@@ -1,0 +1,681 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# AMP Report Development Guidelines
+
+This document outlines the standards and best practices for creating consistent reports in the AMP application. Following these guidelines will ensure all reports have a uniform appearance, behavior, and code structure.
+
+## Table of Contents
+- [Layout Structure](mdc:#layout-structure)
+- [Form Organization](mdc:#form-organization)
+- [Styling Standards](mdc:#styling-standards)
+- [Dark Mode Implementation](mdc:#dark-mode-implementation)
+- [Data Structure](mdc:#data-structure)
+- [Accessibility & Navigation](mdc:#accessibility--navigation)
+- [Performance Considerations](mdc:#performance-considerations)
+- [Best Practices Checklist](mdc:#best-practices-checklist)
+
+## Layout Structure
+
+### Standard Report Structure
+```jsx
+<div className="p-6 flex justify-center">
+  <div className="max-w-7xl w-full space-y-6">
+    {/* Header with title and buttons */}
+    <div className="flex justify-between items-center mb-6">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        Report Title
+      </h1>
+      <div className="flex items-center space-x-4">
+        <button
+          onClick={() => setStatus(status === 'PASS' ? 'FAIL' : 'PASS')}
+          className={`px-4 py-2 rounded-md text-white font-medium ${
+            status === 'PASS' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
+          }`}
+        >
+          {status}
+        </button>
+        <button 
+          onClick={handleSave} 
+          disabled={isSaving}
+          className="bg-[#f26722] hover:bg-[#e55611] text-white font-medium px-4 py-2 rounded-md disabled:opacity-50"
+        >
+          {isSaving ? 'Saving...' : reportId ? 'Update Report' : 'Save Report'}
+        </button>
+      </div>
+    </div>
+    
+    {/* Report sections */}
+    <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
+      <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Section Title</h2>
+      {/* Section content */}
+    </section>
+    
+    {/* Additional sections... */}
+  </div>
+</div>
+```
+
+### Key Layout Rules
+1. Top-level container should have padding and centered content
+2. Reports should have a max width of `max-w-7xl`
+3. Sections should be separated with `space-y-6`
+4. Each section should use the standard card structure with shadow, borders, and padding
+5. Headers should have a bottom border with appropriate padding
+6. The report title and PASS/FAIL + Save buttons should be at the top, with buttons right-aligned
+
+## Form Organization
+
+### Form Fields
+- Use consistent field width: `w-full` for full width, `w-32` for labels
+- Group related fields together in a grid or flex layout
+- Use `mb-4` for vertical spacing between field groups
+- Ensure proper label/input association with matching IDs
+
+### Label Conventions
+```jsx
+<label htmlFor="fieldId" className="form-label inline-block w-32">Field Label:</label>
+<input id="fieldId" name="fieldName" type="text" value={value} onChange={handleChange} className="form-input" />
+```
+
+### Multi-Column Forms
+Use CSS Grid for responsive layouts:
+```jsx
+<div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+  {/* Column 1 */}
+  <div>
+    {/* Fields */}
+  </div>
+  {/* Column 2 */}
+  <div>
+    {/* Fields */}
+  </div>
+</div>
+```
+
+### Tables
+- Use `overflow-x-auto` for responsive tables
+- Include clear table headers with proper alignment
+- Use consistent classes for table cells
+- Use `caption-bottom` for table descriptions
+- Include aria labels for accessibility
+
+## Styling Standards
+
+### Form Input Classes
+Always use these standardized input classes:
+```css
+.form-input, .form-select, .form-textarea {
+  @apply mt-1 block w-full p-2 
+    bg-gray-100 dark:bg-dark-100 
+    border border-gray-300 dark:border-gray-600 
+    rounded-md shadow-sm 
+    focus:outline-none focus:ring-[#f26722] focus:border-[#f26722]
+    text-gray-900 dark:text-white;
+}
+
+.form-input[readonly] {
+  @apply bg-gray-200 dark:bg-dark-200 
+    text-gray-700 dark:text-gray-300;
+}
+
+.form-label {
+  @apply text-gray-900 dark:text-white;
+}
+```
+
+### Button Styles
+- Primary button (for saving): `bg-[#f26722] hover:bg-[#e55611] text-white`
+- Secondary button: `bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600`
+- PASS button: `bg-green-600 hover:bg-green-700 text-white`
+- FAIL button: `bg-red-600 hover:bg-red-700 text-white`
+
+### Section Card Styling
+```jsx
+<section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
+  <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+    Section Title
+  </h2>
+  {/* Content */}
+</section>
+```
+
+## Dark Mode Implementation
+
+### Critical Dark Mode Rules
+1. **Never use explicit colors** without a dark mode equivalent
+2. Always pair light mode classes with dark mode alternatives:
+   - `bg-white dark:bg-dark-150` 
+   - `text-gray-900 dark:text-white`
+   - `border-gray-200 dark:border-gray-700`
+
+### Color Mappings
+| Element | Light Mode | Dark Mode |
+|---------|------------|-----------|
+| Page background | `bg-gray-50` | `dark:bg-dark-200` |
+| Card background | `bg-white` | `dark:bg-dark-150` |
+| Input fields | `bg-gray-100` | `dark:bg-dark-100` |
+| Readonly inputs | `bg-gray-200` | `dark:bg-dark-200` |
+| Primary text | `text-gray-900` | `dark:text-white` |
+| Secondary text | `text-gray-500` | `dark:text-gray-400` |
+| Borders | `border-gray-200` | `dark:border-gray-700` |
+| Table headers | `bg-gray-50` | `dark:bg-dark-200` |
+
+### Troubleshooting Dark Mode
+If dark mode styles aren't applying correctly:
+1. Ensure the `dark` class is present on the `html` element
+2. Check for conflicting styles or inline styles overriding dark mode classes
+3. Use the following CSS in your component to force dark mode styles:
+
+```css
+html.dark input, 
+html.dark select, 
+html.dark textarea {
+  background-color: #242424 !important;
+  color: white !important;
+  border-color: #4b5563 !important;
+}
+
+html.dark h1, html.dark h2, html.dark p, html.dark label, 
+html.dark th, html.dark td {
+  color: white !important;
+}
+
+html.dark section {
+  background-color: #1a1a1a !important;
+}
+```
+
+## Data Structure
+
+### Standard Report Data Structure
+```typescript
+interface ReportData {
+  // Job information (always include these fields)
+  customer: string;
+  address: string;
+  user: string;
+  date: string;
+  jobNumber: string;
+  technicians: string;
+  
+  // Report-specific data
+  // ...additional fields as needed
+  
+  // Always include test equipment
+  testEquipment: {
+    // Equipment fields
+    comments: string;
+  };
+}
+```
+
+### Form Data Organization
+1. Group related data together in logical sections
+2. Maintain consistent field naming across reports
+3. Use descriptive field names that reflect the actual field labels
+4. Include proper TypeScript interfaces for all data structures
+
+## Accessibility & Navigation
+
+### Keyboard Navigation
+Always implement keyboard navigation for tables and multi-field forms:
+
+```jsx
+const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>, 
+                      currentPos: { row: number, col: number }) => {
+  const { row, col } = currentPos;
+  
+  // Prevent arrow keys from changing select values
+  if (e.target instanceof HTMLSelectElement && 
+      ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+    e.preventDefault();
+  }
+
+  switch (e.key) {
+    case 'ArrowRight':
+      // Navigate right
+      break;
+    case 'ArrowLeft':
+      // Navigate left
+      break;
+    case 'ArrowDown':
+      // Navigate down
+      break;
+    case 'ArrowUp':
+      // Navigate up
+      break;
+    // Handle other keys...
+  }
+};
+```
+
+### Accessibility Guidelines
+1. Use semantic HTML elements (`section`, `h1`, `h2`, etc.)
+2. Add `aria-labelledby` for sections
+3. Include descriptive `aria-label` attributes for inputs
+4. Ensure sufficient color contrast in both light and dark modes
+5. Make sure all interactive elements are keyboard-accessible
+
+## Performance Considerations
+
+### Data Fetching
+1. Use the standard job data fetching pattern:
+```jsx
+const loadJobInfo = async () => {
+  if (!jobId) return;
+  
+  try {
+    setLoading(true);
+    // Fetch job data
+    const { data: jobData, error: jobError } = await supabase
+      .schema('neta_ops')
+      .from('jobs')
+      .select(`title, job_number, customer_id`)
+      .eq('id', jobId)
+      .single();
+
+    if (jobError) throw jobError;
+
+    // Fetch customer data
+    if (jobData?.customer_id) {
+      const { data: customerData, error: customerError } = await supabase
+        .schema('common')
+        .from('customers')
+        .select(`name, company_name, address`)
+        .eq('id', jobData.customer_id)
+        .single();
+        
+      if (!customerError && customerData) {
+        // Use customer data
+      }
+    }
+  } catch (error) {
+    console.error('Error loading job info:', error);
+    setError(`Failed to load job info: ${(error as Error).message}`);
+  } finally {
+    setLoading(false);
+  }
+};
+```
+
+### State Management
+1. Use a single `formData` state with proper TypeScript interface
+2. Implement specific handler functions for different types of data updates
+3. Use memoization for expensive calculations
+
+## Best Practices Checklist
+
+Before submitting a new report component, verify:
+
+- [ ] **Layout matches the standard report structure**
+- [ ] **All form fields follow the label/input pattern**
+- [ ] **Dark mode styles are properly implemented**
+- [ ] **Tables have proper keyboard navigation**
+- [ ] **All inputs have properly associated labels**
+- [ ] **Form data has appropriate TypeScript interfaces**
+- [ ] **Error handling is implemented for data loading and saving**
+- [ ] **Loading/error states are handled appropriately**
+- [ ] **Save/update functionality follows standard pattern**
+- [ ] **All section cards use consistent styling**
+- [ ] **Text and background colors have proper contrast**
+- [ ] **Accessibility attributes are present where needed**
+
+## Report View/Edit Mode Implementation
+
+All reports must implement a consistent view/edit mode pattern:
+
+### State Management
+```typescript
+// Required state variables
+const [isEditMode, setIsEditMode] = useState<boolean>(!reportId); // Edit mode by default for new reports
+const [status, setStatus] = useState<'PASS' | 'FAIL'>('PASS');
+```
+
+### Loading Existing Reports
+```typescript
+// Load existing report
+const loadReport = async () => {
+  if (!reportId) {
+    setLoading(false);
+    setIsEditMode(true); // New reports start in edit mode
+    return;
+  }
+
+  try {
+    setLoading(true);
+    
+    const { data, error } = await supabase
+      .schema('neta_ops')
+      .from('table_name')
+      .select('*')
+      .eq('id', reportId)
+      .single();
+    
+    if (error) throw error;
+    
+    if (data && data.report_info) {
+      // Update form data with the loaded report data
+      setFormData(prev => ({
+        ...prev,
+        ...data.report_info,
+        // Add other fields as needed
+      }));
+      
+      // Set status based on report data if available
+      if (data.report_info.status) {
+        setStatus(data.report_info.status);
+      }
+      
+      setIsEditMode(false); // Start in view mode for existing reports
+    }
+  } catch (error) {
+    console.error('Error loading report:', error);
+    setError(`Failed to load report: ${(error as Error).message}`);
+  } finally {
+    setLoading(false);
+  }
+};
+```
+
+### Standardized Report Header
+Reports should have a standardized header with a consistent layout and button pattern:
+
+```jsx
+const renderHeader = () => (
+  <div className="flex justify-between items-center mb-6">
+    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+      Report Title
+    </h1>
+    <div className="flex gap-2">
+      {/* Status Button - Always visible, only interactive in edit mode */}
+      <button
+        onClick={() => {
+          if (isEditMode) { // Only allow status change if editing
+            setStatus(status === 'PASS' ? 'FAIL' : 'PASS');
+          }
+        }}
+        className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+          status === 'PASS'
+            ? 'bg-green-600 text-white focus:ring-green-500'
+            : 'bg-red-600 text-white focus:ring-red-500'
+        } ${!isEditMode ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}
+      >
+        {status === 'PASS' ? 'PASS' : 'FAIL'}
+      </button>
+
+      {/* Conditional Edit/Save Buttons */}
+      {reportId && !isEditMode ? (
+        <button
+          onClick={() => setIsEditMode(true)}
+          className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Edit Report
+        </button>
+      ) : (
+        <button
+          onClick={handleSave}
+          disabled={!isEditMode}
+          className={`px-4 py-2 text-sm text-white bg-orange-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!isEditMode ? 'hidden' : 'hover:bg-orange-700'}`}
+        >
+          Save Report
+        </button>
+      )}
+    </div>
+  </div>
+);
+```
+
+### Controlled Form Input Fields
+All input fields should be conditionally read-only based on edit mode:
+
+```jsx
+<input
+  type="text"
+  value={formData.someField}
+  onChange={(e) => handleChange('someField', e.target.value)}
+  readOnly={!isEditMode}
+  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${
+    !isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''
+  }`}
+/>
+
+<select
+  value={formData.someSelectField}
+  onChange={(e) => handleChange('someSelectField', e.target.value)}
+  disabled={!isEditMode}
+  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${
+    !isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''
+  }`}
+>
+  {/* options */}
+</select>
+```
+
+### Visual Styles for View Mode
+When in view mode, inputs should:
+- Have a gray background to indicate they're read-only
+- Display the cursor-not-allowed style
+- Maintain the same layout and width
+- Have slightly reduced opacity to show they're not interactive
+
+### Save/Update Reports Flow
+```typescript
+const handleSave = async () => {
+  if (!jobId || !user?.id || !isEditMode) return;
+
+  try {
+    let result;
+    if (reportId) {
+      // Update existing report
+      result = await supabase
+        .schema('neta_ops')
+        .from('table_name')
+        .update({ /* report data */ })
+        .eq('id', reportId)
+        .select()
+        .single();
+    } else {
+      // Create new report
+      result = await supabase
+        .schema('neta_ops')
+        .from('table_name')
+        .insert({ /* report data */ })
+        .select()
+        .single();
+
+      // Create asset entry for the report
+      if (result.data) {
+        const assetData = {
+          name: `Report Type - ${formData.identifier || formData.location || 'Unnamed'}`,
+          file_url: `report:/jobs/${jobId}/report-route/${result.data.id}`,
+          user_id: user.id
+        };
+
+        const { data: assetResult, error: assetError } = await supabase
+          .schema('neta_ops')
+          .from('assets')
+          .insert(assetData)
+          .select()
+          .single();
+
+        if (assetError) throw assetError;
+
+        // Link asset to job
+        await supabase
+          .schema('neta_ops')
+          .from('job_assets')
+          .insert({
+            job_id: jobId,
+            asset_id: assetResult.id,
+            user_id: user.id
+          });
+      }
+    }
+
+    if (result.error) throw result.error;
+
+    setIsEditMode(false); // Exit editing mode
+    alert(`Report ${reportId ? 'updated' : 'saved'} successfully!`);
+    navigate(`/jobs/${jobId}`); // Navigate back to job view
+  } catch (error: any) {
+    console.error('Error saving report:', error);
+    alert(`Failed to save report: ${error?.message || 'Unknown error'}`);
+  }
+};
+```
+
+## Temperature Correction Implementation
+
+When implementing reports that require temperature correction (like cable testing):
+
+### Data Structure
+```typescript
+interface ReportWithTemperatureCorrection {
+  // Standard report fields
+  // ...
+  
+  // Environmental data
+  temperature: number; // In Fahrenheit
+  humidity: number;    // Percentage
+  
+  // Original readings
+  readings: {
+    // Various test readings
+  };
+  
+  // Temperature-corrected readings
+  correctedReadings: {
+    // Same structure as readings
+  };
+}
+```
+
+### Temperature Conversion Table
+- Include a comprehensive temperature conversion table (°F to °C)
+- Implement as an array of temperature pairs:
+```typescript
+const TEMP_CONVERSION_DATA: { fahrenheit: number; celsius: number }[] = [
+  // Cover a wide range of temperatures
+  { fahrenheit: 32, celsius: 0 },
+  { fahrenheit: 50, celsius: 10 },
+  // ...and so on
+];
+```
+
+### Temperature Correction Factors (TCF)
+- Store the complete TCF lookup table:
+```typescript
+const TCF_DATA: { celsius: number; multiplier: number }[] = [
+  { celsius: 20, multiplier: 1.0 },   // Base reference temperature
+  { celsius: 25, multiplier: 1.25 },  // Example values
+  // ...and so on
+];
+```
+
+- When implementing the TCF lookup function:
+  1. Look for exact matches in the table first
+  2. If no exact match, use linear interpolation between nearest values
+  3. Return exact values without rounding
+
+```typescript
+const getTCF = (celsius: number): number => {
+  // Find exact match first
+  const exactMatch = TCF_DATA.find(data => data.celsius === celsius);
+  if (exactMatch) {
+    return exactMatch.multiplier; // Return exact value from table
+  }
+  
+  // If no exact match, interpolate between surrounding values
+  // ...interpolation logic here
+};
+```
+
+### UI Implementation
+- Display temperature inputs in the job information section:
+```jsx
+<div className="mb-4 flex items-center">
+  <label htmlFor="temperature" className="form-label inline-block w-32">Temp:</label>
+  <input 
+    id="temperature" 
+    name="temperature" 
+    type="number" 
+    value={formData.temperature} 
+    onChange={handleChange} 
+    className="form-input w-20"
+  />
+  <span className="mx-2">°F</span>
+  <span className="mx-2">{celsiusTemperature}</span>
+  <span>°C</span>
+  <span className="mx-5">TCF</span>
+  <span>{tcf}</span>
+</div>
+```
+
+### Applying Correction
+- Implement an effect to recalculate corrected readings when temperature changes:
+```typescript
+useEffect(() => {
+  const updatedTestSets = formData.testSets.map(set => {
+    const correctedReadings = {
+      // Apply TCF to each reading
+      aToGround: applyTCF(set.readings.aToGround, tcf),
+      // ... other readings
+    };
+    return { ...set, correctedReadings };
+  });
+  
+  setFormData(prev => ({ ...prev, testSets: updatedTestSets }));
+}, [formData.temperature, tcf]); 
+```
+
+### Saving Reports with Asset Creation
+When saving reports with test data:
+
+1. Save the report data to the appropriate table in the correct schema:
+```typescript
+const { data: insertData, error: insertError } = await supabase
+  .schema('neta_ops')  // Use the correct schema
+  .from('report_table_name')
+  .insert(reportPayload)
+  .select('id')
+  .single();
+```
+
+2. Create an asset record to display in job details:
+```typescript
+const assetData = {
+  name: `Report Type - ${formData.identifier || new Date().toLocaleDateString()}`,
+  file_url: `report:/jobs/${jobId}/report-route/${savedReportId}`,
+  user_id: user?.id,
+  created_at: new Date().toISOString()
+};
+
+const { data: assetResult } = await supabase
+  .schema('neta_ops')
+  .from('assets')
+  .insert(assetData)
+  .select('id')
+  .single();
+```
+
+3. Link the asset to the job:
+```typescript
+await supabase
+  .schema('neta_ops')
+  .from('job_assets')
+  .insert({
+    job_id: jobId,
+    asset_id: assetResult.id,
+    user_id: user?.id
+  });
+```
+
+4. Navigate back to job details after successful save:
+```typescript
+navigate(`/jobs/${jobId}`);
+```
+
+By following these guidelines, all reports in the application will maintain a consistent appearance, behavior, and code structure, improving both developer efficiency and user experience. 

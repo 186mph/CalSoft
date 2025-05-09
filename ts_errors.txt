@@ -1,0 +1,250 @@
+src/components/customers/CustomerInteractions.tsx(161,41): error TS2345: Argument of type '{ tags: string[]; customer_id: string; type: string; title: string; description: string; outcome: string; follow_up_date: string; follow_up_notes: string; completed: boolean; associated_contact_id: string; }' is not assignable to parameter of type 'Omit<CustomerInteraction, "id" | "created_at">'.
+  Property 'created_by' is missing in type '{ tags: string[]; customer_id: string; type: string; title: string; description: string; outcome: string; follow_up_date: string; follow_up_notes: string; completed: boolean; associated_contact_id: string; }' but required in type 'Omit<CustomerInteraction, "id" | "created_at">'.
+src/components/customers/CustomerList.tsx(341,31): error TS2322: Type 'string | null' is not assignable to type 'Color | undefined'.
+  Type 'null' is not assignable to type 'Color | undefined'.
+src/components/customers/CustomerList.tsx(346,40): error TS2322: Type 'string | null' is not assignable to type 'BackgroundColor | undefined'.
+  Type 'null' is not assignable to type 'BackgroundColor | undefined'.
+src/components/customers/SurveyTemplates.tsx(133,9): error TS2322: Type 'QuestionType' is not assignable to type '"rating"'.
+  Type '"boolean"' is not assignable to type '"rating"'.
+src/components/customers/SurveyTemplates.tsx(250,9): error TS2367: This comparison appears to be unintentional because the types '"rating"' and '"multiple_choice"' have no overlap.
+src/components/customers/SurveyTemplates.tsx(261,23): error TS2367: This comparison appears to be unintentional because the types '"rating"' and '"multiple_choice"' have no overlap.
+src/components/customers/SurveyTemplates.tsx(268,11): error TS2322: Type '{ options: string[]; } | null' is not assignable to type '{ options: string[]; } | undefined'.
+  Type 'null' is not assignable to type '{ options: string[]; } | undefined'.
+src/components/customers/SurveyTemplates.tsx(275,11): error TS2322: Type '{ options: string[]; } | null' is not assignable to type '{ options: string[]; } | undefined'.
+  Type 'null' is not assignable to type '{ options: string[]; } | undefined'.
+src/components/customers/SurveyTemplates.tsx(748,14): error TS2367: This comparison appears to be unintentional because the types '"rating"' and '"multiple_choice"' have no overlap.
+src/components/customers/SurveyTemplates.tsx(820,16): error TS2367: This comparison appears to be unintentional because the types '"rating"' and '"multiple_choice"' have no overlap.
+src/components/debug/DebugTable.tsx(2,26): error TS2307: Cannot find module '../lib/supabase' or its corresponding type declarations.
+src/components/equipment/AssignmentForm.tsx(6,28): error TS2307: Cannot find module '@/components/ui/DatePicker' or its corresponding type declarations.
+src/components/equipment/AssignmentForm.tsx(10,22): error TS2307: Cannot find module '@/lib/interfaces/user' or its corresponding type declarations.
+src/components/equipment/AssignmentForm.tsx(11,34): error TS2307: Cannot find module '@/lib/services/users' or its corresponding type declarations.
+src/components/equipment/AssignmentForm.tsx(40,11): error TS2322: Type '"error"' is not assignable to type '"default" | "destructive" | "success" | "warning" | "info" | undefined'.
+src/components/equipment/AssignmentForm.tsx(85,9): error TS2322: Type '"error"' is not assignable to type '"default" | "destructive" | "success" | "warning" | "info" | undefined'.
+src/components/equipment/AssignmentForm.tsx(101,22): error TS2339: Property 'asset_tag' does not exist on type 'Equipment'.
+src/components/equipment/AssignmentForm.tsx(101,77): error TS2339: Property 'asset_tag' does not exist on type 'Equipment'.
+src/components/equipment/EquipmentForm.tsx(10,28): error TS2307: Cannot find module '@/components/ui/DatePicker' or its corresponding type declarations.
+src/components/equipment/EquipmentForm.tsx(43,29): error TS2339: Property 'category' does not exist on type 'Equipment'.
+src/components/equipment/EquipmentForm.tsx(44,32): error TS2339: Property 'description' does not exist on type 'Equipment'.
+src/components/equipment/EquipmentForm.tsx(46,30): error TS2339: Property 'asset_tag' does not exist on type 'Equipment'.
+src/components/equipment/EquipmentForm.tsx(47,37): error TS2339: Property 'acquisition_date' does not exist on type 'Equipment'.
+src/components/equipment/EquipmentForm.tsx(48,37): error TS2339: Property 'acquisition_cost' does not exist on type 'Equipment'.
+src/components/equipment/EquipmentForm.tsx(49,42): error TS2339: Property 'estimated_life_months' does not exist on type 'Equipment'.
+src/components/equipment/EquipmentForm.tsx(53,30): error TS2339: Property 'condition' does not exist on type 'Equipment'.
+src/components/equipment/EquipmentForm.tsx(55,37): error TS2551: Property 'last_maintenance' does not exist on type 'Equipment'. Did you mean 'last_maintenance_date'?
+src/components/equipment/EquipmentForm.tsx(56,37): error TS2551: Property 'next_maintenance' does not exist on type 'Equipment'. Did you mean 'next_maintenance_date'?
+src/components/equipment/EquipmentForm.tsx(82,45): error TS2345: Argument of type '{ acquisition_cost: number | null; estimated_life_months: number | null; name: string; category: string; description: string; serial_number: string; asset_tag: string; acquisition_date: string; ... 6 more ...; next_maintenance: string; }' is not assignable to parameter of type 'Partial<Equipment>'.
+  Types of property 'status' are incompatible.
+    Type 'string' is not assignable to type '"available" | "maintenance" | "retired" | "assigned" | undefined'.
+src/components/equipment/EquipmentForm.tsx(89,31): error TS2345: Argument of type '{ acquisition_cost: number | null; estimated_life_months: number | null; name: string; category: string; description: string; serial_number: string; asset_tag: string; acquisition_date: string; ... 6 more ...; next_maintenance: string; }' is not assignable to parameter of type 'Omit<Equipment, "id" | "created_at" | "updated_at">'.
+  Type '{ acquisition_cost: number | null; estimated_life_months: number | null; name: string; category: string; description: string; serial_number: string; asset_tag: string; acquisition_date: string; ... 6 more ...; next_maintenance: string; }' is missing the following properties from type 'Omit<Equipment, "id" | "created_at" | "updated_at">': type, location, purchase_date, warranty_expiration, and 2 more.
+src/components/equipment/EquipmentForm.tsx(103,9): error TS2322: Type '"error"' is not assignable to type '"default" | "destructive" | "success" | "warning" | "info" | undefined'.
+src/components/jobs/JobCostTracking.tsx(407,10): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; md: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; md: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/jobs/JobCostTracking.tsx(472,12): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; md: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; md: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/jobs/JobCostTracking.tsx(478,20): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/jobs/JobCostTracking.tsx(483,20): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element[]; item: true; xs: number; sm: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element[]; item: true; xs: number; sm: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/jobs/JobCostTracking.tsx(491,20): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element[]; item: true; xs: number; sm: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element[]; item: true; xs: number; sm: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/jobs/JobCostTracking.tsx(499,20): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element[]; item: true; xs: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element[]; item: true; xs: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/jobs/JobCostTracking.tsx(599,14): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; md: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; md: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/jobs/JobCostTracking.tsx(613,14): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; md: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; md: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/jobs/JobCostTracking.tsx(630,14): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; md: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; md: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/jobs/JobCostTracking.tsx(648,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; md: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; md: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/jobs/JobCostTracking.tsx(664,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; md: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; md: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/jobs/JobCostTracking.tsx(685,14): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; md: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; md: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/jobs/JobCostTracking.tsx(705,14): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/jobs/JobNotifications.tsx(149,24): error TS2339: Property 'error' does not exist on type '{ success: boolean; }'.
+src/components/jobs/JobSurveys.tsx(50,28): error TS2307: Cannot find module '../../utils/formatDate' or its corresponding type declarations.
+src/components/jobs/JobSurveys.tsx(51,36): error TS2307: Cannot find module '../../utils/auth' or its corresponding type declarations.
+src/components/jobs/ResourceAllocationManager.tsx(76,7): error TS2322: Type 'Element' is not assignable to type 'null'.
+src/components/jobs/ResourceAllocationManager.tsx(80,7): error TS2322: Type 'Element' is not assignable to type 'null'.
+src/components/jobs/ResourceAllocationManager.tsx(84,7): error TS2322: Type 'Element' is not assignable to type 'null'.
+src/components/jobs/ResourceAllocationManager.tsx(88,7): error TS2322: Type 'Element' is not assignable to type 'null'.
+src/components/jobs/ResourceAllocationManager.tsx(97,7): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & ChipOwnProps & CommonProps & Omit<any, "children" | ... 15 more ... | "skipFocusWhenDisabled">): Element | null', gave the following error.
+    Type 'null' is not assignable to type 'ReactElement<unknown, string | JSXElementConstructor<any>> | undefined'.
+  Overload 2 of 2, '(props: DefaultComponentProps<ChipTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type 'null' is not assignable to type 'ReactElement<unknown, string | JSXElementConstructor<any>> | undefined'.
+src/components/jobs/ResourceAllocationManager.tsx(581,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; key: string; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; key: string; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/jobs/ResourceAllocationManager.tsx(666,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/jobs/ResourceAllocationManager.tsx(676,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/lab/CertificateGenerator.tsx(463,34): error TS2322: Type '"success" | "warning" | "danger"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+  Type '"success"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+src/components/lab/EquipmentCalibration.tsx(169,23): error TS2322: Type '"primary" | "success" | "warning" | "info" | "danger"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+  Type '"primary"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+src/components/lab/LabDashboard.tsx(323,28): error TS2322: Type '"primary"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+src/components/lab/LabDashboard.tsx(337,28): error TS2322: Type '"warning"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+src/components/lab/LabDashboard.tsx(366,28): error TS2322: Type '"primary"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+src/components/lab/LabDashboard.tsx(370,28): error TS2322: Type '"success"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+src/components/lab/LabDashboard.tsx(377,28): error TS2322: Type '"warning"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+src/components/lab/LabDashboard.tsx(409,28): error TS2322: Type '"primary"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+src/components/lab/LabDashboard.tsx(415,28): error TS2322: Type '"success"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+src/components/lab/LabDashboard.tsx(421,28): error TS2322: Type '"warning"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+src/components/lab/QualityMetrics.tsx(553,34): error TS2322: Type '"success" | "warning" | "danger"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+  Type '"success"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+src/components/lab/TestingProcedures.tsx(320,28): error TS2322: Type '"primary" | "success" | "warning" | "info" | "danger"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+  Type '"primary"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+src/components/lab/TestingProcedures.tsx(468,30): error TS2322: Type '"info"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+src/components/office/AssetTracking.tsx(314,17): error TS2345: Argument of type '(Asset | { status: string; assignedTo: string; checkoutHistory: CheckoutRecord[]; id: string; name: string; type: string; purchaseDate: string; cost: number; location: string; serialNumber?: string | undefined; warrantyExpiration?: string | undefined; lastMaintenance?: string | undefined; notes?: string | undefined;...' is not assignable to parameter of type 'SetStateAction<Asset[]>'.
+  Type '(Asset | { status: string; assignedTo: string; checkoutHistory: CheckoutRecord[]; id: string; name: string; type: string; purchaseDate: string; cost: number; location: string; serialNumber?: string | undefined; warrantyExpiration?: string | undefined; lastMaintenance?: string | undefined; notes?: string | undefined;...' is not assignable to type 'Asset[]'.
+    Type 'Asset | { status: string; assignedTo: string; checkoutHistory: CheckoutRecord[]; id: string; name: string; type: string; purchaseDate: string; cost: number; location: string; serialNumber?: string | undefined; warrantyExpiration?: string | undefined; lastMaintenance?: string | undefined; notes?: string | undefined; }' is not assignable to type 'Asset'.
+      Type '{ status: string; assignedTo: string; checkoutHistory: CheckoutRecord[]; id: string; name: string; type: string; purchaseDate: string; cost: number; location: string; serialNumber?: string; warrantyExpiration?: string; lastMaintenance?: string; notes?: string; }' is not assignable to type 'Asset'.
+        Types of property 'status' are incompatible.
+          Type 'string' is not assignable to type '"available" | "maintenance" | "retired" | "assigned"'.
+src/components/office/AssetTracking.tsx(356,15): error TS2345: Argument of type '(Asset | { status: string; assignedTo: undefined; checkoutHistory: CheckoutRecord[]; id: string; name: string; type: string; purchaseDate: string; cost: number; location: string; serialNumber?: string | undefined; warrantyExpiration?: string | undefined; lastMaintenance?: string | undefined; notes?: string | undefin...' is not assignable to parameter of type 'SetStateAction<Asset[]>'.
+  Type '(Asset | { status: string; assignedTo: undefined; checkoutHistory: CheckoutRecord[]; id: string; name: string; type: string; purchaseDate: string; cost: number; location: string; serialNumber?: string | undefined; warrantyExpiration?: string | undefined; lastMaintenance?: string | undefined; notes?: string | undefin...' is not assignable to type 'Asset[]'.
+    Type 'Asset | { status: string; assignedTo: undefined; checkoutHistory: CheckoutRecord[]; id: string; name: string; type: string; purchaseDate: string; cost: number; location: string; serialNumber?: string | undefined; warrantyExpiration?: string | undefined; lastMaintenance?: string | undefined; notes?: string | undefine...' is not assignable to type 'Asset'.
+      Type '{ status: string; assignedTo: undefined; checkoutHistory: CheckoutRecord[]; id: string; name: string; type: string; purchaseDate: string; cost: number; location: string; serialNumber?: string; warrantyExpiration?: string; lastMaintenance?: string; notes?: string; }' is not assignable to type 'Asset'.
+        Types of property 'status' are incompatible.
+          Type 'string' is not assignable to type '"available" | "maintenance" | "retired" | "assigned"'.
+src/components/office/AssetTracking.tsx(372,15): error TS2345: Argument of type '(Asset | { status: string; lastMaintenance: string | undefined; id: string; name: string; type: string; purchaseDate: string; cost: number; location: string; assignedTo?: string | undefined; serialNumber?: string | undefined; warrantyExpiration?: string | undefined; notes?: string | undefined; checkoutHistory?: Chec...' is not assignable to parameter of type 'SetStateAction<Asset[]>'.
+  Type '(Asset | { status: string; lastMaintenance: string | undefined; id: string; name: string; type: string; purchaseDate: string; cost: number; location: string; assignedTo?: string | undefined; serialNumber?: string | undefined; warrantyExpiration?: string | undefined; notes?: string | undefined; checkoutHistory?: Chec...' is not assignable to type 'Asset[]'.
+    Type 'Asset | { status: string; lastMaintenance: string | undefined; id: string; name: string; type: string; purchaseDate: string; cost: number; location: string; assignedTo?: string | undefined; serialNumber?: string | undefined; warrantyExpiration?: string | undefined; notes?: string | undefined; checkoutHistory?: Check...' is not assignable to type 'Asset'.
+      Type '{ status: string; lastMaintenance: string | undefined; id: string; name: string; type: string; purchaseDate: string; cost: number; location: string; assignedTo?: string; serialNumber?: string; warrantyExpiration?: string; notes?: string; checkoutHistory?: CheckoutRecord[]; }' is not assignable to type 'Asset'.
+        Types of property 'status' are incompatible.
+          Type 'string' is not assignable to type '"available" | "maintenance" | "retired" | "assigned"'.
+src/components/office/AssetTracking.tsx(407,46): error TS2322: Type '{ children: Element[]; value: string; onValueChange: Dispatch<SetStateAction<string>>; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'onValueChange' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'. Did you mean 'onVolumeChange'?
+src/components/office/AssetTracking.tsx(420,48): error TS2322: Type '{ children: Element[]; value: string; onValueChange: Dispatch<SetStateAction<string>>; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'onValueChange' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'. Did you mean 'onVolumeChange'?
+src/components/office/AssetTracking.tsx(554,17): error TS2322: Type '{ children: Element[]; value: string; onValueChange: (value: any) => void; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'onValueChange' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'. Did you mean 'onVolumeChange'?
+src/components/office/CalendarSystem.tsx(300,17): error TS2345: Argument of type 'Date' is not assignable to parameter of type 'never'.
+src/components/office/CalendarSystem.tsx(609,9): error TS2719: Type 'CalendarEvent[]' is not assignable to type 'CalendarEvent[]'. Two different types with this name exist, but they are unrelated.
+  Type 'CalendarEvent' is not assignable to type 'CalendarEvent'. Two different types with this name exist, but they are unrelated.
+    Types of property 'reminders' are incompatible.
+      Type 'EventReminder[] | undefined' is not assignable to type 'EventReminder[] | undefined'. Two different types with this name exist, but they are unrelated.
+        Type 'EventReminder[]' is not assignable to type 'EventReminder[]'. Two different types with this name exist, but they are unrelated.
+          Type 'EventReminder' is missing the following properties from type 'EventReminder': eventId, time, type
+src/components/office/CalendarSystem.tsx(610,9): error TS2322: Type '(eventId: string, reminderData: Omit<EventReminder, "id" | "sent">) => void' is not assignable to type '(eventId: string, reminder: Omit<EventReminder, "id" | "sent">) => void'.
+  Types of parameters 'reminderData' and 'reminder' are incompatible.
+    Type 'Omit<EventReminder, "id" | "sent">' is missing the following properties from type 'Omit<EventReminder, "id" | "sent">': title, startTime, endTime
+src/components/office/CalendarSystem.tsx(786,17): error TS2322: Type '(value: EventCategory) => void' is not assignable to type '(value: string) => void'.
+  Types of parameters 'value' and 'value' are incompatible.
+    Type 'string' is not assignable to type 'EventCategory'.
+src/components/office/ExpenseTracking.tsx(349,11): error TS2533: Object is possibly 'null' or 'undefined'.
+src/components/office/ExpenseTracking.tsx(349,20): error TS2533: Object is possibly 'null' or 'undefined'.
+src/components/office/ExpenseTracking.tsx(350,11): error TS2533: Object is possibly 'null' or 'undefined'.
+src/components/office/ExpenseTracking.tsx(350,20): error TS2533: Object is possibly 'null' or 'undefined'.
+src/components/reports/ReportApprovalWorkflow.tsx(198,23): error TS2322: Type '"warning"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+src/components/reports/ReportApprovalWorkflow.tsx(202,23): error TS2322: Type '"success"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+src/components/reports/ReportApprovalWorkflow.tsx(204,23): error TS2322: Type '"danger"' is not assignable to type '"default" | "outline" | "secondary" | "destructive" | null | undefined'.
+src/components/resources/ResourceManagement.tsx(156,10): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; md: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; md: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/resources/ResourceManagement.tsx(169,10): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; md: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; md: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/resources/ResourceManagement.tsx(182,10): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; md: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; md: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/resources/ResourceManagement.tsx(195,10): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; md: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; md: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/scheduling/EquipmentTracking.tsx(67,5): error TS2353: Object literal may only specify known properties, and 'location' does not exist in type 'Partial<Equipment> | (() => Partial<Equipment>)'.
+src/components/scheduling/EquipmentTracking.tsx(145,82): error TS2554: Expected 0-1 arguments, but got 2.
+src/components/scheduling/EquipmentTracking.tsx(223,54): error TS2339: Property 'saveEquipment' does not exist on type '{ getAllEquipment: (filters?: EquipmentFilter | EquipmentFilters | undefined) => Promise<{ data: any[] | null; error: PostgrestError | null; }>; ... 10 more ...; getEquipmentStatuses: () => Promise<...>; }'.
+src/components/scheduling/EquipmentTracking.tsx(249,11): error TS2353: Object literal may only specify known properties, and 'location' does not exist in type 'SetStateAction<Partial<Equipment>>'.
+src/components/scheduling/EquipmentTracking.tsx(284,12): error TS2678: Type '"out-of-service"' is not comparable to type 'EquipmentStatus'.
+src/components/scheduling/EquipmentTracking.tsx(293,28): error TS2304: Cannot find name 'Tool'.
+src/components/scheduling/EquipmentTracking.tsx(350,36): error TS2345: Argument of type 'string' is not assignable to parameter of type 'EquipmentCategory'.
+src/components/scheduling/EquipmentTracking.tsx(361,23): error TS2339: Property 'location' does not exist on type 'Equipment'.
+src/components/scheduling/EquipmentTracking.tsx(364,33): error TS2339: Property 'location' does not exist on type 'Equipment'.
+src/components/scheduling/EquipmentTracking.tsx(368,43): error TS2551: Property 'assignedTo' does not exist on type 'Equipment'. Did you mean 'assigned_to'?
+src/components/scheduling/EquipmentTracking.tsx(371,46): error TS2551: Property 'assignedTo' does not exist on type 'Equipment'. Did you mean 'assigned_to'?
+src/components/scheduling/EquipmentTracking.tsx(371,85): error TS2551: Property 'assignedTo' does not exist on type 'Equipment'. Did you mean 'assigned_to'?
+src/components/scheduling/EquipmentTracking.tsx(611,38): error TS2339: Property 'location' does not exist on type 'Partial<Equipment>'.
+src/components/stats/DatabaseStatsCard.tsx(4,58): error TS2307: Cannot find module './ui/Card' or its corresponding type declarations.
+src/components/stats/DatabaseStatsCard.tsx(5,26): error TS2307: Cannot find module './ui/Skeleton' or its corresponding type declarations.
+src/components/theme/theme-toggle.tsx(3,24): error TS2307: Cannot find module './ui/Button' or its corresponding type declarations.
+src/lib/types/equipment.ts(1,22): error TS2307: Cannot find module './user' or its corresponding type declarations.

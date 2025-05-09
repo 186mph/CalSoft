@@ -1,0 +1,1 @@
+CREATE OR REPLACE FUNCTION exec_sql(sql_query TEXT) RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS supabase/migrations/20250317090200_create_migrations_table_rpc.sql BEGIN EXECUTE sql_query; END; supabase/migrations/20250317090200_create_migrations_table_rpc.sql;

@@ -1,0 +1,7 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Never delete any supabase tables withoout checking with me first
+never upload anything to my github unless I ask you to

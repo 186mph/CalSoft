@@ -1,0 +1,78 @@
+Database Connections Setup and Verification PRD
+
+Objective:
+Set up and verify all database connections between the common, business, and neta_ops schemas in the Supabase database, replacing dummy data with actual database connections.
+
+Current State:
+- Web app is partially set up with dummy data
+- Supabase connection is working
+- Three schemas exist: common, business, and neta_ops
+- Environment variables are properly configured
+
+Requirements:
+
+1. Schema Verification and Documentation
+- Verify the structure and relationships between all three schemas
+- Document the purpose and relationships of each schema
+- Map out all table relationships across schemas
+- Create a schema diagram showing cross-schema relationships
+
+2. Database Connection Setup
+- Implement proper schema selection in Supabase queries
+- Set up cross-schema joins where needed
+- Ensure proper error handling for schema-specific errors
+- Implement connection pooling and optimization
+- Add connection status monitoring
+
+3. Data Migration
+- Identify all components using dummy data
+- Create migration scripts for each component
+- Implement data validation
+- Set up proper error handling for data type mismatches
+
+4. Frontend Integration
+- Update all components to use real database connections
+- Implement proper loading states
+- Add error handling for database connection issues
+- Add retry mechanisms for failed connections
+- Implement proper data caching
+
+5. Testing and Verification
+- Create test suite for database connections
+- Implement connection monitoring
+- Add logging for connection issues
+- Create health check endpoints
+- Set up automated testing for cross-schema queries
+
+Technical Specifications:
+
+1. Schema Structure:
+- common: Shared tables and utilities
+- business: Business-specific data and operations
+- neta_ops: Operational data and metrics
+
+2. Required Features:
+- Real-time data updates
+- Cross-schema query optimization
+- Connection pooling
+- Error recovery
+- Data validation
+- Cache management
+
+3. Performance Requirements:
+- Query response time < 200ms
+- Connection establishment < 100ms
+- Automatic retry on connection failure
+- Cache hit ratio > 80%
+
+4. Security Requirements:
+- Proper schema-level access control
+- Data validation before cross-schema operations
+- Audit logging for schema access
+- Error handling without exposing schema details
+
+Dependencies:
+- Supabase client library
+- Existing schema structures
+- Frontend components currently using dummy data
+- Environment variables configuration 

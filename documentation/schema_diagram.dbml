@@ -1,0 +1,227 @@
+// Database Schema Diagram for Active-Website-Software
+// Created using dbdiagram.io format (DBML)
+
+// Common Schema (Central Data)
+Table common.customers {
+  id uuid [pk]
+  name text [not null]
+  company_name text
+  address text
+  phone text
+  email text
+  status text
+  user_id uuid
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table common.contacts {
+  id uuid [pk]
+  customer_id uuid [ref: > common.customers.id]
+  name text [not null]
+  email text
+  phone text
+  role text
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+// Business Schema (Sales/Opportunities)
+Table business.opportunities {
+  id uuid [pk]
+  customer_id uuid [ref: > common.customers.id]
+  name text [not null]
+  quote_number text
+  status text [not null]
+  value decimal
+  probability integer
+  job_id uuid [ref: > neta_ops.jobs.id]
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table business.estimates {
+  id uuid [pk]
+  opportunity_id uuid [ref: > business.opportunities.id]
+  // Other fields for estimates
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+// Neta Ops Schema (Operations)
+Table neta_ops.jobs {
+  id uuid [pk]
+  customer_id uuid [ref: > common.customers.id]
+  opportunity_id uuid [ref: > business.opportunities.id]
+  job_number text [unique]
+  title text [not null]
+  status text [not null]
+  division text
+  description text
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table neta_ops.assets {
+  id uuid [pk]
+  customer_id uuid [ref: > common.customers.id]
+  name text [not null]
+  type text
+  location text
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table neta_ops.job_assets {
+  job_id uuid [ref: > neta_ops.jobs.id]
+  asset_id uuid [ref: > neta_ops.assets.id]
+  indexes {
+    (job_id, asset_id) [pk]
+  }
+}
+
+Table neta_ops.reports {
+  id uuid [pk]
+  job_id uuid [ref: > neta_ops.jobs.id]
+  report_type text
+  // Other fields for reports
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+// Equipment Management Tables (neta_ops schema)
+Table neta_ops.equipment {
+  id uuid [pk]
+  name text [not null]
+  type text [not null]
+  category text
+  serial_number text
+  model text
+  manufacturer text
+  purchase_date date
+  warranty_expiration date
+  status text [not null]
+  location text
+  asset_id uuid [ref: > neta_ops.assets.id]
+  customer_id uuid [ref: > common.customers.id]
+  last_maintenance_date date
+  next_maintenance_date date
+  notes text
+  condition_rating integer
+  created_at timestamptz
+  updated_at timestamptz
+  created_by uuid
+}
+
+Table neta_ops.calibrations {
+  id uuid [pk]
+  equipment_id uuid [ref: > neta_ops.equipment.id]
+  calibration_date date [not null]
+  next_calibration_date date
+  performed_by uuid
+  calibration_standard text
+  result text [not null]
+  certificate_number text
+  notes text
+  created_at timestamptz
+  updated_at timestamptz
+  created_by uuid
+}
+
+Table neta_ops.procedures {
+  id uuid [pk]
+  title text [not null]
+  version text [not null]
+  document_url text
+  status text [not null]
+  description text
+  category text
+  created_at timestamptz
+  updated_at timestamptz
+  created_by uuid
+  approved_by uuid
+  approval_date date
+}
+
+Table neta_ops.certificates {
+  id uuid [pk]
+  certificate_number text [not null, unique]
+  certificate_type text [not null]
+  issued_date date [not null]
+  expiration_date date
+  status text [not null]
+  equipment_id uuid [ref: > neta_ops.equipment.id]
+  calibration_id uuid [ref: > neta_ops.calibrations.id]
+  document_url text
+  notes text
+  created_at timestamptz
+  updated_at timestamptz
+  created_by uuid
+}
+
+Table neta_ops.quality_metrics {
+  id uuid [pk]
+  equipment_id uuid [ref: > neta_ops.equipment.id]
+  metric_name text [not null]
+  metric_value decimal [not null]
+  unit text
+  date_recorded date [not null]
+  target_value decimal
+  lower_threshold decimal
+  upper_threshold decimal
+  status text
+  notes text
+  created_at timestamptz
+  updated_at timestamptz
+  created_by uuid
+}
+
+Table neta_ops.equipment_assignments {
+  id uuid [pk]
+  equipment_id uuid [ref: > neta_ops.equipment.id]
+  assigned_to uuid
+  assigned_by uuid
+  assigned_date timestamptz [not null]
+  return_date timestamptz
+  status text [not null]
+  job_id uuid [ref: > neta_ops.jobs.id]
+  notes text
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table neta_ops.maintenance_records {
+  id uuid [pk]
+  equipment_id uuid [ref: > neta_ops.equipment.id]
+  maintenance_type text [not null]
+  maintenance_date date [not null]
+  next_maintenance_date date
+  performed_by text
+  cost decimal
+  notes text
+  attachments jsonb
+  created_at timestamptz
+  updated_at timestamptz
+  created_by uuid
+}
+
+Table neta_ops.vehicles {
+  id uuid [pk]
+  equipment_id uuid [ref: > neta_ops.equipment.id]
+  make text
+  model text
+  year integer
+  license_plate text
+  vin text
+  mileage integer
+  fuel_type text
+  insurance_expiry date
+  registration_expiry date
+  last_service_date date
+  next_service_date date
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+// Reference note: Circular reference exists between business.opportunities (job_id) and neta_ops.jobs (opportunity_id)
+// This is a bidirectional relationship that needs special handling in the application logic 
