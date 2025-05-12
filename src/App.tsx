@@ -109,6 +109,14 @@ import MetalEnclosedBuswayReport from './components/reports/MetalEnclosedBuswayR
 // Import Medium Voltage Switch Oil Report component
 import MediumVoltageSwitchOilReport from './components/reports/MediumVoltageSwitchOilReport';
 
+// Import Low Voltage Circuit Breaker Electronic Trip Unit ATS Report component
+import LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport from './components/reports/LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport';
+import LowVoltageCircuitBreakerElectronicTripATSReport from './components/reports/LowVoltageCircuitBreakerElectronicTripATSReport';
+import LowVoltageCircuitBreakerThermalMagneticATSReport from './components/reports/LowVoltageCircuitBreakerThermalMagneticATSReport';
+
+// Import the new Small Breaker Panelboard report
+import LowVoltagePanelboardSmallBreakerTestATSReport from './components/reports/LowVoltagePanelboardSmallBreakerTestATSReport';
+
 // --- Define Division Context --- Start
 interface DivisionContextType {
   division: string | null;
@@ -398,6 +406,10 @@ function App() {
                   <Route path="/jobs/:id/low-voltage-switch-multi-device-test/:reportId?" element={<RequireAuth><Layout><LowVoltageSwitchWithPrint /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/low-voltage-switch-report/:reportId?" element={<RequireAuth><Layout><LowVoltageSwitchReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/mv-switch-oil/:reportId?" element={<RequireAuth><Layout><MediumVoltageSwitchOilReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report/:reportId?" element={<RequireAuth><Layout><LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/low-voltage-circuit-breaker-electronic-trip-ats-report/:reportId?" element={<RequireAuth><Layout><LowVoltageCircuitBreakerElectronicTripATSReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/low-voltage-circuit-breaker-thermal-magnetic-ats-report/:reportId?" element={<RequireAuth><Layout><LowVoltageCircuitBreakerThermalMagneticATSReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/low-voltage-panelboard-small-breaker-report/:reportId?" element={<RequireAuth><Layout><LowVoltagePanelboardSmallBreakerTestATSReport /></Layout></RequireAuth>} />
                   
                   {/* NETA Testing Services Diagnostics */}
                   <Route path="/job-diagnostics" element={<RequireAuth><Layout><JobDiagnostics /></Layout></RequireAuth>} />

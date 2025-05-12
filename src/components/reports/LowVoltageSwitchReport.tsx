@@ -88,7 +88,11 @@ interface FormData {
   identifier: string;
 
   // Environmental Data
-  temperature: number;
+  temperature: {
+    fahrenheit: number;
+    celsius: number;
+    tcf: number;
+  };
   humidity: number;
 
   // Enclosure Data
@@ -567,7 +571,11 @@ export default function LowVoltageSwitchReport() {
     substation: '',
     eqptLocation: '',
     identifier: '',
-    temperature: 20,
+    temperature: {
+      fahrenheit: 68,
+      celsius: 20,
+      tcf: 1
+    },
     humidity: 0,
     manufacturer: '',
     catalogNo: '',
@@ -762,8 +770,8 @@ export default function LowVoltageSwitchReport() {
 
   // Update TCF when temperature changes
   useEffect(() => {
-    setTcf(calculateTCF(formData.temperature));
-  }, [formData.temperature]);
+    setTcf(calculateTCF(formData.temperature.fahrenheit));
+  }, [formData.temperature.fahrenheit]);
 
   const handleChange = (field: string, value: any) => {
     setFormData((prev: FormData) => {
@@ -846,7 +854,7 @@ export default function LowVoltageSwitchReport() {
           substation: formData.substation,
           eqptLocation: formData.eqptLocation,
           identifier: formData.identifier,
-          temperature: formData.temperature,
+          temperature: formData.temperature.fahrenheit,
           humidity: formData.humidity,
           manufacturer: formData.manufacturer,
           catalogNo: formData.catalogNo,
@@ -1138,15 +1146,15 @@ export default function LowVoltageSwitchReport() {
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
-                    value={formData.temperature}
-                    onChange={(e) => handleChange('temperature', Number(e.target.value))}
+                    value={formData.temperature.fahrenheit}
+                    onChange={(e) => handleChange('temperature', { ...formData.temperature, fahrenheit: Number(e.target.value) })}
                     readOnly={!isEditMode}
                     className={`block w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                   />
                   <span className="text-gray-600 dark:text-gray-400">°F</span>
                   <input
                     type="number"
-                    value={((formData.temperature - 32) * 5/9).toFixed(0)}
+                    value={formData.temperature.celsius}
                     readOnly
                     className="block w-16 rounded-md border-gray-300 dark:border-gray-700 shadow-sm bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-gray-400 text-base"
                   />

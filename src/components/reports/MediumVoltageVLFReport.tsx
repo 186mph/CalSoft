@@ -616,7 +616,7 @@ const MediumVoltageVLFReport: React.FC = () => {
       fahrenheit: 68,
       celsius: 20,
       humidity: 0,
-      tcf: 1.0,
+      tcf: 1.000
     },
     
     // Comments

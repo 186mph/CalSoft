@@ -172,18 +172,18 @@ const PanelboardReport: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
   const [formData, setFormData] = useState<FormData>({
-    // Initialize with default values
-    jobNumber: '',
     customerName: '',
     customerLocation: '',
     date: new Date().toISOString().split('T')[0],
     technicians: '',
     jobTitle: '',
+    jobNumber: '',
+    status: 'PASS',
     substation: '',
     eqptLocation: '',
     temperature: {
-      celsius: 20,
       fahrenheit: 68,
+      celsius: 20,
       humidity: 0,
       tcf: 1
     },
@@ -236,7 +236,6 @@ const PanelboardReport: React.FC = () => {
       megohmmeter: { name: '', serialNumber: '', ampId: '' },
     },
     comments: '',
-    status: 'PASS',
     identifier: '',
     userName: '',
     testEquipmentLocation: '',

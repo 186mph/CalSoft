@@ -215,6 +215,34 @@ export default function JobDetail() {
       file_url: `report:/jobs/${id}/medium-voltage-switch-oil-report?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: 'ATS'
+    },
+    {
+      id: 'low-voltage-circuit-breaker-electronic-trip-unit-ats',
+      name: '8-Low Voltage Circuit Breaker Electronic Trip Unit ATS - Secondary Injection',
+      file_url: `report:/jobs/${id}/low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'ATS'
+    },
+    {
+      id: 'low-voltage-circuit-breaker-electronic-trip-ats-primary-injection',
+      name: '8-Low Voltage Circuit Breaker Electronic Trip Unit ATS - Primary Injection',
+      file_url: `report:/jobs/${id}/low-voltage-circuit-breaker-electronic-trip-ats-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'ATS'
+    },
+    {
+      id: 'low-voltage-circuit-breaker-thermal-magnetic-ats',
+      name: '8-Low Voltage Circuit Breaker Thermal-Magnetic ATS',
+      file_url: `report:/jobs/${id}/low-voltage-circuit-breaker-thermal-magnetic-ats-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'ATS'
+    },
+    {
+      id: 'low-voltage-panelboard-small-breaker-report',
+      name: '8-Low Voltage Panelboard Small Breaker Test ATS (up to 60 individual breakers)',
+      file_url: `report:/jobs/${id}/low-voltage-panelboard-small-breaker-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'ATS'
     }
   ];
 

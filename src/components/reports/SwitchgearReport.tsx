@@ -207,8 +207,8 @@ const SwitchgearReport: React.FC = () => {
     substation: '',
     eqptLocation: '',
     temperature: {
-      celsius: 20,
       fahrenheit: 68,
+      celsius: 20,
       humidity: 0,
       tcf: 1
     },
