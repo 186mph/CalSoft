@@ -243,6 +243,20 @@ export default function JobDetail() {
       file_url: `report:/jobs/${id}/low-voltage-panelboard-small-breaker-report?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: 'ATS'
+    },
+    {
+      id: 'medium-voltage-circuit-breaker-report',
+      name: '9-Medium Voltage Circuit Breaker Test Report ATS',
+      file_url: `report:/jobs/${id}/medium-voltage-circuit-breaker-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'ATS'
+    },
+    {
+      id: 'current-transformer-test-ats-report',
+      name: '12-Current Transformer Test ATS (partial, single CT)',
+      file_url: `report:/jobs/${id}/current-transformer-test-ats-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'ATS'
     }
   ];
 

@@ -116,6 +116,11 @@ import LowVoltageCircuitBreakerThermalMagneticATSReport from './components/repor
 
 // Import the new Small Breaker Panelboard report
 import LowVoltagePanelboardSmallBreakerTestATSReport from './components/reports/LowVoltagePanelboardSmallBreakerTestATSReport';
+// Import the new Medium Voltage Circuit Breaker report
+import MediumVoltageCircuitBreakerReport from './components/reports/MediumVoltageCircuitBreakerReport';
+
+// Import the new Current Transformer Test ATS Report component
+import CurrentTransformerTestATSReport from './components/reports/CurrentTransformerTestATSReport';
 
 // --- Define Division Context --- Start
 interface DivisionContextType {
@@ -410,6 +415,8 @@ function App() {
                   <Route path="/jobs/:id/low-voltage-circuit-breaker-electronic-trip-ats-report/:reportId?" element={<RequireAuth><Layout><LowVoltageCircuitBreakerElectronicTripATSReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/low-voltage-circuit-breaker-thermal-magnetic-ats-report/:reportId?" element={<RequireAuth><Layout><LowVoltageCircuitBreakerThermalMagneticATSReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/low-voltage-panelboard-small-breaker-report/:reportId?" element={<RequireAuth><Layout><LowVoltagePanelboardSmallBreakerTestATSReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/medium-voltage-circuit-breaker-report/:reportId?" element={<RequireAuth><Layout><MediumVoltageCircuitBreakerReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/current-transformer-test-ats-report/:reportId?" element={<RequireAuth><Layout><CurrentTransformerTestATSReport /></Layout></RequireAuth>} />
                   
                   {/* NETA Testing Services Diagnostics */}
                   <Route path="/job-diagnostics" element={<RequireAuth><Layout><JobDiagnostics /></Layout></RequireAuth>} />
