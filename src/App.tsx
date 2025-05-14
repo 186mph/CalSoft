@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, ReactNode, useEffect, useLayoutEffect } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect, useLayoutEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate, useParams, useNavigationType } from 'react-router-dom';
 import CustomerList from './components/customers/CustomerList';
 import ContactList from './components/customers/ContactList';
@@ -121,6 +121,21 @@ import MediumVoltageCircuitBreakerReport from './components/reports/MediumVoltag
 
 // Import the new Current Transformer Test ATS Report component
 import CurrentTransformerTestATSReport from './components/reports/CurrentTransformerTestATSReport';
+
+// Import Oil Analysis Report
+import OilAnalysisReport from './components/reports/OilAnalysisReport';
+
+// Import Cable Hi-Pot Test Report
+import CableHiPotReport from './components/reports/CableHiPotReport';
+
+// Import the new 12-Current Transformer Test ATS Report
+const New12CurrentTransformerTestATSReport = lazy(() => import('@/components/reports/12-CurrentTransformerTestATSReport'));
+
+// Import Relay Test Report
+import RelayTestReport from './components/reports/RelayTestReport';
+
+// Import Automatic Transfer Switch ATS Report
+import AutomaticTransferSwitchATSReport from '@/components/reports/AutomaticTransferSwitchATSReport';
 
 // --- Define Division Context --- Start
 interface DivisionContextType {
@@ -417,6 +432,13 @@ function App() {
                   <Route path="/jobs/:id/low-voltage-panelboard-small-breaker-report/:reportId?" element={<RequireAuth><Layout><LowVoltagePanelboardSmallBreakerTestATSReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/medium-voltage-circuit-breaker-report/:reportId?" element={<RequireAuth><Layout><MediumVoltageCircuitBreakerReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/current-transformer-test-ats-report/:reportId?" element={<RequireAuth><Layout><CurrentTransformerTestATSReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/12-current-transformer-test-ats-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><New12CurrentTransformerTestATSReport /></Suspense></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/oil-analysis-report/:reportId?" element={<RequireAuth><Layout><OilAnalysisReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/cable-hipot-test-report/:reportId?" element={<RequireAuth><Layout><CableHiPotReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/current-transformer-test-ats-report/:reportId?" element={<RequireAuth><Layout><CurrentTransformerTestATSReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/12-current-transformer-test-ats-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><New12CurrentTransformerTestATSReport /></Suspense></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/relay-test-report/:reportId?" element={<RequireAuth><Layout><RelayTestReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/automatic-transfer-switch-ats-report/:reportId?" element={<RequireAuth><Layout><AutomaticTransferSwitchATSReport /></Layout></RequireAuth>} />
                   
                   {/* NETA Testing Services Diagnostics */}
                   <Route path="/job-diagnostics" element={<RequireAuth><Layout><JobDiagnostics /></Layout></RequireAuth>} />

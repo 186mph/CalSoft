@@ -23,6 +23,7 @@ import { JobNotifications } from './JobNotifications';
 import { SLAManagement } from './SLAManagement';
 import { ReportApprovalWorkflow } from '../reports/ReportApprovalWorkflow';
 import { SelectRoot, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/Select';
+import { DropdownMenuItem } from '../ui/DropdownMenu';
 
 interface Job {
   id: string;
@@ -72,6 +73,13 @@ interface RelatedOpportunity {
   id: string;
   quote_number: string;
 }
+
+const reportRoutes = {
+  'Panelboard Report': 'panelboard-report',
+  'LV Switch Multi Device Test': 'low-voltage-switch-multi-device-test',
+  'LV Breaker Electronic Trip ATS Report': 'low-voltage-circuit-breaker-electronic-trip-ats-report',
+  '35-Automatic Transfer Switch ATS': 'automatic-transfer-switch-ats-report',
+};
 
 export default function JobDetail() {
   const { id } = useParams<{ id: string }>();
@@ -252,9 +260,23 @@ export default function JobDetail() {
       template_type: 'ATS'
     },
     {
+      id: 'automatic-transfer-switch-ats-report',
+      name: '35-Automatic Transfer Switch ATS',
+      file_url: `report:/jobs/${id}/automatic-transfer-switch-ats-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'ATS'
+    },
+    {
       id: 'current-transformer-test-ats-report',
       name: '12-Current Transformer Test ATS (partial, single CT)',
       file_url: `report:/jobs/${id}/current-transformer-test-ats-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'ATS'
+    },
+    {
+      id: 'new-current-transformer-test-ats-report',
+      name: '12-Current Transformer Test ATS',
+      file_url: `report:/jobs/${id}/12-current-transformer-test-ats-report?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: 'ATS'
     }

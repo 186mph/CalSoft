@@ -71,41 +71,43 @@ interface FormData {
   };
   substation: string;
   eqptLocation: string;
-  status: 'PASS' | 'FAIL'; // PASS/FAIL status
+  status: 'PASS' | 'FAIL';
 
   // Nameplate Data (Device Data)
-  manufacturer: string;
-  deviceClass: string; // 'Class' from image
-  ctRatio: string;
-  serialNumber: string;
-  catalogNumber: string;
-  voltageRating: string; // Voltage Rating (V)
-  polarityFacing: string;
-  deviceType: string; // 'Type' from image for device
-  frequency: string;
+  nameplate_data: {
+    manufacturer: string;
+    deviceClass: string;
+    ctRatio: string;
+    serialNumber: string;
+    catalogNumber: string;
+    voltageRating: string;
+    polarityFacing: string;
+    deviceType: string;
+    frequency: string;
+  };
 
   // Visual and Mechanical Inspection
   visualInspectionItems: {
     netaSection: string;
     description: string;
-    result: string; // Dropdown
+    result: string;
   }[];
 
   // Electrical Tests
   electricalTests: {
     primaryWinding: {
-      testVoltage: string; // Dropdown
+      testVoltage: string;
       results: string;
-      units: string; // Dropdown
+      units: string;
       reading: string;
-      tempCorrection20C: string; // Calculated
+      tempCorrection20C: string;
     };
     secondaryWinding: {
-      testVoltage: string; // Dropdown
+      testVoltage: string;
       results: string;
-      units: string; // Dropdown
+      units: string;
       reading: string;
-      tempCorrection20C: string; // Calculated
+      tempCorrection20C: string;
     };
   };
 
@@ -139,7 +141,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
     { netaSection: '7.10.1.A.8', description: 'Verify appropriate lubrication on moving current-carrying parts and on moving and sliding surfaces.', result: '' },
   ];
   
-  const [formData, setFormData] = useState<FormData>({
+  const initialFormData: FormData = {
     customerName: '',
     customerAddress: '',
     userName: user?.email || '',
@@ -147,20 +149,22 @@ const CurrentTransformerTestATSReport: React.FC = () => {
     identifier: '',
     jobNumber: '',
     technicians: '',
-    temperature: { fahrenheit: 76, celsius: 24, tcf: 1.2, humidity: 0 }, // Default from image
+    temperature: { fahrenheit: 76, celsius: 24, tcf: 1.2, humidity: 0 },
     substation: '',
     eqptLocation: '',
     status: 'PASS',
 
-    manufacturer: '',
-    deviceClass: '',
-    ctRatio: '',
-    serialNumber: '',
-    catalogNumber: '',
-    voltageRating: '',
-    polarityFacing: '',
-    deviceType: '',
-    frequency: '',
+    nameplate_data: {
+      manufacturer: '',
+      deviceClass: '',
+      ctRatio: '',
+      serialNumber: '',
+      catalogNumber: '',
+      voltageRating: '',
+      polarityFacing: '',
+      deviceType: '',
+      frequency: '',
+    },
 
     visualInspectionItems: initialVisualInspectionItems,
 
@@ -171,7 +175,9 @@ const CurrentTransformerTestATSReport: React.FC = () => {
 
     testEquipment: { megohmmeter: '', megohmmeterSerial: '', megohmmeterAmpId: '' },
     comments: '',
-  });
+  };
+
+  const [formData, setFormData] = useState<FormData>(initialFormData);
 
   const loadJobInfo = async () => {
     if (!jobId) return;
@@ -251,16 +257,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
           eqptLocation: data.report_info?.eqptLocation || '',
           status: data.report_info?.status || 'PASS',
 
-          manufacturer: data.nameplate_data?.manufacturer || '',
-          deviceClass: data.nameplate_data?.deviceClass || '',
-          ctRatio: data.nameplate_data?.ctRatio || '',
-          serialNumber: data.nameplate_data?.serialNumber || '',
-          catalogNumber: data.nameplate_data?.catalogNumber || '',
-          voltageRating: data.nameplate_data?.voltageRating || '',
-          polarityFacing: data.nameplate_data?.polarityFacing || '',
-          deviceType: data.nameplate_data?.deviceType || '',
-          frequency: data.nameplate_data?.frequency || '',
-          
+          nameplate_data: data.nameplate_data || prev.nameplate_data,
           visualInspectionItems: data.visual_mechanical_inspection?.items || initialVisualInspectionItems,
           electricalTests: data.electrical_tests || prev.electricalTests,
           testEquipment: data.test_equipment || prev.testEquipment,
@@ -297,15 +294,15 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         status: formData.status,
       },
       nameplate_data: {
-        manufacturer: formData.manufacturer,
-        deviceClass: formData.deviceClass,
-        ctRatio: formData.ctRatio,
-        serialNumber: formData.serialNumber,
-        catalogNumber: formData.catalogNumber,
-        voltageRating: formData.voltageRating,
-        polarityFacing: formData.polarityFacing,
-        deviceType: formData.deviceType,
-        frequency: formData.frequency,
+        manufacturer: formData.nameplate_data.manufacturer,
+        deviceClass: formData.nameplate_data.deviceClass,
+        ctRatio: formData.nameplate_data.ctRatio,
+        serialNumber: formData.nameplate_data.serialNumber,
+        catalogNumber: formData.nameplate_data.catalogNumber,
+        voltageRating: formData.nameplate_data.voltageRating,
+        polarityFacing: formData.nameplate_data.polarityFacing,
+        deviceType: formData.nameplate_data.deviceType,
+        frequency: formData.nameplate_data.frequency,
       },
       visual_mechanical_inspection: { items: formData.visualInspectionItems },
       electrical_tests: formData.electricalTests,
@@ -546,45 +543,108 @@ const CurrentTransformerTestATSReport: React.FC = () => {
           <div>
             <div className="mb-4 flex items-center">
               <label htmlFor="manufacturer" className="form-label inline-block w-32 dark:text-gray-300">Manufacturer:</label>
-              <input id="manufacturer" type="text" value={formData.manufacturer} onChange={(e) => handleChange('nameplate_data', 'manufacturer', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <input 
+                id="manufacturer" 
+                type="text" 
+                value={formData.nameplate_data.manufacturer} 
+                onChange={(e) => handleChange('nameplate_data', 'manufacturer', e.target.value)} 
+                readOnly={!isEditing} 
+                className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+              />
             </div>
             <div className="mb-4 flex items-center">
               <label htmlFor="deviceClass" className="form-label inline-block w-32 dark:text-gray-300">Class:</label>
-              <input id="deviceClass" type="text" value={formData.deviceClass} onChange={(e) => handleChange('nameplate_data', 'deviceClass', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <input 
+                id="deviceClass" 
+                type="text" 
+                value={formData.nameplate_data.deviceClass} 
+                onChange={(e) => handleChange('nameplate_data', 'deviceClass', e.target.value)} 
+                readOnly={!isEditing} 
+                className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+              />
             </div>
             <div className="mb-4 flex items-center">
               <label htmlFor="ctRatio" className="form-label inline-block w-32 dark:text-gray-300">CT Ratio:</label>
-              <input id="ctRatio" type="text" value={formData.ctRatio} onChange={(e) => handleChange('nameplate_data', 'ctRatio', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <input 
+                id="ctRatio" 
+                type="text" 
+                value={formData.nameplate_data.ctRatio} 
+                onChange={(e) => handleChange('nameplate_data', 'ctRatio', e.target.value)} 
+                readOnly={!isEditing} 
+                className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+              />
             </div>
           </div>
           {/* Column 2 */}
           <div>
             <div className="mb-4 flex items-center">
               <label htmlFor="serialNumber" className="form-label inline-block w-32 dark:text-gray-300">Serial #:</label>
-              <input id="serialNumber" type="text" value={formData.serialNumber} onChange={(e) => handleChange('nameplate_data', 'serialNumber', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <input 
+                id="serialNumber" 
+                type="text" 
+                value={formData.nameplate_data.serialNumber} 
+                onChange={(e) => handleChange('nameplate_data', 'serialNumber', e.target.value)} 
+                readOnly={!isEditing} 
+                className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+              />
             </div>
             <div className="mb-4 flex items-center">
               <label htmlFor="catalogNumber" className="form-label inline-block w-32 dark:text-gray-300">Catalog Number:</label>
-              <input id="catalogNumber" type="text" value={formData.catalogNumber} onChange={(e) => handleChange('nameplate_data', 'catalogNumber', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <input 
+                id="catalogNumber" 
+                type="text" 
+                value={formData.nameplate_data.catalogNumber} 
+                onChange={(e) => handleChange('nameplate_data', 'catalogNumber', e.target.value)} 
+                readOnly={!isEditing} 
+                className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+              />
             </div>
             <div className="mb-4 flex items-center">
               <label htmlFor="voltageRating" className="form-label inline-block w-32 dark:text-gray-300">Voltage Rating (V):</label>
-              <input id="voltageRating" type="text" value={formData.voltageRating} onChange={(e) => handleChange('nameplate_data', 'voltageRating', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <input 
+                id="voltageRating" 
+                type="text" 
+                value={formData.nameplate_data.voltageRating} 
+                onChange={(e) => handleChange('nameplate_data', 'voltageRating', e.target.value)} 
+                readOnly={!isEditing} 
+                className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+              />
             </div>
           </div>
           {/* Column 3 */}
           <div>
             <div className="mb-4 flex items-center">
               <label htmlFor="polarityFacing" className="form-label inline-block w-32 dark:text-gray-300">Polarity Facing:</label>
-              <input id="polarityFacing" type="text" value={formData.polarityFacing} onChange={(e) => handleChange('nameplate_data', 'polarityFacing', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <input 
+                id="polarityFacing" 
+                type="text" 
+                value={formData.nameplate_data.polarityFacing} 
+                onChange={(e) => handleChange('nameplate_data', 'polarityFacing', e.target.value)} 
+                readOnly={!isEditing} 
+                className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+              />
             </div>
             <div className="mb-4 flex items-center">
               <label htmlFor="deviceType" className="form-label inline-block w-32 dark:text-gray-300">Type:</label>
-              <input id="deviceType" type="text" value={formData.deviceType} onChange={(e) => handleChange('nameplate_data', 'deviceType', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <input 
+                id="deviceType" 
+                type="text" 
+                value={formData.nameplate_data.deviceType} 
+                onChange={(e) => handleChange('nameplate_data', 'deviceType', e.target.value)} 
+                readOnly={!isEditing} 
+                className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+              />
             </div>
             <div className="mb-4 flex items-center">
               <label htmlFor="frequency" className="form-label inline-block w-32 dark:text-gray-300">Frequency:</label>
-              <input id="frequency" type="text" value={formData.frequency} onChange={(e) => handleChange('nameplate_data', 'frequency', e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <input 
+                id="frequency" 
+                type="text" 
+                value={formData.nameplate_data.frequency} 
+                onChange={(e) => handleChange('nameplate_data', 'frequency', e.target.value)} 
+                readOnly={!isEditing} 
+                className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+              />
             </div>
           </div>
         </div>
@@ -629,64 +689,132 @@ const CurrentTransformerTestATSReport: React.FC = () => {
       {/* Electrical Tests */}
       <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Electrical Tests</h2>
+        
         {/* Primary Winding */}
         <div className="mb-6">
           <h3 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">Primary Winding - 1 min. Insulation Resistance to Ground</h3>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Test Voltage:</label>
-              <select value={formData.electricalTests.primaryWinding.testVoltage} onChange={(e) => handleChange('electricalTests', 'primaryWinding', e.target.value, undefined, 'testVoltage')} disabled={!isEditing} className={`form-input mt-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
-                {insulationTestVoltageOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Results:</label>
-              <input type="text" value={formData.electricalTests.primaryWinding.results} onChange={(e) => handleChange('electricalTests', 'primaryWinding', e.target.value, undefined, 'results')} readOnly={!isEditing} className={`form-input mt-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Units:</label>
-              <select value={formData.electricalTests.primaryWinding.units} onChange={(e) => handleChange('electricalTests', 'primaryWinding', e.target.value, undefined, 'units')} disabled={!isEditing} className={`form-input mt-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
-                {insulationResistanceUnitsOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Reading:</label>
-              <input type="text" value={formData.electricalTests.primaryWinding.reading} onChange={(e) => handleChange('electricalTests', 'primaryWinding', e.target.value, undefined, 'reading')} readOnly={!isEditing} className={`form-input mt-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Temp. Correction 20°C:</label>
-              <input type="text" value={formData.electricalTests.primaryWinding.tempCorrection20C} readOnly className="form-input mt-1 bg-gray-100 dark:bg-dark-200" />
-            </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full border border-gray-200 dark:border-gray-700">
+              <thead>
+                <tr>
+                  <th className="border border-gray-200 dark:border-gray-700 px-4 py-2">
+                    <div className="text-left mb-1">Test Voltage:</div>
+                    <select 
+                      value={formData.electricalTests.primaryWinding.testVoltage} 
+                      onChange={(e) => handleChange('electricalTests', 'primaryWinding', e.target.value, undefined, 'testVoltage')} 
+                      disabled={!isEditing}
+                      className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    >
+                      {insulationTestVoltageOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    </select>
+                  </th>
+                  <th className="border border-gray-200 dark:border-gray-700 px-4 py-2 text-left">Results</th>
+                  <th className="border border-gray-200 dark:border-gray-700 px-4 py-2 text-left">Units</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">Reading</td>
+                  <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">
+                    <input 
+                      type="text" 
+                      value={formData.electricalTests.primaryWinding.reading} 
+                      onChange={(e) => handleChange('electricalTests', 'primaryWinding', e.target.value, undefined, 'reading')} 
+                      readOnly={!isEditing}
+                      className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    />
+                  </td>
+                  <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">
+                    <select 
+                      value={formData.electricalTests.primaryWinding.units} 
+                      onChange={(e) => handleChange('electricalTests', 'primaryWinding', e.target.value, undefined, 'units')} 
+                      disabled={!isEditing}
+                      className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    >
+                      {insulationResistanceUnitsOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">Temp. Correction 20°C</td>
+                  <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">
+                    <input 
+                      type="text" 
+                      value={formData.electricalTests.primaryWinding.tempCorrection20C} 
+                      readOnly 
+                      className="form-input w-full bg-gray-100 dark:bg-dark-200"
+                    />
+                  </td>
+                  <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 text-gray-700 dark:text-gray-300">
+                    {formData.electricalTests.primaryWinding.units}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
+
         {/* Secondary Winding */}
         <div>
           <h3 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">Secondary Winding - 1 min. Insulation Resistance to Ground</h3>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Test Voltage:</label>
-              <select value={formData.electricalTests.secondaryWinding.testVoltage} onChange={(e) => handleChange('electricalTests', 'secondaryWinding', e.target.value, undefined, 'testVoltage')} disabled={!isEditing} className={`form-input mt-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
-                {insulationTestVoltageOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Results:</label>
-              <input type="text" value={formData.electricalTests.secondaryWinding.results} onChange={(e) => handleChange('electricalTests', 'secondaryWinding', e.target.value, undefined, 'results')} readOnly={!isEditing} className={`form-input mt-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Units:</label>
-              <select value={formData.electricalTests.secondaryWinding.units} onChange={(e) => handleChange('electricalTests', 'secondaryWinding', e.target.value, undefined, 'units')} disabled={!isEditing} className={`form-input mt-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
-                {insulationResistanceUnitsOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Reading:</label>
-              <input type="text" value={formData.electricalTests.secondaryWinding.reading} onChange={(e) => handleChange('electricalTests', 'secondaryWinding', e.target.value, undefined, 'reading')} readOnly={!isEditing} className={`form-input mt-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Temp. Correction 20°C:</label>
-              <input type="text" value={formData.electricalTests.secondaryWinding.tempCorrection20C} readOnly className="form-input mt-1 bg-gray-100 dark:bg-dark-200" />
-            </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full border border-gray-200 dark:border-gray-700">
+              <thead>
+                <tr>
+                  <th className="border border-gray-200 dark:border-gray-700 px-4 py-2">
+                    <div className="text-left mb-1">Test Voltage:</div>
+                    <select 
+                      value={formData.electricalTests.secondaryWinding.testVoltage} 
+                      onChange={(e) => handleChange('electricalTests', 'secondaryWinding', e.target.value, undefined, 'testVoltage')} 
+                      disabled={!isEditing}
+                      className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    >
+                      {insulationTestVoltageOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    </select>
+                  </th>
+                  <th className="border border-gray-200 dark:border-gray-700 px-4 py-2 text-left">Results</th>
+                  <th className="border border-gray-200 dark:border-gray-700 px-4 py-2 text-left">Units</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">Reading</td>
+                  <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">
+                    <input 
+                      type="text" 
+                      value={formData.electricalTests.secondaryWinding.reading} 
+                      onChange={(e) => handleChange('electricalTests', 'secondaryWinding', e.target.value, undefined, 'reading')} 
+                      readOnly={!isEditing}
+                      className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    />
+                  </td>
+                  <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">
+                    <select 
+                      value={formData.electricalTests.secondaryWinding.units} 
+                      onChange={(e) => handleChange('electricalTests', 'secondaryWinding', e.target.value, undefined, 'units')} 
+                      disabled={!isEditing}
+                      className={`form-input w-full ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    >
+                      {insulationResistanceUnitsOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">Temp. Correction 20°C</td>
+                  <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">
+                    <input 
+                      type="text" 
+                      value={formData.electricalTests.secondaryWinding.tempCorrection20C} 
+                      readOnly 
+                      className="form-input w-full bg-gray-100 dark:bg-dark-200"
+                    />
+                  </td>
+                  <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 text-gray-700 dark:text-gray-300">
+                    {formData.electricalTests.secondaryWinding.units}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
@@ -722,26 +850,28 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         />
       </section>
 
-      {/* Styling classes (can be in a global CSS) */}
-      <style jsx global>{`
-        .form-label {
-          @apply block text-sm font-medium text-gray-700 dark:text-gray-300;
-        }
-        .form-input {
-          @apply mt-1 block w-full p-2 
-            border border-gray-300 dark:border-gray-600 
-            rounded-md shadow-sm 
-            focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] 
-            text-gray-900 dark:text-white 
-            bg-white dark:bg-dark-100;
-        }
-        .form-input[readonly],
-        .form-input.bg-gray-100 {
-          @apply bg-gray-100 dark:bg-dark-200 
-            text-gray-700 dark:text-gray-400 
-            cursor-not-allowed;
-        }
-      `}</style>
+      {/* Styling classes */}
+      <style>
+        {`
+          .form-label {
+            @apply block text-sm font-medium text-gray-700 dark:text-gray-300;
+          }
+          .form-input {
+            @apply mt-1 block w-full p-2 
+              border border-gray-300 dark:border-gray-600 
+              rounded-md shadow-sm 
+              focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] 
+              text-gray-900 dark:text-white 
+              bg-white dark:bg-dark-100;
+          }
+          .form-input[readonly],
+          .form-input.bg-gray-100 {
+            @apply bg-gray-100 dark:bg-dark-200 
+              text-gray-700 dark:text-gray-400 
+              cursor-not-allowed;
+          }
+        `}
+      </style>
     </div>
   );
 };
