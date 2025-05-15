@@ -29,9 +29,9 @@ const visualInspectionOptions = [ // As per screenshot
 ];
 
 const insulationResistanceUnits = [
-  { symbol: "kΩ", name: "Kilo-Ohms" },
-  { symbol: "MΩ", name: "Mega-Ohms" },
-  { symbol: "GΩ", name: "Giga-Ohms" }
+  { symbol: "kΩ"},
+  { symbol: "MΩ"},
+  { symbol: "GΩ"}
 ];
 
 const testVoltageOptions = [
@@ -1038,7 +1038,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                           disabled={!isEditing}
                           className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                         >
-                          {insulationResistanceUnits.map(u => <option key={u.symbol} value={u.symbol}>{u.name} ({u.symbol})</option>)}
+                          {insulationResistanceUnits.map(u => <option key={u.symbol} value={u.symbol}> ({u.symbol})</option>)}
                         </select>
                       </td>
                     </tr>
