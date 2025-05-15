@@ -79,6 +79,8 @@ const reportRoutes = {
   'LV Switch Multi Device Test': 'low-voltage-switch-multi-device-test',
   'LV Breaker Electronic Trip ATS Report': 'low-voltage-circuit-breaker-electronic-trip-ats-report',
   '35-Automatic Transfer Switch ATS': 'automatic-transfer-switch-ats-report',
+  '2-Large Dry Type Xfmr. Insp. & Test MTS 23': 'large-dry-type-transformer-mts-report',
+  '2-Large Dry Type Xfmr. Visual, Mechanical, Insulation Resistance Test MTS': 'large-dry-type-xfmr-mts-report',
 };
 
 export default function JobDetail() {
@@ -120,6 +122,34 @@ export default function JobDetail() {
   // Default assets that are always available
   const defaultAssets: Asset[] = [
     {
+      id: 'switchgear-panelboard-mts',
+      name: '1-Switchgear, Switchboard, Panelboard Inspection & Test Report MTS',
+      file_url: `report:/jobs/${id}/switchgear-panelboard-mts-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'MTS'
+    },
+    {
+      id: 'large-dry-type-transformer-mts-report',
+      name: '2-Large Dry Type Xfmr. Inspection and Test MTS 23',
+      file_url: `report:/jobs/${id}/large-dry-type-transformer-mts-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'MTS'
+    },
+    {
+      id: 'large-dry-type-xfmr-mts-report',
+      name: '2-Large Dry Type Xfmr. Visual, Mechanical, Insulation Resistance Test MTS',
+      file_url: `report:/jobs/${id}/large-dry-type-xfmr-mts-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'MTS'
+    },
+    {
+      id: 'liquid-xfmr-visual-mts-report',
+      name: '2-Liquid Filled Xfmr. Visual, Mechanical, Insulation Resistance Test MTS',
+      file_url: `report:/jobs/${id}/liquid-xfmr-visual-mts-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'MTS'
+    },
+    {
       id: 'switchgear-inspection-report',
       name: '1-Switchgear, Switchboard, Panelboard Inspection & Test Report ATS 21',
       file_url: `report:/jobs/${id}/switchgear-report?returnToAssets=true`,
@@ -137,13 +167,6 @@ export default function JobDetail() {
       id: 'dry-type-transformer-test',
       name: '2-Dry Type Xfmr. Visual, Mechanical, Insulation Resistance Test ATS 21',
       file_url: `report:/jobs/${id}/dry-type-transformer?returnToAssets=true`,
-      created_at: new Date().toISOString(),
-      template_type: 'ATS'
-    },
-    {
-      id: 'large-dry-type-transformer-test',
-      name: '2-Large Dry Type Xfmr. Visual, Mechanical, Insulation Resistance Test ATS 21',
-      file_url: `report:/jobs/${id}/large-dry-type-transformer?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: 'ATS'
     },
@@ -260,13 +283,6 @@ export default function JobDetail() {
       template_type: 'ATS'
     },
     {
-      id: 'automatic-transfer-switch-ats-report',
-      name: '35-Automatic Transfer Switch ATS',
-      file_url: `report:/jobs/${id}/automatic-transfer-switch-ats-report?returnToAssets=true`,
-      created_at: new Date().toISOString(),
-      template_type: 'ATS'
-    },
-    {
       id: 'current-transformer-test-ats-report',
       name: '12-Current Transformer Test ATS (partial, single CT)',
       file_url: `report:/jobs/${id}/current-transformer-test-ats-report?returnToAssets=true`,
@@ -277,6 +293,13 @@ export default function JobDetail() {
       id: 'new-current-transformer-test-ats-report',
       name: '12-Current Transformer Test ATS',
       file_url: `report:/jobs/${id}/12-current-transformer-test-ats-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'ATS'
+    },
+    {
+      id: 'automatic-transfer-switch-ats-report',
+      name: '35-Automatic Transfer Switch ATS',
+      file_url: `report:/jobs/${id}/automatic-transfer-switch-ats-report?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: 'ATS'
     }
@@ -843,7 +866,7 @@ export default function JobDetail() {
                         </Button>
                         
                         {isDropdownOpen && (
-                          <div className="absolute right-0 top-10 w-80 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-10">
+                          <div className="absolute right-0 top-10 w-[32rem] rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-10">
                             <div className="py-1" role="menu" aria-orientation="vertical">
                               <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">
                                 Upload Document

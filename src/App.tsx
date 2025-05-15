@@ -137,6 +137,18 @@ import RelayTestReport from './components/reports/RelayTestReport';
 // Import Automatic Transfer Switch ATS Report
 import AutomaticTransferSwitchATSReport from '@/components/reports/AutomaticTransferSwitchATSReport';
 
+// Import Switchgear Panelboard MTS Report
+import SwitchgearPanelboardMTSReport from './components/reports/SwitchgearPanelboardMTSReport';
+
+// Import the new Large Dry Type Transformer MTS Report
+import LargeDryTypeTransformerMTSReport from './components/reports/LargeDryTypeTransformerMTSReport';
+
+// Import the new Large Dry Type Transformer MTS Report
+import LargeDryTypeXfmrMTSReport from './components/reports/LargeDryTypeXfmrMTSReport';
+
+// Import the new LiquidXfmrVisualMTSReport component
+const LiquidXfmrVisualMTSReport = lazy(() => import('@/components/reports/LiquidXfmrVisualMTSReport'));
+
 // --- Define Division Context --- Start
 interface DivisionContextType {
   division: string | null;
@@ -414,6 +426,8 @@ function App() {
                   <Route path="/jobs/:id/panelboard-report/:reportId?" element={<RequireAuth><Layout><PanelboardReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/dry-type-transformer/:reportId?" element={<RequireAuth><Layout><DryTypeTransformerReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/large-dry-type-transformer/:reportId?" element={<RequireAuth><Layout><LargeDryTypeTransformerReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/large-dry-type-transformer-mts-report/:reportId?" element={<RequireAuth><Layout><LargeDryTypeTransformerMTSReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/large-dry-type-xfmr-mts-report/:reportId?" element={<RequireAuth><Layout><LargeDryTypeXfmrMTSReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/liquid-filled-transformer/:reportId?" element={<RequireAuth><Layout><LiquidFilledTransformerReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/oil-inspection/:reportId?" element={<RequireAuth><Layout><OilInspectionReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/medium-voltage-switch-oil-report/:reportId?" element={<RequireAuth><Layout><MediumVoltageSwitchOilReport /></Layout></RequireAuth>} />
@@ -446,6 +460,12 @@ function App() {
 
                   {/* Add this to your routes */}
                   <Route path="/db-debug" element={<RequireAuth><Layout><DatabaseDebug /></Layout></RequireAuth>} />
+
+                  {/* Added route for SwitchgearPanelboardMTSReport */}
+                  <Route path="/jobs/:id/switchgear-panelboard-mts-report/:reportId?" element={<RequireAuth><Layout><SwitchgearPanelboardMTSReport /></Layout></RequireAuth>} />
+
+                  {/* Added route for LiquidXfmrVisualMTSReport */}
+                  <Route path="/jobs/:id/liquid-xfmr-visual-mts-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><LiquidXfmrVisualMTSReport /></Suspense></Layout></RequireAuth>} />
                 </Routes>
                 
                 {/* Persistent Chat Windows */}
