@@ -302,6 +302,13 @@ export default function JobDetail() {
       file_url: `report:/jobs/${id}/automatic-transfer-switch-ats-report?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: 'ATS'
+    },
+    {
+      id: 'two-small-dry-typer-xfmr-ats-report',
+      name: '2-Small Dry Typer Xfmr. Inspection and Test ATS',
+      file_url: `report:/jobs/${id}/two-small-dry-typer-xfmr-ats-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'ATS'
     }
   ];
 
@@ -715,7 +722,35 @@ export default function JobDetail() {
     }
   };
 
-  // All other functions and handlers...
+  const getReportEditPath = (asset: Asset) => {
+    const reportType = asset.file_url.split(':/')[1]; 
+    const parts = reportType.split('/');
+    const jobSegment = parts[1]; 
+    const reportNameSegment = parts[2]; 
+    const reportIdSegment = parts[3];
+    
+    if (jobSegment !== 'jobs' || !parts[2] || !reportIdSegment) {
+      console.error('Unexpected asset file_url format for report path:', asset.file_url);
+      return `/jobs/${id}`; 
+    }
+
+    const reportPathMap: { [key: string]: string } = {
+        'panelboard-report': 'panelboard-report',
+        'low-voltage-breaker-report': 'low-voltage-breaker-report',
+        'low-voltage-circuit-breaker-electronic-trip-ats-report': 'low-voltage-circuit-breaker-electronic-trip-ats-report',
+        'low-voltage-switch-multi-device-test': 'low-voltage-switch-multi-device-test',
+        'two-small-dry-typer-xfmr-ats-report': 'two-small-dry-typer-xfmr-ats-report'
+    };
+
+    const mappedReportName = reportPathMap[reportNameSegment];
+
+    if (!mappedReportName) {
+        console.error('Unknown report type for path mapping:', reportNameSegment);
+        return `/jobs/${id}`; // Fallback to job detail if mapping is not found
+    }
+
+    return `/jobs/${id}/${mappedReportName}/${reportIdSegment}`;
+  };
 
   if (loading) {
     return (
@@ -916,7 +951,7 @@ export default function JobDetail() {
                                       .map((asset) => (
                                         <Link 
                                           key={asset.id}
-                                          to={asset.file_url.replace('report:', '')}
+                                          to={getReportEditPath(asset)}
                                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                                           onClick={() => setIsDropdownOpen(false)}
                                         >
@@ -936,7 +971,7 @@ export default function JobDetail() {
                                       .map((asset) => (
                                         <Link 
                                           key={asset.id}
-                                          to={asset.file_url.replace('report:', '')}
+                                          to={getReportEditPath(asset)}
                                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                                           onClick={() => setIsDropdownOpen(false)}
                                         >
@@ -958,7 +993,7 @@ export default function JobDetail() {
                                           .map((asset) => (
                                             <Link 
                                               key={asset.id}
-                                              to={asset.file_url.replace('report:', '')}
+                                              to={getReportEditPath(asset)}
                                               className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                                               onClick={() => setIsDropdownOpen(false)}
                                             >
@@ -1036,7 +1071,7 @@ export default function JobDetail() {
                                     <div className="flex items-center justify-end space-x-2">
                                       {asset.file_url.startsWith('report:') ? (
                                         <Link 
-                                          to={`${asset.file_url.replace('report:', '')}${asset.file_url.includes('?') ? '&' : '?'}returnToAssets=true`} 
+                                          to={getReportEditPath(asset)}
                                           className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                                         >
                                           Open Report

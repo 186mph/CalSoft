@@ -149,6 +149,9 @@ import LargeDryTypeXfmrMTSReport from './components/reports/LargeDryTypeXfmrMTSR
 // Import the new LiquidXfmrVisualMTSReport component
 const LiquidXfmrVisualMTSReport = lazy(() => import('@/components/reports/LiquidXfmrVisualMTSReport'));
 
+// Import the new Two Small Dry Type Transformer ATS Report component
+const TwoSmallDryTyperXfmrATSReport = lazy(() => import('@/components/reports/TwoSmallDryTyperXfmrATSReport'));
+
 // --- Define Division Context --- Start
 interface DivisionContextType {
   division: string | null;
@@ -466,6 +469,10 @@ function App() {
 
                   {/* Added route for LiquidXfmrVisualMTSReport */}
                   <Route path="/jobs/:id/liquid-xfmr-visual-mts-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><LiquidXfmrVisualMTSReport /></Suspense></Layout></RequireAuth>} />
+
+                  {/* Added route for Two Small Dry Type Transformer ATS Report */}
+                  <Route path="two-small-dry-typer-xfmr-ats-report/:id" element={<TwoSmallDryTyperXfmrATSReport />} />
+                  <Route path="two-small-dry-typer-xfmr-ats-report/:id/:reportId" element={<TwoSmallDryTyperXfmrATSReport />} />
                 </Routes>
                 
                 {/* Persistent Chat Windows */}

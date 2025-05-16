@@ -34,22 +34,49 @@ export async function processAuthToken(url: string) {
     // Check if we have a hash fragment first (Supabase often uses these)
     const hashFragment = url.split('#')[1];
     if (hashFragment) {
-      // The fragment might contain the access_token
       const hashParams = new URLSearchParams(hashFragment);
       const accessToken = hashParams.get('access_token');
       
       if (accessToken) {
-        console.log('Found access_token in URL hash');
+        console.log('Found access_token in URL hash. Attempting supabase.auth.getSession().');
+        const { data: sessionData, error: getSessionError } = await supabase.auth.getSession();
+
+        if (getSessionError || !sessionData?.session) {
+          console.warn(
+            'supabase.auth.getSession() failed or found no session after hash token. Attempting supabase.auth.setSession().',
+            { getSessionError }
+          );
+          
+          const refreshTokenFromHash = hashParams.get('refresh_token');
+          // It's good practice to log if a refresh token is unexpectedly missing, though setSession might handle it.
+          if (!refreshTokenFromHash) {
+             console.warn('No refresh_token found in URL hash for setSession fallback attempt.');
+          }
+
+          const { data: setSessionData, error: setSessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshTokenFromHash || '' // Use empty string if null, as setSession expects a string.
+          });
+
+          if (setSessionError || !setSessionData?.session) {
+            console.error(
+              'supabase.auth.setSession() also failed or found no session.',
+              { setSessionError, originalGetSessionError: getSessionError }
+            );
+            // Return failure, incorporating errors from both attempts if available.
+            return { 
+              success: false, 
+              data: null, 
+              error: setSessionError || getSessionError || new Error('Failed to establish session from hash tokens') 
+            };
+          }
+          
+          console.log('Successfully established session using supabase.auth.setSession() from hash tokens.');
+          return { success: true, data: setSessionData, error: null };
+        }
         
-        // Let Supabase handle the session with the existing hash
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        
-        return { 
-          success: !!data.session, 
-          data, 
-          error: null 
-        };
+        console.log('Successfully established session using supabase.auth.getSession() from hash tokens.');
+        return { success: true, data: sessionData, error: null };
       }
     }
     
