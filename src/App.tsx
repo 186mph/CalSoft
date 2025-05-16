@@ -471,8 +471,7 @@ function App() {
                   <Route path="/jobs/:id/liquid-xfmr-visual-mts-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><LiquidXfmrVisualMTSReport /></Suspense></Layout></RequireAuth>} />
 
                   {/* Added route for Two Small Dry Type Transformer ATS Report */}
-                  <Route path="two-small-dry-typer-xfmr-ats-report/:id" element={<TwoSmallDryTyperXfmrATSReport />} />
-                  <Route path="two-small-dry-typer-xfmr-ats-report/:id/:reportId" element={<TwoSmallDryTyperXfmrATSReport />} />
+                  <Route path="/jobs/:id/two-small-dry-typer-xfmr-ats-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><TwoSmallDryTyperXfmrATSReport /></Suspense></Layout></RequireAuth>} />
                 </Routes>
                 
                 {/* Persistent Chat Windows */}

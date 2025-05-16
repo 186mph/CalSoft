@@ -723,33 +723,88 @@ export default function JobDetail() {
   };
 
   const getReportEditPath = (asset: Asset) => {
-    const reportType = asset.file_url.split(':/')[1]; 
-    const parts = reportType.split('/');
-    const jobSegment = parts[1]; 
-    const reportNameSegment = parts[2]; 
-    const reportIdSegment = parts[3];
-    
-    if (jobSegment !== 'jobs' || !parts[2] || !reportIdSegment) {
-      console.error('Unexpected asset file_url format for report path:', asset.file_url);
-      return `/jobs/${id}`; 
+    const urlContent = asset.file_url.split(':/')[1];
+    const pathSegments = urlContent.split('/');
+
+    if (pathSegments[0] !== 'jobs' || !pathSegments[1] || !pathSegments[2]) {
+      console.error('Unexpected asset.file_url format for report path:', asset.file_url, 'Expected format like "report:/jobs/JOB_ID/report-slug..."');
+      return `/jobs/${id}`; // Fallback to current job detail page
     }
 
+    const jobIdSegment = pathSegments[1]; // This is the job ID from the asset's URL
+    let reportNameSlug = pathSegments[2];
+    const reportIdFromUrl = pathSegments[3]; // This might be an actual ID or undefined
+
+    // Clean query parameters from reportNameSlug if it's the last significant path part before query
+    if (reportNameSlug.includes('?')) {
+      reportNameSlug = reportNameSlug.split('?')[0];
+    }
+    
+    // Comprehensive map of report slugs to their route segments
+    // Keys should match the slug in defaultAssets.file_url (e.g., 'panelboard-report')
+    // Values should be the route segment used in App.tsx (usually the same)
     const reportPathMap: { [key: string]: string } = {
-        'panelboard-report': 'panelboard-report',
-        'low-voltage-breaker-report': 'low-voltage-breaker-report',
-        'low-voltage-circuit-breaker-electronic-trip-ats-report': 'low-voltage-circuit-breaker-electronic-trip-ats-report',
-        'low-voltage-switch-multi-device-test': 'low-voltage-switch-multi-device-test',
-        'two-small-dry-typer-xfmr-ats-report': 'two-small-dry-typer-xfmr-ats-report'
+      'panelboard-report': 'panelboard-report',
+      'low-voltage-switch-multi-device-test': 'low-voltage-switch-multi-device-test',
+      'low-voltage-circuit-breaker-electronic-trip-ats-report': 'low-voltage-circuit-breaker-electronic-trip-ats-report',
+      'automatic-transfer-switch-ats-report': 'automatic-transfer-switch-ats-report',
+      'large-dry-type-transformer-mts-report': 'large-dry-type-transformer-mts-report',
+      'large-dry-type-xfmr-mts-report': 'large-dry-type-xfmr-mts-report',
+      'switchgear-panelboard-mts-report': 'switchgear-panelboard-mts-report',
+      'liquid-xfmr-visual-mts-report': 'liquid-xfmr-visual-mts-report',
+      'switchgear-report': 'switchgear-report',
+      'dry-type-transformer': 'dry-type-transformer',
+      'large-dry-type-transformer': 'large-dry-type-transformer', // Added based on App.tsx routes
+      'liquid-filled-transformer': 'liquid-filled-transformer',
+      'oil-inspection': 'oil-inspection',
+      'low-voltage-cable-test-12sets': 'low-voltage-cable-test-12sets',
+      'low-voltage-cable-test-20sets': 'low-voltage-cable-test-20sets',
+      'medium-voltage-vlf-tan-delta': 'medium-voltage-vlf-tan-delta',
+      'medium-voltage-vlf': 'medium-voltage-vlf',
+      'medium-voltage-cable-vlf-test': 'medium-voltage-cable-vlf-test',
+      'metal-enclosed-busway': 'metal-enclosed-busway',
+      'low-voltage-switch-report': 'low-voltage-switch-report',
+      'medium-voltage-switch-oil-report': 'medium-voltage-switch-oil-report',
+      'low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report': 'low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report',
+      'low-voltage-circuit-breaker-thermal-magnetic-ats-report': 'low-voltage-circuit-breaker-thermal-magnetic-ats-report',
+      'low-voltage-panelboard-small-breaker-report': 'low-voltage-panelboard-small-breaker-report',
+      'medium-voltage-circuit-breaker-report': 'medium-voltage-circuit-breaker-report',
+      'current-transformer-test-ats-report': 'current-transformer-test-ats-report',
+      '12-current-transformer-test-ats-report': '12-current-transformer-test-ats-report',
+      'oil-analysis-report': 'oil-analysis-report', // Added based on App.tsx routes
+      'cable-hipot-test-report': 'cable-hipot-test-report', // Added based on App.tsx routes
+      'relay-test-report': 'relay-test-report', // Added based on App.tsx routes
+      'two-small-dry-typer-xfmr-ats-report': 'two-small-dry-typer-xfmr-ats-report'
+      // ensure all slugs from defaultAssets and App.tsx routes are here
     };
 
-    const mappedReportName = reportPathMap[reportNameSegment];
+    const mappedReportName = reportPathMap[reportNameSlug];
 
     if (!mappedReportName) {
-        console.error('Unknown report type for path mapping:', reportNameSegment);
-        return `/jobs/${id}`; // Fallback to job detail if mapping is not found
+      console.error('Unknown report type for path mapping. Slug:', reportNameSlug, 'Original URL:', asset.file_url, 'Asset ID:', asset.id);
+      return `/jobs/${id}`; // Fallback
     }
 
-    return `/jobs/${id}/${mappedReportName}/${reportIdSegment}`;
+    // Check if the asset is a template (for creating a new report) or an existing report.
+    // Templates from defaultAssets typically won't have a reportId in their file_url path.
+    // Existing assets (from jobAssets) will have a file_url like 'report:/jobs/JOB_ID/slug/REPORT_ID'.
+    
+    // A simple way to check if it's a template link: if asset.id is one of the predefined template IDs in defaultAssets
+    const isTemplate = defaultAssets.some(da => da.id === asset.id && da.file_url.startsWith('report:'));
+
+    if (isTemplate) {
+      // For templates (new reports), navigate to the path without a reportId segment.
+      // The jobIdSegment here is the current job's ID passed via the template literal in defaultAssets
+      return `/jobs/${jobIdSegment}/${mappedReportName}`;
+    } else if (reportIdFromUrl) {
+      // For existing reports that have an ID in their URL structure.
+      return `/jobs/${jobIdSegment}/${mappedReportName}/${reportIdFromUrl}`;
+    } else {
+      // Fallback for existing assets that might have a malformed URL or if it's a template missed by the above check.
+      // This primarily targets new reports from templates.
+      console.warn('Asset is not a template and has no reportId in URL, defaulting to new report path:', asset.file_url);
+      return `/jobs/${jobIdSegment}/${mappedReportName}`;
+    }
   };
 
   if (loading) {
