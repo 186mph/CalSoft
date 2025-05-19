@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
@@ -66,6 +66,7 @@ interface FormData {
     celsius: number;
     tcf: number;
     humidity: number;
+    correctionFactor: number;
   };
   substation: string;
   eqptLocation: string;
@@ -74,19 +75,21 @@ interface FormData {
   nameplate: {
     manufacturer: string;
     kvaBase: string;
-    kvaCooling: string; 
+    kvaCooling: string;
     voltsPrimary: string;
+    voltsPrimarySecondary: string;
     voltsSecondary: string;
-    connectionsPrimary: string; 
-    connectionsSecondary: string; 
-    windingMaterialPrimary: string; 
-    windingMaterialSecondary: string; 
+    voltsSecondarySecondary: string;
+    connectionsPrimary: 'Delta' | 'Wye' | 'Single Phase';
+    connectionsSecondary: 'Delta' | 'Wye' | 'Single Phase';
+    windingMaterialPrimary: 'Aluminum' | 'Copper';
+    windingMaterialSecondary: 'Aluminum' | 'Copper';
     catalogNumber: string;
     tempRise: string;
     serialNumber: string;
     impedance: string;
-    tapVoltages: string[]; 
-    tapPosition: string; 
+    tapVoltages: string[];
+    tapPosition: string;
     tapPositionLeftVolts: string;
     tapPositionLeftPercent: string;
   };
@@ -116,18 +119,12 @@ interface FormData {
       units: string;
       corrected0_5Min: string;
       corrected1Min: string;
-      correctedUnits: string; 
+      correctedUnits: string;
       tableMinimum: string;
       tableMinimumUnits: string;
+      dielectricAbsorption: string;
     }>;
-    dielectricAbsorptionRatio: {
-      calculatedAs: string;
-      priToGnd: string;
-      secToGnd: string;
-      priToSec: string;
-      passFail: string;
-      minimumDAR: string;
-    };
+    dielectricAbsorptionAcceptable: string;
   };
 
   // Electrical Tests - Turns Ratio
@@ -170,12 +167,12 @@ const initialVisualInspectionItems = [
 ];
 
 const initialInsulationResistanceTests = [
-  { winding: 'Primary to Ground', testVoltage: '1000V', measured0_5Min: '', measured1Min: '', units: 'GΩ', corrected0_5Min: '', corrected1Min: '', correctedUnits: 'GΩ', tableMinimum: '100.5', tableMinimumUnits: 'GΩ' },
-  { winding: 'Secondary to Ground', testVoltage: '500V', measured0_5Min: '', measured1Min: '', units: 'GΩ', corrected0_5Min: '', corrected1Min: '', correctedUnits: 'GΩ', tableMinimum: '', tableMinimumUnits: 'GΩ' },
-  { winding: 'Primary to Secondary', testVoltage: '1000V', measured0_5Min: '', measured1Min: '', units: 'GΩ', corrected0_5Min: '', corrected1Min: '', correctedUnits: 'GΩ', tableMinimum: '', tableMinimumUnits: 'GΩ' },
+  { winding: 'Primary to Ground', testVoltage: '1000V', measured0_5Min: '', measured1Min: '', units: 'GΩ', corrected0_5Min: '', corrected1Min: '', correctedUnits: 'GΩ', tableMinimum: '100.5', tableMinimumUnits: 'GΩ', dielectricAbsorption: '' },
+  { winding: 'Secondary to Ground', testVoltage: '500V', measured0_5Min: '', measured1Min: '', units: 'GΩ', corrected0_5Min: '', corrected1Min: '', correctedUnits: 'GΩ', tableMinimum: '', tableMinimumUnits: 'GΩ', dielectricAbsorption: '' },
+  { winding: 'Primary to Secondary', testVoltage: '1000V', measured0_5Min: '', measured1Min: '', units: 'GΩ', corrected0_5Min: '', corrected1Min: '', correctedUnits: 'GΩ', tableMinimum: '', tableMinimumUnits: 'GΩ', dielectricAbsorption: '' },
 ];
 
-const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
+const TwoSmallDryTyperXfmrATSReport: React.FC = () => {
   const { id: jobId, reportId } = useParams<{ id: string; reportId?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -183,6 +180,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(!reportId);
   const [error, setError] = useState<string | null>(null);
+  const isUpdatingTemp = useRef<boolean>(false);
 
   const [formData, setFormData] = useState<FormData>({
     customer: '',
@@ -192,25 +190,36 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
     identifier: '',
     jobNumber: '',
     technicians: '',
-    temperature: { fahrenheit: 68, celsius: 20, tcf: 1, humidity: 50 },
+    temperature: { fahrenheit: 68, celsius: 20, tcf: 1, humidity: 50, correctionFactor: 1 },
     substation: '',
     eqptLocation: '',
     nameplate: {
-      manufacturer: '', kvaBase: '', kvaCooling: '', voltsPrimary: '', voltsSecondary: '',
-      connectionsPrimary: 'Delta', connectionsSecondary: 'Wye',
-      windingMaterialPrimary: 'Aluminum', windingMaterialSecondary: 'Copper',
-      catalogNumber: '', tempRise: '', serialNumber: '', impedance: '',
-      tapVoltages: Array(7).fill(''), tapPosition: '1',
-      tapPositionLeftVolts: '', tapPositionLeftPercent: ''
+      manufacturer: '',
+      kvaBase: '',
+      kvaCooling: '',
+      voltsPrimary: '',
+      voltsPrimarySecondary: '',
+      voltsSecondary: '',
+      voltsSecondarySecondary: '',
+      connectionsPrimary: 'Delta',
+      connectionsSecondary: 'Wye',
+      windingMaterialPrimary: 'Aluminum',
+      windingMaterialSecondary: 'Copper',
+      catalogNumber: '',
+      tempRise: '',
+      serialNumber: '',
+      impedance: '',
+      tapVoltages: Array(7).fill(''),
+      tapPosition: '1',
+      tapPositionLeftVolts: '',
+      tapPositionLeftPercent: ''
     },
     indicatorGauges: { liquidLevel: '', temperature: '', pressureVacuum: '' },
     visualInspectionItems: JSON.parse(JSON.stringify(initialVisualInspectionItems)),
     visualInspectionComments: '',
     insulationResistance: {
       tests: JSON.parse(JSON.stringify(initialInsulationResistanceTests)),
-      dielectricAbsorptionRatio: {
-        calculatedAs: '1 Min. / 0.5 Min. Values', priToGnd: '', secToGnd: '', priToSec: '', passFail: '', minimumDAR: '1.0'
-      }
+      dielectricAbsorptionAcceptable: 'Yes'
     },
     turnsRatio: {
       secondaryWindingVoltage: '',
@@ -269,13 +278,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
     }
   }, [jobId, user]);
 
-  const loadReport = useCallback(async () => {
-    if (!reportId) {
-      setLoading(false);
-      setIsEditing(true);
-      return;
-    }
-    setLoading(true);
+  const loadReport = async () => {
     try {
       const { data, error } = await supabase
         .schema('neta_ops')
@@ -287,39 +290,30 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
       if (error) throw error;
 
       if (data && data.report_data) {
-        const loadedFormData = JSON.parse(JSON.stringify(data.report_data));
-        
+        // Parse the saved data and merge with current formData structure
         setFormData(prev => ({
           ...prev,
-          ...loadedFormData,
-          user: data.user_id || user?.email || loadedFormData.user || prev.user,
-          temperature: {
-            ...(prev.temperature),
-            ...(loadedFormData.temperature || {}),
-          },
+          ...data.report_data,
+          // Ensure nested objects are properly structured
           nameplate: {
-            ...(prev.nameplate),
-            ...(loadedFormData.nameplate || {}),
-            tapVoltages: loadedFormData.nameplate?.tapVoltages || Array(7).fill(''),
+            ...prev.nameplate,
+            ...(data.report_data.nameplate || {})
+          },
+          temperature: {
+            ...prev.temperature,
+            ...(data.report_data.temperature || {})
           },
           indicatorGauges: {
-            ...(prev.indicatorGauges),
-            ...(loadedFormData.indicatorGauges || {}),
+            ...prev.indicatorGauges,
+            ...(data.report_data.indicatorGauges || {})
           },
-          visualInspectionItems: loadedFormData.visualInspectionItems || JSON.parse(JSON.stringify(initialVisualInspectionItems)),
           insulationResistance: {
-            ...(prev.insulationResistance),
-            ...(loadedFormData.insulationResistance || {}),
-            tests: loadedFormData.insulationResistance?.tests || JSON.parse(JSON.stringify(initialInsulationResistanceTests)),
-            dielectricAbsorptionRatio: {
-              ...(prev.insulationResistance.dielectricAbsorptionRatio),
-              ...(loadedFormData.insulationResistance?.dielectricAbsorptionRatio || {}),
-            }
+            tests: data.report_data.insulationResistance?.tests || JSON.parse(JSON.stringify(initialInsulationResistanceTests)),
+            dielectricAbsorptionAcceptable: data.report_data.insulationResistance?.dielectricAbsorptionAcceptable || 'Yes'
           },
           turnsRatio: {
-            ...(prev.turnsRatio),
-            ...(loadedFormData.turnsRatio || {}),
-            tests: loadedFormData.turnsRatio?.tests || Array(1).fill(null).map(() => ({
+            secondaryWindingVoltage: data.report_data.turnsRatio?.secondaryWindingVoltage || '',
+            tests: data.report_data.turnsRatio?.tests || Array(1).fill(null).map(() => ({
               tap: '3', nameplateVoltage: '', calculatedRatio: '',
               measuredH1H2: '', devH1H2: '', passFailH1H2: '',
               measuredH2H3: '', devH2H3: '', passFailH2H3: '',
@@ -327,35 +321,21 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
             }))
           },
           testEquipment: {
-            ...(prev.testEquipment),
-            ...(loadedFormData.testEquipment || {}),
-            megohmmeter: {
-                ...(prev.testEquipment.megohmmeter),
-                ...(loadedFormData.testEquipment?.megohmmeter || {}),
-            },
-            ttrTestSet: {
-                ...(prev.testEquipment.ttrTestSet),
-                ...(loadedFormData.testEquipment?.ttrTestSet || {}),
-            }
-          }
+            ...prev.testEquipment,
+            ...(data.report_data.testEquipment || {})
+          },
+          visualInspectionItems: data.report_data.visualInspectionItems || JSON.parse(JSON.stringify(initialVisualInspectionItems)),
+          status: data.report_data.status || 'PASS'
         }));
-
-        if (data.report_data.status) {
-          setFormData(prev => ({ ...prev, status: data.report_data.status }));
-        }
         setIsEditing(false);
-      } else {
-        setIsEditing(true); 
-        console.warn(`No report data found for reportId: ${reportId}`);
       }
     } catch (error) {
       console.error('Error loading report:', error);
       setError(`Failed to load report: ${(error as Error).message}`);
-      setIsEditing(true);
     } finally {
       setLoading(false);
     }
-  }, [reportId, jobId, user]);
+  };
 
   useEffect(() => {
     loadJobInfo();
@@ -375,13 +355,17 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
         }
       }));
     }
-  }, [loadJobInfo, reportId, loadReport]);
+  }, [loadJobInfo, reportId]);
 
   useEffect(() => {
-    if (!isEditing && !reportId && reportId !== undefined) return;
-    const newCelsius = (formData.temperature.fahrenheit - 32) * 5 / 9;
-    const newTcf = getTCF(newCelsius);
-    if (newCelsius !== formData.temperature.celsius || newTcf !== formData.temperature.tcf) {
+    if (!isEditing || isUpdatingTemp.current) return;
+    
+    isUpdatingTemp.current = true;
+    
+    if (formData.temperature.fahrenheit) {
+      const newCelsius = (formData.temperature.fahrenheit - 32) * 5 / 9;
+      const newTcf = getTCF(newCelsius);
+      
       setFormData(prev => ({
         ...prev,
         temperature: {
@@ -391,73 +375,269 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
         }
       }));
     }
-  }, [formData.temperature.fahrenheit, isEditing, reportId]);
+    
+    setTimeout(() => {
+      isUpdatingTemp.current = false;
+    }, 0);
+  }, [formData.temperature.fahrenheit, isEditing]);
 
   useEffect(() => {
-    if (!isEditing && !reportId && reportId !== undefined) return;
-    const newFahrenheit = (formData.temperature.celsius * 9 / 5) + 32;
-    const newTcf = getTCF(formData.temperature.celsius);
-     if (newFahrenheit !== formData.temperature.fahrenheit || newTcf !== formData.temperature.tcf) {
-        setFormData(prev => ({
-        ...prev,
-        temperature: {
-            ...prev.temperature,
-            fahrenheit: parseFloat(newFahrenheit.toFixed(2)),
-            tcf: newTcf,
+    const tcf = formData.temperature.correctionFactor;
+
+    // Calculate corrected values for each test
+    const tests = formData.insulationResistance.tests.map(test => {
+      const corrected0_5Min = test.measured0_5Min && tcf ? (parseFloat(test.measured0_5Min) * tcf).toFixed(2) : '';
+      const corrected1Min = test.measured1Min && tcf ? (parseFloat(test.measured1Min) * tcf).toFixed(2) : '';
+
+      // Calculate dielectric absorption ratio (1 min / 0.5 min)
+      let dielectricAbsorption = '';
+      if (test.measured1Min && test.measured0_5Min) {
+        const ratio = parseFloat(test.measured1Min) / parseFloat(test.measured0_5Min);
+        if (!isNaN(ratio) && isFinite(ratio)) {
+          dielectricAbsorption = ratio.toFixed(2);
         }
-        }));
-    }
-  }, [formData.temperature.celsius, isEditing, reportId]);
+      }
 
-  useEffect(() => {
-    const tcf = formData.temperature.tcf;
-    if (typeof tcf !== 'number' || isNaN(tcf)) return;
+      return {
+        ...test,
+        corrected0_5Min,
+        corrected1Min,
+        dielectricAbsorption
+      };
+    });
+
+    // Determine if all DA values are acceptable (> 1)
+    const daValues = tests.map(test => parseFloat(test.dielectricAbsorption));
+    const daAcceptable = daValues.every(v => !isNaN(v) && v > 1) ? 'Yes' : 'No';
 
     setFormData(prev => ({
       ...prev,
       insulationResistance: {
         ...prev.insulationResistance,
-        tests: prev.insulationResistance.tests.map(test => ({
-          ...test,
-          corrected0_5Min: test.measured0_5Min && tcf ? (parseFloat(test.measured0_5Min) * tcf).toFixed(2) : '',
-          corrected1Min: test.measured1Min && tcf ? (parseFloat(test.measured1Min) * tcf).toFixed(2) : '',
-        }))
+        tests: tests,
+        dielectricAbsorptionAcceptable: daAcceptable
       }
     }));
-  }, [formData.temperature.tcf, formData.insulationResistance.tests]);
+  }, [
+    formData.insulationResistance.tests,
+    formData.temperature.correctionFactor
+  ]);
+
+  // Add new effect to update nameplate voltage ratios
+  useEffect(() => {
+    if (!isEditing) return;
+
+    setFormData(prev => {
+      const newTurnsRatioTests = prev.turnsRatio.tests.map(test => {
+        const tapIndex = parseInt(test.tap) - 1;
+        if (tapIndex >= 0 && tapIndex < prev.nameplate.tapVoltages.length) {
+          const tapVoltage = prev.nameplate.tapVoltages[tapIndex];
+          if (tapVoltage) {
+            return { ...test, nameplateVoltage: tapVoltage };
+          }
+        }
+        return test;
+      });
+
+      return {
+        ...prev,
+        turnsRatio: {
+          ...prev.turnsRatio,
+          tests: newTurnsRatioTests
+        }
+      };
+    });
+  }, [formData.nameplate.tapVoltages, isEditing]);
+
+  // Update the turns ratio calculation effect
+  useEffect(() => {
+    if (!isEditing) return;
+
+    setFormData(prev => {
+      const newTurnsRatioTests = prev.turnsRatio.tests.map(test => {
+        // Get the nameplate voltage for this tap
+        const tapIndex = parseInt(test.tap) - 1;
+        const tapVoltage = prev.nameplate.tapVoltages[tapIndex];
+
+        // Calculate the ratio
+        let calculatedRatio = '';
+        const secondaryVoltage = parseFloat(prev.turnsRatio.secondaryWindingVoltage);
+        
+        if (secondaryVoltage && !isNaN(secondaryVoltage)) {
+          // If primary connection is Delta and secondary is Wye
+          if (prev.nameplate.connectionsPrimary === 'Delta' && prev.nameplate.connectionsSecondary === 'Wye') {
+            const primaryVoltage = parseFloat(tapVoltage);
+            if (primaryVoltage && !isNaN(primaryVoltage)) {
+              calculatedRatio = (primaryVoltage / secondaryVoltage).toFixed(3);
+            }
+          } else {
+            // For all other cases, use the nameplate voltage directly
+            const nameplateVoltage = parseFloat(test.nameplateVoltage);
+            if (nameplateVoltage && !isNaN(nameplateVoltage)) {
+              calculatedRatio = (nameplateVoltage / secondaryVoltage).toFixed(3);
+            }
+          }
+        }
+
+        // Calculate deviations and pass/fail for each measurement
+        const calculateDeviationAndResult = (measured: string, calculated: string) => {
+          if (!measured || !calculated) return { deviation: '', passFail: '' };
+          
+          const measuredValue = parseFloat(measured);
+          const calculatedValue = parseFloat(calculated);
+          
+          if (isNaN(measuredValue) || isNaN(calculatedValue)) return { deviation: '', passFail: '' };
+          
+          const deviation = ((measuredValue - calculatedValue) / calculatedValue * 100).toFixed(3);
+          const deviationValue = parseFloat(deviation);
+          
+          // Determine pass/fail based on ±0.5% threshold
+          const passFail = (deviationValue > -0.501 && deviationValue < 0.501) ? 'PASS' : 'FAIL';
+          
+          return { deviation, passFail };
+        };
+
+        // Calculate for H1-H2
+        const h1h2Results = calculateDeviationAndResult(test.measuredH1H2, calculatedRatio);
+        // Calculate for H2-H3
+        const h2h3Results = calculateDeviationAndResult(test.measuredH2H3, calculatedRatio);
+        // Calculate for H3-H1
+        const h3h1Results = calculateDeviationAndResult(test.measuredH3H1, calculatedRatio);
+
+        return {
+          ...test,
+          calculatedRatio,
+          devH1H2: h1h2Results.deviation,
+          passFailH1H2: h1h2Results.passFail,
+          devH2H3: h2h3Results.deviation,
+          passFailH2H3: h2h3Results.passFail,
+          devH3H1: h3h1Results.deviation,
+          passFailH3H1: h3h1Results.passFail
+        };
+      });
+
+      return {
+        ...prev,
+        turnsRatio: {
+          ...prev.turnsRatio,
+          tests: newTurnsRatioTests
+        }
+      };
+    });
+  }, [
+    formData.nameplate.tapVoltages,
+    formData.turnsRatio.secondaryWindingVoltage,
+    formData.nameplate.connectionsPrimary,
+    formData.nameplate.connectionsSecondary,
+    formData.turnsRatio.tests.map(t => t.measuredH1H2).join(','), // Add dependencies for measured values
+    formData.turnsRatio.tests.map(t => t.measuredH2H3).join(','),
+    formData.turnsRatio.tests.map(t => t.measuredH3H1).join(','),
+    isEditing
+  ]);
 
   const handleFahrenheitChange = (fahrenheit: number) => {
     if (!isEditing) return;
     setFormData(prev => ({
       ...prev,
-      temperature: { ...prev.temperature, fahrenheit }
+      temperature: { 
+        ...prev.temperature, 
+        fahrenheit 
+      }
     }));
   };
 
   const handleCelsiusChange = (celsius: number) => {
     if (!isEditing) return;
+    const newFahrenheit = (celsius * 9 / 5) + 32;
+    const newTcf = getTCF(celsius);
+    
     setFormData(prev => ({
       ...prev,
-      temperature: { ...prev.temperature, celsius }
+      temperature: { 
+        ...prev.temperature, 
+        celsius,
+        fahrenheit: parseFloat(newFahrenheit.toFixed(2)),
+        tcf: newTcf
+      }
     }));
   };
 
-  const handleChange = (path: string, value: any) => {
-    if (!isEditing) return;
-    setFormData(prev => {
-      const keys = path.split('.');
-      const newState = JSON.parse(JSON.stringify(prev)) as FormData;
-      let currentLevel = newState as any;
+  const getTableMinimum = (voltage: string): string => {
+    if (!voltage) return '';
+    const volts = parseFloat(voltage);
+    if (isNaN(volts)) return '';
+    
+    if (volts <= 600) return '0.5';
+    if (volts <= 5000) return '5';
+    return '25';
+  };
 
-      for (let i = 0; i < keys.length - 1; i++) {
-        const key = keys[i];
-        if (!currentLevel[key] || typeof currentLevel[key] !== 'object') {
-          currentLevel[key] = {};
+  const handleChange = (field: string, value: any) => {
+    if (!isEditing) return;
+
+    setFormData(prev => {
+      const newData = { ...prev };
+      
+      // Handle nested fields
+      if (field.includes('.')) {
+        const [parent, child] = field.split('.');
+        (newData as any)[parent] = {
+          ...(newData as any)[parent],
+          [child]: value
+        };
+
+        // Auto-fill secondary winding voltage when nameplate secondary voltage changes
+        if (field === 'nameplate.voltsSecondary') {
+          newData.turnsRatio.secondaryWindingVoltage = value;
         }
-        currentLevel = currentLevel[key];
+      } else {
+        (newData as any)[field] = value;
       }
-      currentLevel[keys[keys.length - 1]] = value;
-      return newState;
+
+      // Calculate table minimum values based on voltage
+      if (field === 'nameplate.voltsPrimary' || field === 'nameplate.voltsSecondary') {
+        const primaryVoltage = parseFloat(newData.nameplate.voltsPrimary) || 0;
+        const secondaryVoltage = parseFloat(newData.nameplate.voltsSecondary) || 0;
+
+        // Update table minimum values based on voltage ranges for each test
+        newData.insulationResistance.tests = newData.insulationResistance.tests.map((test, index) => {
+          let tableMinimum = '0.5'; // Default for 0-600V
+          let tableMinimumUnits = 'GΩ';
+
+          // Primary to Ground (index 0) - use primary voltage
+          if (index === 0) {
+            if (primaryVoltage > 5000) {
+              tableMinimum = '25';
+            } else if (primaryVoltage > 600) {
+              tableMinimum = '5';
+            }
+          }
+          // Secondary to Ground (index 1) - use secondary voltage
+          else if (index === 1) {
+            if (secondaryVoltage > 5000) {
+              tableMinimum = '25';
+            } else if (secondaryVoltage > 600) {
+              tableMinimum = '5';
+            }
+          }
+          // Primary to Secondary (index 2) - use primary voltage
+          else if (index === 2) {
+            if (primaryVoltage > 5000) {
+              tableMinimum = '25';
+            } else if (primaryVoltage > 600) {
+              tableMinimum = '5';
+            }
+          }
+
+          return {
+            ...test,
+            tableMinimum,
+            tableMinimumUnits
+          };
+        });
+      }
+
+      return newData;
     });
   };
 
@@ -481,6 +661,18 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
       const section = prev[sectionKey] as any;
       const newTests = [...section.tests];
       newTests[testIndex] = { ...newTests[testIndex], [field]: value };
+
+      // Auto-fill nameplate voltage ratio when tap changes in turns ratio section
+      if (sectionKey === 'turnsRatio' && field === 'tap') {
+        const tapIndex = parseInt(value) - 1;
+        if (tapIndex >= 0 && tapIndex < prev.nameplate.tapVoltages.length) {
+          const tapVoltage = prev.nameplate.tapVoltages[tapIndex];
+          if (tapVoltage) {
+            newTests[testIndex].nameplateVoltage = tapVoltage;
+          }
+        }
+      }
+
       return { ...prev, [sectionKey]: { ...section, tests: newTests } };
     });
   };
@@ -544,11 +736,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
       
       setIsEditing(false);
       alert(`Report ${reportId ? 'updated' : 'saved'} successfully!`);
-      if (!reportId && currentReportId) {
-        navigate(`/jobs/${jobId}/two-small-dry-typer-xfmr-ats-report/${currentReportId}`, { replace: true });
-      } else {
-        navigateAfterSave(navigate, jobId, location);
-      }
+      navigate(`/jobs/${jobId}`);
     } catch (error: any) {
       console.error('Error saving report:', error);
       alert(`Failed to save report: ${error?.message || 'Unknown error'}`);
@@ -676,191 +864,289 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
           </div>
         </section>
 
-        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
+        <section className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Nameplate Data</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-4">
-              <div>
-                  <label htmlFor="nameplate.manufacturer" className="form-label">Manufacturer</label>
-                  <input id="nameplate.manufacturer" type="text" name="nameplate.manufacturer" value={formData.nameplate.manufacturer} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              </div>
-              <div>
-                  <label htmlFor="nameplate.catalogNumber" className="form-label">Catalog Number</label>
-                  <input id="nameplate.catalogNumber" type="text" name="nameplate.catalogNumber" value={formData.nameplate.catalogNumber} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              </div>
-              <div>
-                  <label htmlFor="nameplate.serialNumber" className="form-label">Serial Number</label>
-                  <input id="nameplate.serialNumber" type="text" name="nameplate.serialNumber" value={formData.nameplate.serialNumber} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-6">
-              <div>
-                  <label htmlFor="nameplate.kvaBase" className="form-label">KVA</label>
-                  <div className="flex items-center">
-                      <input id="nameplate.kvaBase" type="text" name="nameplate.kvaBase" placeholder="Base" value={formData.nameplate.kvaBase} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm w-1/2 mr-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-                      <span className="text-gray-500 dark:text-gray-400">/</span>
-                      <input id="nameplate.kvaCooling" type="text" name="nameplate.kvaCooling" placeholder="Cooling" value={formData.nameplate.kvaCooling} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm w-1/2 ml-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-                  </div>
-              </div>
-               <div>
-                  <label htmlFor="nameplate.tempRise" className="form-label">Temp. Rise (°C)</label>
-                  <input id="nameplate.tempRise" type="text" name="nameplate.tempRise" value={formData.nameplate.tempRise} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              </div>
-              <div>
-                  <label htmlFor="nameplate.impedance" className="form-label">Impedance (%)</label>
-                  <input id="nameplate.impedance" type="text" name="nameplate.impedance" value={formData.nameplate.impedance} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              </div>
-          </div>
+          <div className="space-y-4">
 
-          <div className="grid grid-cols-12 gap-x-2 mb-2">
-            <div className="col-span-2">{/* Spacer */}</div>
-            <div className="col-span-3 text-center form-label font-medium">Volts</div>
-            <div className="col-span-4 text-center form-label font-medium">Connections</div>
-            <div className="col-span-3 text-center form-label font-medium">Winding Material</div>
-          </div>
-
-          <div className="grid grid-cols-12 gap-x-2 mb-4 items-center">
-            <div className="col-span-2 form-label self-center">Primary</div>
-            <div className="col-span-3 flex items-center">
-              <input type="text" name="nameplate.voltsPrimary" placeholder="Primary" value={formData.nameplate.voltsPrimary} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm w-1/2 mr-1 text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              <span className="text-gray-500 dark:text-gray-400">/</span>
-              <input type="text" name="nameplate.voltsPrimaryInternal" placeholder="" disabled className={`form-input text-sm w-1/2 ml-1 text-center bg-gray-100 dark:bg-dark-200 opacity-0 cursor-default`} />
-            </div>
-            <div className="col-span-4 flex justify-around items-center">
-              {connectionOptions.map(opt => (
-                <label key={`pri-${opt}`} className="inline-flex items-center">
-                  <input type="radio" name="nameplate.connectionsPrimary" value={opt} checked={formData.nameplate.connectionsPrimary === opt} onChange={(e) => handleChange(e.target.name, e.target.value)} disabled={!isEditing} className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]" />
-                  <span className="ml-1 text-sm text-gray-700 dark:text-gray-300">{opt}</span>
-                </label>
-              ))}
-            </div>
-            <div className="col-span-3 flex justify-around items-center">
-              {materialOptions.map(opt => (
-                <label key={`pri-mat-${opt}`} className="inline-flex items-center">
-                  <input type="radio" name="nameplate.windingMaterialPrimary" value={opt} checked={formData.nameplate.windingMaterialPrimary === opt} onChange={(e) => handleChange(e.target.name, e.target.value)} disabled={!isEditing} className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]" />
-                  <span className="ml-1 text-sm text-gray-700 dark:text-gray-300">{opt}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-12 gap-x-2 mb-6 items-center">
-            <div className="col-span-2 form-label self-center">Secondary</div>
-            <div className="col-span-3 flex items-center">
-              <input type="text" name="nameplate.voltsSecondary" placeholder="Secondary" value={formData.nameplate.voltsSecondary} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm w-1/2 mr-1 text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              <span className="text-gray-500 dark:text-gray-400">/</span>
-              <input type="text" name="nameplate.voltsSecondaryInternal" placeholder="" disabled className={`form-input text-sm w-1/2 ml-1 text-center bg-gray-100 dark:bg-dark-200 opacity-0 cursor-default`} />
-            </div>
-            <div className="col-span-4 flex justify-around items-center">
-              {connectionOptions.map(opt => (
-                <label key={`sec-${opt}`} className="inline-flex items-center">
-                  <input type="radio" name="nameplate.connectionsSecondary" value={opt} checked={formData.nameplate.connectionsSecondary === opt} onChange={(e) => handleChange(e.target.name, e.target.value)} disabled={!isEditing} className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]" />
-                  <span className="ml-1 text-sm text-gray-700 dark:text-gray-300">{opt}</span>
-                </label>
-              ))}
-            </div>
-            <div className="col-span-3 flex justify-around items-center">
-              {materialOptions.map(opt => (
-                <label key={`sec-mat-${opt}`} className="inline-flex items-center">
-                  <input type="radio" name="nameplate.windingMaterialSecondary" value={opt} checked={formData.nameplate.windingMaterialSecondary === opt} onChange={(e) => handleChange(e.target.name, e.target.value)} disabled={!isEditing} className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]" />
-                  <span className="ml-1 text-sm text-gray-700 dark:text-gray-300">{opt}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white border-t dark:border-gray-700 pt-4">Tap Configuration</h3>
-          <div>
-            <label className="form-label mb-1">Tap Voltages</label>
-            <div className="grid grid-cols-7 gap-2">
-              {formData.nameplate.tapVoltages.map((_, index) => (
-                <div key={`tap-label-${index}`} className="text-center form-label text-sm">{index + 1}</div>
-              ))}
-            </div>
-            <div className="grid grid-cols-7 gap-2 mb-4">
-              {formData.nameplate.tapVoltages.map((tv, index) => (
-                <input 
-                  key={`tapVoltage-${index}`} 
-                  id={`tapVoltage-${index}`} 
-                  type="text" 
-                  value={tv} 
-                  onChange={(e) => {
-                    const newTaps = [...formData.nameplate.tapVoltages];
-                    newTaps[index] = e.target.value;
-                    handleChange('nameplate.tapVoltages', newTaps);
-                  }}
-                  readOnly={!isEditing} 
-                  className={`form-input text-sm text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+            {/* Row 1: Manufacturer, Catalog, Serial */}
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer</label>
+                <input
+                  type="text"
+                  value={formData.nameplate.manufacturer}
+                  onChange={(e) => handleChange('nameplate.manufacturer', e.target.value)}
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
-              ))}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Catalog Number</label>
+                <input
+                  type="text"
+                  value={formData.nameplate.catalogNumber}
+                  onChange={(e) => handleChange('nameplate.catalogNumber', e.target.value)}
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
+                <input
+                  type="text"
+                  value={formData.nameplate.serialNumber}
+                  onChange={(e) => handleChange('nameplate.serialNumber', e.target.value)}
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 items-end">
-            <div>
-              <label htmlFor="nameplate.tapPosition" className="form-label">Tap Position</label>
-              <select 
-                id="nameplate.tapPosition" 
-                name="nameplate.tapPosition" 
-                value={formData.nameplate.tapPosition} 
-                onChange={(e) => handleChange(e.target.name, e.target.value)} 
-                disabled={!isEditing} 
-                className={`form-select text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-              >
-                {Array.from({length: 7}, (_, i) => i + 1).map(num => <option key={num} value={num.toString()}>{num}</option>)}
-              </select>
+            {/* Row 2: KVA, Temp Rise, Impedance */}
+            <div className="grid grid-cols-3 gap-4 items-end">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">KVA</label>
+                <div className="flex items-center space-x-1 mt-1">
+                  <input
+                    type="text"
+                    value={formData.nameplate.kvaBase}
+                    onChange={(e) => handleChange('nameplate.kvaBase', e.target.value)}
+                    readOnly={!isEditing}
+                    className={`w-20 rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  />
+                  <span className="text-gray-500">/</span>
+                  <input
+                    type="text"
+                    value={formData.nameplate.kvaCooling}
+                    onChange={(e) => handleChange('nameplate.kvaCooling', e.target.value)}
+                    readOnly={!isEditing}
+                    className={`w-20 rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Temp. Rise (°C)</label>
+                <input
+                  type="text"
+                  value={formData.nameplate.tempRise}
+                  onChange={(e) => handleChange('nameplate.tempRise', e.target.value)}
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Impedance (%)</label>
+                <input
+                  type="text"
+                  value={formData.nameplate.impedance}
+                  onChange={(e) => handleChange('nameplate.impedance', e.target.value)}
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
             </div>
-            <div className="md:col-span-2">
-              <label htmlFor="nameplate.tapPositionLeftVolts" className="form-label">Tap Position Left</label>
+
+            {/* Row 3: Headers */}
+            <div className="grid grid-cols-[100px_1fr_1fr_1fr] gap-4 mt-4">
+              <div>{/* Empty cell for alignment */}</div>
+              <div className="text-center font-medium text-sm text-gray-700 dark:text-gray-300">Volts</div>
+              <div className="text-center font-medium text-sm text-gray-700 dark:text-gray-300">Connections</div>
+              <div className="text-center font-medium text-sm text-gray-700 dark:text-gray-300">Winding Material</div>
+            </div>
+
+            {/* Row 4: Primary */}
+            <div className="grid grid-cols-[100px_1fr_1fr_1fr] gap-4 items-center">
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Primary</div>
+              {/* Volts */}
+              <div className="flex items-center justify-center space-x-1">
+                <input
+                  type="text"
+                  value={formData.nameplate.voltsPrimary}
+                  onChange={(e) => handleChange('nameplate.voltsPrimary', e.target.value)}
+                  readOnly={!isEditing}
+                  className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+                <span className="text-gray-500">/</span>
+                <input
+                  type="text"
+                  value={formData.nameplate.voltsPrimarySecondary}
+                  onChange={(e) => handleChange('nameplate.voltsPrimarySecondary', e.target.value)}
+                  readOnly={!isEditing}
+                  className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
+              {/* Connections */}
+              <div className="flex justify-center space-x-4">
+                {['Delta', 'Wye', 'Single Phase'].map(conn => (
+                  <label key={`pri-${conn}`} className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      name="primary-connection"
+                      value={conn}
+                      checked={formData.nameplate.connectionsPrimary === conn}
+                      onChange={() => handleChange('nameplate.connectionsPrimary', conn)}
+                      disabled={!isEditing}
+                      className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]"
+                    />
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{conn}</span>
+                  </label>
+                ))}
+              </div>
+              {/* Winding Material */}
+              <div className="flex justify-center space-x-4">
+                {['Aluminum', 'Copper'].map(mat => (
+                  <label key={`pri-${mat}`} className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      name="primary-material"
+                      value={mat}
+                      checked={formData.nameplate.windingMaterialPrimary === mat}
+                      onChange={() => handleChange('nameplate.windingMaterialPrimary', mat)}
+                      disabled={!isEditing}
+                      className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]"
+                    />
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{mat}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Row 5: Secondary */}
+            <div className="grid grid-cols-[100px_1fr_1fr_1fr] gap-4 items-center">
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Secondary</div>
+              {/* Volts */}
+              <div className="flex items-center justify-center space-x-1">
+                <input
+                  type="text"
+                  value={formData.nameplate.voltsSecondary}
+                  onChange={(e) => handleChange('nameplate.voltsSecondary', e.target.value)}
+                  readOnly={!isEditing}
+                  className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+                <span className="text-gray-500">/</span>
+                <input
+                  type="text"
+                  value={formData.nameplate.voltsSecondarySecondary}
+                  onChange={(e) => handleChange('nameplate.voltsSecondarySecondary', e.target.value)}
+                  readOnly={!isEditing}
+                  className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
+              {/* Connections */}
+              <div className="flex justify-center space-x-4">
+                {['Delta', 'Wye', 'Single Phase'].map(conn => (
+                  <label key={`sec-${conn}`} className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      name="secondary-connection"
+                      value={conn}
+                      checked={formData.nameplate.connectionsSecondary === conn}
+                      onChange={() => handleChange('nameplate.connectionsSecondary', conn)}
+                      disabled={!isEditing}
+                      className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]"
+                    />
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{conn}</span>
+                  </label>
+                ))}
+              </div>
+              {/* Winding Material */}
+              <div className="flex justify-center space-x-4">
+                {['Aluminum', 'Copper'].map(mat => (
+                  <label key={`sec-${mat}`} className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      name="secondary-material"
+                      value={mat}
+                      checked={formData.nameplate.windingMaterialSecondary === mat}
+                      onChange={() => handleChange('nameplate.windingMaterialSecondary', mat)}
+                      disabled={!isEditing}
+                      className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]"
+                    />
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{mat}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Row 6: Tap Configuration */}
+            <div className="space-y-2">
+              {/* Tap Voltages */}
               <div className="flex items-center">
-                <input 
-                  id="nameplate.tapPositionLeftNumber" 
-                  type="number"
-                  name="nameplate.tapPositionLeftNumberPlaceholder"
-                  value={formData.nameplate.tapPosition}
-                  readOnly
-                  className={`form-input text-sm w-16 text-center mr-1 ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
-                />
-                <span className="text-gray-500 dark:text-gray-400 mx-1">/</span>
-                <input 
-                  id="nameplate.tapPositionLeftVolts" 
-                  type="text" 
-                  name="nameplate.tapPositionLeftVolts" 
-                  placeholder="Volts"
-                  value={formData.nameplate.tapPositionLeftVolts} 
-                  onChange={(e) => handleChange(e.target.name, e.target.value)} 
-                  readOnly={!isEditing} 
-                  className={`form-input text-sm w-1/2 mr-2 text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
-                />
-                <input 
-                  id="nameplate.tapPositionLeftPercent" 
-                  type="text" 
-                  name="nameplate.tapPositionLeftPercent" 
-                  placeholder="Percent"
-                  value={formData.nameplate.tapPositionLeftPercent} 
-                  onChange={(e) => handleChange(e.target.name, e.target.value)} 
-                  readOnly={!isEditing} 
-                  className={`form-input text-sm w-1/2 text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
-                />
+                <label className="w-[130px] text-sm font-medium text-gray-700 dark:text-gray-300 flex-shrink-0">Tap Voltages</label>
+                <div className="grid grid-cols-7 gap-2 flex-grow">
+                  {formData.nameplate.tapVoltages.map((voltage, index) => (
+                    <input
+                      key={index}
+                      type="text"
+                      value={voltage}
+                      onChange={(e) => {
+                        const newVoltages = [...formData.nameplate.tapVoltages];
+                        newVoltages[index] = e.target.value;
+                        handleChange('nameplate.tapVoltages', newVoltages);
+                      }}
+                      readOnly={!isEditing}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Tap Position Numbers */}
+              <div className="flex items-center">
+                <label className="w-[130px] text-sm font-medium text-gray-700 dark:text-gray-300 flex-shrink-0">Tap Position</label>
+                <div className="grid grid-cols-7 gap-2 flex-grow">
+                  {[1, 2, 3, 4, 5, 6, 7].map((position) => (
+                    <div key={position} className="text-center text-sm text-gray-700 dark:text-gray-300 font-medium">
+                      {position}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tap Position Left */}
+              <div className="flex items-center">
+                <label className="w-[130px] text-sm font-medium text-gray-700 dark:text-gray-300 flex-shrink-0">Tap Position Left</label>
+                {/* First pair of inputs */}
+                <div className="flex items-center space-x-1 mr-4">
+                  <input
+                    type="text"
+                    value={formData.nameplate.tapPosition}
+                    onChange={(e) => handleChange('nameplate.tapPosition', e.target.value)}
+                    readOnly={!isEditing}
+                    className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  />
+                  <span className="text-gray-500">/</span>
+                  <input
+                    type="text"
+                    value={formData.nameplate.tapPosition}
+                    readOnly
+                    className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white bg-gray-100 dark:bg-dark-200`}
+                  />
+                </div>
+                {/* Separate Volts input */}
+                <div className="flex items-center space-x-1 mr-4">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Volts</span>
+                  <input
+                    type="text"
+                    value={formData.nameplate.tapPositionLeftVolts}
+                    onChange={(e) => handleChange('nameplate.tapPositionLeftVolts', e.target.value)}
+                    readOnly={!isEditing}
+                    className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  />
+                </div>
+                {/* Separate Percent input */}
+                <div className="flex items-center space-x-1">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Percent</span>
+                  <input
+                    type="text"
+                    value={formData.nameplate.tapPositionLeftPercent}
+                    onChange={(e) => handleChange('nameplate.tapPositionLeftPercent', e.target.value)}
+                    readOnly={!isEditing}
+                    className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-        
-        <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Indicator Gauge Values</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                  <label htmlFor="indicatorGauges.liquidLevel" className="form-label">Liquid Level</label>
-                  <input id="indicatorGauges.liquidLevel" type="text" name="indicatorGauges.liquidLevel" value={formData.indicatorGauges.liquidLevel} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              </div>
-              <div>
-                  <label htmlFor="indicatorGauges.temperature" className="form-label">Temperature</label>
-                  <input id="indicatorGauges.temperature" type="text" name="indicatorGauges.temperature" value={formData.indicatorGauges.temperature} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              </div>
-              <div>
-                  <label htmlFor="indicatorGauges.pressureVacuum" className="form-label">Pressure / Vacuum</label>
-                  <input id="indicatorGauges.pressureVacuum" type="text" name="indicatorGauges.pressureVacuum" value={formData.indicatorGauges.pressureVacuum} onChange={(e) => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-              </div>
           </div>
         </section>
 
@@ -921,34 +1207,46 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
               </tbody>
             </table>
           </div>
-          <div className="grid grid-cols-6 gap-2 mt-4 items-end">
-                <div>
-                    <label className="form-label block text-center">Calculated As:</label>
-                    <input type="text" name="insulationResistance.dielectricAbsorptionRatio.calculatedAs" value={formData.insulationResistance.dielectricAbsorptionRatio.calculatedAs} readOnly className="form-input text-center text-sm bg-gray-100 dark:bg-dark-200"/>
-                </div>
-                 <div>
-                    <label className="form-label block text-center">Pri to Gnd</label>
-                    <input type="text" name="insulationResistance.dielectricAbsorptionRatio.priToGnd" value={formData.insulationResistance.dielectricAbsorptionRatio.priToGnd} onChange={e => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-center text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}/>
-                </div>
-                <div>
-                    <label className="form-label block text-center">Sec to Gnd</label>
-                    <input type="text" name="insulationResistance.dielectricAbsorptionRatio.secToGnd" value={formData.insulationResistance.dielectricAbsorptionRatio.secToGnd} onChange={e => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-center text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}/>
-                </div>
-                <div>
-                    <label className="form-label block text-center">Pri to Sec</label>
-                    <input type="text" name="insulationResistance.dielectricAbsorptionRatio.priToSec" value={formData.insulationResistance.dielectricAbsorptionRatio.priToSec} onChange={e => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-center text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}/>
-                </div>
-                <div>
-                    <label className="form-label block text-center">Pass/Fail</label>
-                     <select name="insulationResistance.dielectricAbsorptionRatio.passFail" value={formData.insulationResistance.dielectricAbsorptionRatio.passFail} onChange={e => handleChange(e.target.name, e.target.value)} disabled={!isEditing} className={`form-select text-center text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}>
-                        {passFailOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                    </select>
-                </div>
-                 <div>
-                    <label className="form-label block text-center">Min. D.A.R.</label>
-                    <input type="text" name="insulationResistance.dielectricAbsorptionRatio.minimumDAR" value={formData.insulationResistance.dielectricAbsorptionRatio.minimumDAR} readOnly className="form-input text-center text-sm bg-gray-100 dark:bg-dark-200"/>
-                </div>
-            </div>
+          {/* Dielectric Absorption Section */}
+          <div className="overflow-x-auto mt-6">
+            <table className="min-w-full border border-gray-200 dark:border-gray-700">
+              <thead className="bg-gray-50 dark:bg-dark-200">
+                <tr>
+                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-left text-xs font-medium text-gray-700 dark:text-white border-b dark:border-gray-700 border-r dark:border-gray-700"></th>
+                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-700 dark:text-white border-b dark:border-gray-700 border-r dark:border-gray-700 w-32">Primary</th>
+                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-700 dark:text-white border-b dark:border-gray-700 border-r dark:border-gray-700 w-32">Secondary</th>
+                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-700 dark:text-white border-b dark:border-gray-700 border-r dark:border-gray-700 w-32">Primary to Secondary</th>
+                  <th className="px-3 py-2 bg-gray-50 dark:bg-dark-200 text-center text-xs font-medium text-gray-700 dark:text-white border-b dark:border-gray-700 border-r dark:border-gray-700 w-32">Acceptable</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b dark:border-gray-700">
+                  <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border-r dark:border-gray-700">Dielectric Absorption : (Ratio of 1 Minute to 0.5 Minute Result)</td>
+                  {formData.insulationResistance.tests.map((test, index) => (
+                    <td key={index} className="px-3 py-2 border-r dark:border-gray-700 w-32">
+                      <input
+                        type="text"
+                        value={test.dielectricAbsorption}
+                        readOnly
+                        className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white"
+                      />
+                    </td>
+                  ))}
+                  <td className="px-3 py-2 w-32">
+                    <input
+                      type="text"
+                      value={formData.insulationResistance.dielectricAbsorptionAcceptable}
+                      readOnly
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm text-sm dark:text-white ${
+                        formData.insulationResistance.dielectricAbsorptionAcceptable === 'Yes' ? 'text-green-600 font-medium' :
+                        formData.insulationResistance.dielectricAbsorptionAcceptable === 'No' ? 'text-red-600 font-medium' : ''
+                      }`}
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
@@ -1023,23 +1321,78 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
 
         <section className="bg-white dark:bg-dark-150 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Test Equipment Used</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                  <h3 className="font-medium mb-1 text-gray-900 dark:text-white">Megohmmeter:</h3>
-                  <div className="grid grid-cols-3 gap-2">
-                      <input type="text" name="testEquipment.megohmmeter.name" placeholder="Name" value={formData.testEquipment.megohmmeter.name} onChange={e => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-                      <input type="text" name="testEquipment.megohmmeter.serialNumber" placeholder="Serial Number" value={formData.testEquipment.megohmmeter.serialNumber} onChange={e => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-                      <input type="text" name="testEquipment.megohmmeter.ampId" placeholder="AMP ID" value={formData.testEquipment.megohmmeter.ampId} onChange={e => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-                  </div>
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="min-w-[120px] font-medium text-gray-900 dark:text-white">Megohmmeter:</div>
+              <div className="flex-1">
+                <input
+                  type="text"
+                  name="testEquipment.megohmmeter.name"
+                  value={formData.testEquipment.megohmmeter.name}
+                  onChange={e => handleChange(e.target.name, e.target.value)}
+                  readOnly={!isEditing}
+                  className={`form-input w-full text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
               </div>
-               <div>
-                  <h3 className="font-medium mb-1 text-gray-900 dark:text-white">TTR Test Set:</h3>
-                  <div className="grid grid-cols-3 gap-2">
-                      <input type="text" name="testEquipment.ttrTestSet.name" placeholder="Name" value={formData.testEquipment.ttrTestSet.name} onChange={e => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-                      <input type="text" name="testEquipment.ttrTestSet.serialNumber" placeholder="Serial Number" value={formData.testEquipment.ttrTestSet.serialNumber} onChange={e => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-                      <input type="text" name="testEquipment.ttrTestSet.ampId" placeholder="AMP ID" value={formData.testEquipment.ttrTestSet.ampId} onChange={e => handleChange(e.target.name, e.target.value)} readOnly={!isEditing} className={`form-input text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
-                  </div>
+              <div className="flex items-center gap-2">
+                <span className="whitespace-nowrap font-medium text-gray-900 dark:text-white">Serial Number:</span>
+                <input
+                  type="text"
+                  name="testEquipment.megohmmeter.serialNumber"
+                  value={formData.testEquipment.megohmmeter.serialNumber}
+                  onChange={e => handleChange(e.target.name, e.target.value)}
+                  readOnly={!isEditing}
+                  className={`form-input w-48 text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
               </div>
+              <div className="flex items-center gap-2">
+                <span className="whitespace-nowrap font-medium text-gray-900 dark:text-white">AMP ID:</span>
+                <input
+                  type="text"
+                  name="testEquipment.megohmmeter.ampId"
+                  value={formData.testEquipment.megohmmeter.ampId}
+                  onChange={e => handleChange(e.target.name, e.target.value)}
+                  readOnly={!isEditing}
+                  className={`form-input w-32 text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="min-w-[120px] font-medium text-gray-900 dark:text-white">TTR Test Set:</div>
+              <div className="flex-1">
+                <input
+                  type="text"
+                  name="testEquipment.ttrTestSet.name"
+                  value={formData.testEquipment.ttrTestSet.name}
+                  onChange={e => handleChange(e.target.name, e.target.value)}
+                  readOnly={!isEditing}
+                  className={`form-input w-full text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="whitespace-nowrap font-medium text-gray-900 dark:text-white">Serial Number:</span>
+                <input
+                  type="text"
+                  name="testEquipment.ttrTestSet.serialNumber"
+                  value={formData.testEquipment.ttrTestSet.serialNumber}
+                  onChange={e => handleChange(e.target.name, e.target.value)}
+                  readOnly={!isEditing}
+                  className={`form-input w-48 text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="whitespace-nowrap font-medium text-gray-900 dark:text-white">AMP ID:</span>
+                <input
+                  type="text"
+                  name="testEquipment.ttrTestSet.ampId"
+                  value={formData.testEquipment.ttrTestSet.ampId}
+                  onChange={e => handleChange(e.target.name, e.target.value)}
+                  readOnly={!isEditing}
+                  className={`form-input w-32 text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                />
+              </div>
+            </div>
           </div>
         </section>
 

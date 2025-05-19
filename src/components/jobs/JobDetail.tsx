@@ -171,6 +171,20 @@ export default function JobDetail() {
       template_type: 'ATS'
     },
     {
+      id: 'large-dry-type-transformer',
+      name: '2-Large Dry Type Transformer Inspection and Test ATS',
+      file_url: `report:/jobs/${id}/large-dry-type-transformer?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'ATS'
+    },
+    {
+      id: 'two-small-dry-typer-xfmr-ats-report',
+      name: '2-Small Dry Typer Xfmr. Inspection and Test ATS',
+      file_url: `report:/jobs/${id}/two-small-dry-typer-xfmr-ats-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: 'ATS'
+    },
+    {
       id: 'liquid-filled-transformer-test',
       name: '2-Liquid Filled Xfmr. Visual, Mechanical, Insulation Resistance Test ATS 21',
       file_url: `report:/jobs/${id}/liquid-filled-transformer?returnToAssets=true`,
@@ -300,13 +314,6 @@ export default function JobDetail() {
       id: 'automatic-transfer-switch-ats-report',
       name: '35-Automatic Transfer Switch ATS',
       file_url: `report:/jobs/${id}/automatic-transfer-switch-ats-report?returnToAssets=true`,
-      created_at: new Date().toISOString(),
-      template_type: 'ATS'
-    },
-    {
-      id: 'two-small-dry-typer-xfmr-ats-report',
-      name: '2-Small Dry Typer Xfmr. Inspection and Test ATS',
-      file_url: `report:/jobs/${id}/two-small-dry-typer-xfmr-ats-report?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: 'ATS'
     }
