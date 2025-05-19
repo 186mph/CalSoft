@@ -152,6 +152,13 @@ const LiquidXfmrVisualMTSReport = lazy(() => import('@/components/reports/Liquid
 // Import the new Two Small Dry Type Transformer ATS Report component
 const TwoSmallDryTyperXfmrATSReport = lazy(() => import('@/components/reports/TwoSmallDryTyperXfmrATSReport'));
 
+// Import the new Two Small Dry Type Transformer MTS Report component
+const TwoSmallDryTyperXfmrMTSReport = lazy(() => import('@/components/reports/TwoSmallDryTyperXfmrMTSReport'));
+
+// Import MTS components
+import TwelveSetsLowVoltageCableTestFormMTS from './components/reports/12setslowvoltagecablesMTS';
+import TwentySetsLowVoltageCableTestFormMTS from './components/reports/20SetsLowVoltageCablesMTS';
+
 // --- Define Division Context --- Start
 interface DivisionContextType {
   division: string | null;
@@ -472,6 +479,13 @@ function App() {
 
                   {/* Added route for Two Small Dry Type Transformer ATS Report */}
                   <Route path="/jobs/:id/two-small-dry-typer-xfmr-ats-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><TwoSmallDryTyperXfmrATSReport /></Suspense></Layout></RequireAuth>} />
+
+                  {/* Added route for Two Small Dry Type Transformer MTS Report */}
+                  <Route path="/jobs/:id/two-small-dry-typer-xfmr-mts-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><TwoSmallDryTyperXfmrMTSReport /></Suspense></Layout></RequireAuth>} />
+
+                  {/* Low Voltage Cable Test MTS Reports */}
+                  <Route path="/jobs/:id/low-voltage-cable-test-12sets-mts/:reportId?" element={<RequireAuth><Layout><TwelveSetsLowVoltageCableTestFormMTS /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/low-voltage-cable-test-20sets-mts/:reportId?" element={<RequireAuth><Layout><TwentySetsLowVoltageCableTestFormMTS /></Layout></RequireAuth>} />
                 </Routes>
                 
                 {/* Persistent Chat Windows */}

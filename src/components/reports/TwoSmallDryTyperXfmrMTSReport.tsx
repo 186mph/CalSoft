@@ -157,12 +157,12 @@ interface FormData {
 }
 
 const initialVisualInspectionItems = [
-  { netaSection: '7.2.1.1.A.1', description: 'Compare equipment nameplate data with drawings and specifications.', result: '' },
-  { netaSection: '7.2.1.1.A.2', description: 'Inspect physical and mechanical condition.', result: '' },
-  { netaSection: '7.2.1.1.A.3', description: 'Inspect anchorage, alignment, and grounding.', result: '' },
-  { netaSection: '7.2.1.1.A.4', description: 'Verify that resilient mounts are free and that any shipping brackets have been removed.', result: '' },
-  { netaSection: '7.2.1.1.A.5', description: 'Verify the unit is clean.', result: '' },
-  { netaSection: '7.2.1.1.A.6.1', description: 'Use of a low-resistance ohmmeter in accordance with Section 7.2.1.1.B.1.', result: '' },
+  { netaSection: '7.2.1.1.A.1', description: 'Inspect physical and mechanical condition.', result: '' },
+  { netaSection: '7.2.1.1.A.2', description: 'Inspect anchorage, alignment, and grounding.', result: '' },
+  { netaSection: '7.2.1.1.A.3', description: '*Prior to cleaning the unit, perform as-found tests.', result: '' },
+  { netaSection: '7.2.1.1.A.4', description: 'Clean the unit.', result: '' },
+  { netaSection: '7.2.1.1.A.5', description: 'Inspect bolted electrical connections for high resistance using a low-resistance ohmmeter', result: '' },
+  { netaSection: '7.2.1.1.A.6.1', description: 'Perform as-left tests.', result: '' },
   { netaSection: '7.2.1.1.A.7', description: 'Verify that as-left tap connections are as specified.', result: '' },
 ];
 
@@ -172,7 +172,7 @@ const initialInsulationResistanceTests = [
   { winding: 'Primary to Secondary', testVoltage: '1000V', measured0_5Min: '', measured1Min: '', units: 'GΩ', corrected0_5Min: '', corrected1Min: '', correctedUnits: 'GΩ', tableMinimum: '', tableMinimumUnits: 'GΩ', dielectricAbsorption: '' },
 ];
 
-const TwoSmallDryTyperXfmrATSReport: React.FC = () => {
+const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
   const { id: jobId, reportId } = useParams<{ id: string; reportId?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -282,7 +282,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = () => {
     try {
       const { data, error } = await supabase
         .schema('neta_ops')
-        .from('two_small_dry_type_xfmr_ats_reports')
+        .from('two_small_dry_type_xfmr_mts_reports')
         .select('*')
         .eq('id', reportId)
         .single();
@@ -694,14 +694,14 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = () => {
       if (reportId) {
         const { error } = await supabase
           .schema('neta_ops')
-          .from('two_small_dry_type_xfmr_ats_reports')
+          .from('two_small_dry_type_xfmr_mts_reports')
           .update(reportPayload)
           .eq('id', reportId);
         if (error) throw error;
       } else {
         const { data: insertData, error: insertError } = await supabase
           .schema('neta_ops')
-          .from('two_small_dry_type_xfmr_ats_reports')
+          .from('two_small_dry_type_xfmr_mts_reports')
           .insert(reportPayload)
           .select('id')
           .single();
@@ -710,8 +710,8 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = () => {
         currentReportId = insertData.id;
 
         const assetData = {
-          name: `2-Small Dry Type Xfmr. ATS - ${formData.identifier || formData.eqptLocation || 'Unnamed'}`,
-          file_url: `report:/jobs/${jobId}/two-small-dry-typer-xfmr-ats-report/${currentReportId}`,
+          name: `2-Small Dry Type Xfmr. MTS - ${formData.identifier || formData.eqptLocation || 'Unnamed'}`,
+          file_url: `report:/jobs/${jobId}/two-small-dry-typer-xfmr-mts-report/${currentReportId}`,
           user_id: user.id,
         };
         const { data: assetResult, error: assetError } = await supabase
@@ -736,7 +736,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = () => {
       
       setIsEditing(false);
       alert(`Report ${reportId ? 'updated' : 'saved'} successfully!`);
-      navigate(`/jobs/${jobId}`);
+      navigateAfterSave(navigate, jobId, location);
     } catch (error: any) {
       console.error('Error saving report:', error);
       alert(`Failed to save report: ${error?.message || 'Unknown error'}`);
@@ -762,7 +762,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = () => {
   const renderHeader = () => (
     <div className="flex justify-between items-center mb-6">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        2-Small Dry Type Xfmr. Inspection and Test ATS
+        2-Small Dry Type Xfmr. Inspection and Test MTS
       </h1>
       <div className="flex items-center space-x-2">
         <button
@@ -1162,26 +1162,22 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = () => {
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Description
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-48">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Result
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
                 {formData.visualInspectionItems.map((item, index) => (
-                  <tr key={index} className={index % 2 === 0 ? 'bg-white dark:bg-dark-150' : 'bg-gray-50 dark:bg-dark-200'}>
-                    <td className="px-6 py-2 text-sm text-gray-900 dark:text-white">
-                      {item.netaSection}
-                    </td>
-                    <td className="px-6 py-2 text-sm text-gray-900 dark:text-white">
-                      {item.description}
-                    </td>
-                    <td className="px-6 py-2 text-sm text-gray-900 dark:text-white">
+                  <tr key={index}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.netaSection}</td>
+                    <td className="px-6 py-4 whitespace-normal text-sm text-gray-900 dark:text-white">{item.description}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <select
                         value={item.result}
                         onChange={(e) => handleArrayChange('visualInspectionItems', index, 'result', e.target.value)}
                         disabled={!isEditing}
-                        className={`form-select w-full text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        className={`form-select w-full text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : 'dark:bg-dark-100'}`}
                       >
                         {visualInspectionOptions.map(option => (
                           <option key={option} value={option}>{option}</option>
@@ -1457,4 +1453,4 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = () => {
   );
 };
 
-export default TwoSmallDryTyperXfmrATSReport; 
+export default TwoSmallDryTyperXfmrMTSReport; 
