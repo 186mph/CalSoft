@@ -81,6 +81,8 @@ const reportRoutes = {
   '35-Automatic Transfer Switch ATS': 'automatic-transfer-switch-ats-report',
   '2-Large Dry Type Xfmr. Insp. & Test MTS 23': 'large-dry-type-transformer-mts-report',
   '2-Large Dry Type Xfmr. Visual, Mechanical, Insulation Resistance Test MTS': 'large-dry-type-xfmr-mts-report',
+  '4-Medium Voltage Cable VLF Tan Delta MTS': 'medium-voltage-vlf-tan-delta-mts',
+  '4-Medium Voltage Cable VLF Tan Delta Test MTS': 'medium-voltage-vlf-tan-delta-mts',
 };
 
 export default function JobDetail() {
@@ -332,12 +334,12 @@ export default function JobDetail() {
       template_type: 'MTS'
     },
     {
-      id: 'low-voltage-cable-test-20sets-mts',
-      name: '3-Low Voltage Cable Test MTS (up to 20 sets)',
-      file_url: `report:/jobs/${id}/low-voltage-cable-test-20sets-mts?returnToAssets=true`,
+      id: 'medium-voltage-vlf-tan-delta-mts',
+      name: '4-Medium Voltage Cable VLF Tan Delta MTS',
+      file_url: `report:/jobs/${id}/medium-voltage-vlf-tan-delta-mts?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: 'MTS'
-    }
+    },
   ];
 
   // Handle clicking outside the dropdown
@@ -778,6 +780,7 @@ export default function JobDetail() {
       'automatic-transfer-switch-ats-report': 'automatic-transfer-switch-ats-report',
       'large-dry-type-transformer-mts-report': 'large-dry-type-transformer-mts-report',
       'large-dry-type-xfmr-mts-report': 'large-dry-type-xfmr-mts-report',
+      'medium-voltage-vlf-tan-delta-mts': 'medium-voltage-vlf-tan-delta-mts',
       'switchgear-panelboard-mts-report': 'switchgear-panelboard-mts-report',
       'liquid-xfmr-visual-mts-report': 'liquid-xfmr-visual-mts-report',
       'low-voltage-cable-test-12sets-mts': 'low-voltage-cable-test-12sets-mts',
