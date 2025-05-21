@@ -1,0 +1,392 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Equipment Report Development Guide
+
+## Overview
+This guide outlines the development process and best practices for creating equipment reports in the system. These reports are used to document inspection, testing, and maintenance of various electrical equipment types.
+
+## Report Types
+
+### 1. Switchgear Reports
+- **Purpose**: Document switchgear inspection and testing
+- **Key Components**:
+  - Visual inspection results
+  - Electrical testing data
+  - Maintenance recommendations
+  - Pass/Fail status
+
+### 2. Panelboard Reports
+- **Purpose**: Record panelboard inspection and testing
+- **Key Components**:
+  - Visual inspection checklist
+  - Electrical measurements
+  - Safety compliance checks
+  - Pass/Fail status
+
+### 3. Transformer Reports
+- **Purpose**: Document transformer inspection and testing
+- **Key Components**:
+  - Visual inspection results
+  - Electrical testing data
+  - Oil analysis (if applicable)
+  - Pass/Fail status
+
+### 4. Large Transformer Reports
+- **Purpose**: Comprehensive transformer inspection and testing
+- **Key Components**:
+  - Detailed visual inspection
+  - Comprehensive electrical testing
+  - Oil analysis and testing
+  - Thermal imaging results
+  - Pass/Fail status
+
+## Report Structure
+
+### 1. Data Models
+```typescript
+interface EquipmentReport {
+  id: string;
+  job_id: string;
+  equipment_type: 'switchgear' | 'panelboard' | 'transformer' | 'large_transformer';
+  report_date: Date;
+  inspector: string;
+  status: 'pass' | 'fail' | 'pending';
+  notes: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+interface InspectionResult {
+  id: string;
+  report_id: string;
+  category: string;
+  item: string;
+  result: 'pass' | 'fail' | 'na';
+  notes: string;
+}
+
+interface TestResult {
+  id: string;
+  report_id: string;
+  test_type: string;
+  value: number;
+  unit: string;
+  pass_criteria: string;
+  result: 'pass' | 'fail';
+}
+```
+
+### 2. Database Tables
+```sql
+-- Equipment Reports Table
+CREATE TABLE equipment_reports (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  job_id UUID REFERENCES jobs(id),
+  equipment_type TEXT NOT NULL,
+  report_date TIMESTAMP WITH TIME ZONE,
+  inspector TEXT,
+  status TEXT,
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Inspection Results Table
+CREATE TABLE inspection_results (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  report_id UUID REFERENCES equipment_reports(id),
+  category TEXT,
+  item TEXT,
+  result TEXT,
+  notes TEXT
+);
+
+-- Test Results Table
+CREATE TABLE test_results (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  report_id UUID REFERENCES equipment_reports(id),
+  test_type TEXT,
+  value NUMERIC,
+  unit TEXT,
+  pass_criteria TEXT,
+  result TEXT
+);
+```
+
+## Report Generation Process
+
+### 1. Job Integration
+```typescript
+// Example of linking report to job
+async function createEquipmentReport(jobId: string, reportData: EquipmentReport) {
+  try {
+    const { data, error } = await supabase
+      .from('equipment_reports')
+      .insert({
+        job_id: jobId,
+        ...reportData
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error creating report:', error);
+    throw error;
+  }
+}
+```
+
+### 2. Data Collection
+```typescript
+// Example of collecting inspection results
+interface InspectionForm {
+  category: string;
+  items: {
+    id: string;
+    description: string;
+    result: 'pass' | 'fail' | 'na';
+    notes?: string;
+  }[];
+}
+
+async function saveInspectionResults(reportId: string, formData: InspectionForm) {
+  try {
+    const results = formData.items.map(item => ({
+      report_id: reportId,
+      category: formData.category,
+      item: item.description,
+      result: item.result,
+      notes: item.notes
+    }));
+
+    const { error } = await supabase
+      .from('inspection_results')
+      .insert(results);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error saving inspection results:', error);
+    throw error;
+  }
+}
+```
+
+### 3. Pass/Fail Logic
+```typescript
+function determineReportStatus(inspectionResults: InspectionResult[], testResults: TestResult[]): 'pass' | 'fail' | 'pending' {
+  // Check if all required inspections are complete
+  const allInspectionsComplete = inspectionResults.every(result => result.result !== 'pending');
+  
+  // Check if all required tests are complete
+  const allTestsComplete = testResults.every(result => result.result !== 'pending');
+  
+  if (!allInspectionsComplete || !allTestsComplete) {
+    return 'pending';
+  }
+  
+  // Check for any failures
+  const hasFailures = inspectionResults.some(result => result.result === 'fail') ||
+                     testResults.some(result => result.result === 'fail');
+  
+  return hasFailures ? 'fail' : 'pass';
+}
+```
+
+## UI Components
+
+### 1. Report Form
+```typescript
+interface ReportFormProps {
+  jobId: string;
+  equipmentType: 'switchgear' | 'panelboard' | 'transformer' | 'large_transformer';
+  onSubmit: (data: EquipmentReport) => Promise<void>;
+}
+
+export function ReportForm({ jobId, equipmentType, onSubmit }: ReportFormProps) {
+  const [formData, setFormData] = useState<Partial<EquipmentReport>>({
+    job_id: jobId,
+    equipment_type: equipmentType,
+    report_date: new Date(),
+    status: 'pending'
+  });
+
+  // Form implementation
+}
+```
+
+### 2. Inspection Checklist
+```typescript
+interface ChecklistProps {
+  category: string;
+  items: string[];
+  onResultChange: (itemId: string, result: 'pass' | 'fail' | 'na') => void;
+}
+
+export function InspectionChecklist({ category, items, onResultChange }: ChecklistProps) {
+  // Checklist implementation
+}
+```
+
+### 3. Test Results Form
+```typescript
+interface TestFormProps {
+  testTypes: {
+    id: string;
+    name: string;
+    unit: string;
+    passCriteria: string;
+  }[];
+  onTestComplete: (results: TestResult[]) => void;
+}
+
+export function TestForm({ testTypes, onTestComplete }: TestFormProps) {
+  // Test form implementation
+}
+```
+
+## Best Practices
+
+### 1. Data Validation
+- Validate all input data before saving
+- Ensure required fields are completed
+- Check for valid test values within acceptable ranges
+- Validate pass/fail criteria
+
+### 2. Error Handling
+- Implement proper error handling for database operations
+- Show user-friendly error messages
+- Provide recovery options for failed operations
+- Log errors for debugging
+
+### 3. Performance
+- Implement pagination for large reports
+- Optimize database queries
+- Cache frequently accessed data
+- Use appropriate indexes
+
+### 4. Security
+- Validate user permissions
+- Sanitize input data
+- Implement proper access controls
+- Log security-relevant events
+
+## Adding New Report Types
+
+### 1. Steps to Add New Report Type
+1. Define report structure and requirements
+2. Create necessary database tables
+3. Implement data models and interfaces
+4. Create UI components
+5. Add validation logic
+6. Implement save/load functionality
+7. Add to job integration
+8. Test thoroughly
+
+### 2. Required Components
+- Report form component
+- Data validation logic
+- Save/load functionality
+- Integration with job system
+- Error handling
+- User feedback
+
+### 3. Testing Requirements
+- Unit tests for validation logic
+- Integration tests for database operations
+- UI component tests
+- End-to-end workflow tests
+- Performance testing
+
+## Common Patterns
+
+### 1. Saving Report Data
+```typescript
+async function saveReport(reportId: string, data: any) {
+  try {
+    // Start transaction
+    const { data: report, error: reportError } = await supabase
+      .from('equipment_reports')
+      .update(data)
+      .eq('id', reportId)
+      .select()
+      .single();
+
+    if (reportError) throw reportError;
+
+    // Update status
+    const status = await determineReportStatus(reportId);
+    await updateReportStatus(reportId, status);
+
+    return report;
+  } catch (error) {
+    console.error('Error saving report:', error);
+    throw error;
+  }
+}
+```
+
+### 2. Loading Report Data
+```typescript
+async function loadReport(reportId: string) {
+  try {
+    // Load report data
+    const { data: report, error: reportError } = await supabase
+      .from('equipment_reports')
+      .select('*')
+      .eq('id', reportId)
+      .single();
+
+    if (reportError) throw reportError;
+
+    // Load inspection results
+    const { data: inspections, error: inspectionError } = await supabase
+      .from('inspection_results')
+      .select('*')
+      .eq('report_id', reportId);
+
+    if (inspectionError) throw inspectionError;
+
+    // Load test results
+    const { data: tests, error: testError } = await supabase
+      .from('test_results')
+      .select('*')
+      .eq('report_id', reportId);
+
+    if (testError) throw testError;
+
+    return {
+      ...report,
+      inspections,
+      tests
+    };
+  } catch (error) {
+    console.error('Error loading report:', error);
+    throw error;
+  }
+}
+```
+
+## Additional Resources
+
+### Documentation
+- Equipment testing standards
+- Safety guidelines
+- Industry best practices
+- Company procedures
+
+### Templates
+- Standard report templates
+- Inspection checklists
+- Test procedures
+- Pass/fail criteria
+
+### Support
+- Technical support contact
+- Equipment specialists
+- Quality assurance team
+- Training resources 

@@ -1,0 +1,272 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# AMP Styling Guide
+
+This document outlines the standardized CSS rules and components for both light and dark mode themes in the AMP application.
+
+## Color System
+
+### Light Mode Variables
+```css
+:root {
+  /* Background Colors */
+  --light-bg-primary: #ffffff;
+  --light-bg-secondary: #f3f4f6;
+  --light-bg-tertiary: #e5e7eb;
+  
+  /* Text Colors */
+  --light-text-primary: #111827;    /* gray-900 */
+  --light-text-secondary: #4b5563;  /* gray-600 */
+  --light-text-tertiary: #6b7280;   /* gray-500 */
+  
+  /* Border Colors */
+  --light-border-primary: #e5e7eb;   /* gray-200 */
+  --light-border-secondary: #d1d5db; /* gray-300 */
+  
+  /* Brand Colors */
+  --brand-orange: #f26722;
+  --brand-orange-hover: rgba(242, 103, 34, 0.9); /* #f26722 with 90% opacity */
+  
+  /* Form Colors */
+  --light-input-bg: #ffffff;
+  --light-input-border: #d1d5db;
+  --light-input-focus-ring: #f26722;
+  --light-input-disabled: #f3f4f6;
+}
+```
+
+### Dark Mode Variables
+```css
+:root {
+  /* Background Colors */
+  --dark-bg-primary: #1a1a1a;      /* dark-150 */
+  --dark-bg-secondary: #242424;    /* dark-100 */
+  --dark-bg-tertiary: #2a2a2a;     /* dark-200 */
+  
+  /* Text Colors */
+  --dark-text-primary: #ffffff;
+  --dark-text-secondary: #d1d5db;   /* gray-300 */
+  --dark-text-tertiary: #9ca3af;    /* gray-400 */
+  
+  /* Border Colors */
+  --dark-border-primary: #374151;    /* gray-700 */
+  --dark-border-secondary: #4b5563;  /* gray-600 */
+  
+  /* Form Colors */
+  --dark-input-bg: #242424;         /* dark-100 */
+  --dark-input-border: #4b5563;     /* gray-600 */
+  --dark-input-focus-ring: #f26722;
+  --dark-input-disabled: #2a2a2a;   /* dark-200 */
+}
+```
+
+## Component Classes
+
+### Container and Card Styles
+```css
+.container {
+  @apply bg-white dark:bg-dark-150 rounded-lg shadow-md;
+}
+
+.card {
+  @apply bg-white dark:bg-dark-150 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700;
+}
+```
+
+### Form Styles
+```css
+.form-input {
+  @apply mt-1 block w-full p-2 
+    border border-gray-300 dark:border-gray-600 
+    rounded-md shadow-sm 
+    focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] 
+    dark:bg-dark-100 dark:text-white;
+}
+
+.form-select {
+  @apply mt-1 block w-full p-2 
+    border border-gray-300 dark:border-gray-600 
+    rounded-md shadow-sm 
+    focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] 
+    dark:bg-dark-100 dark:text-white;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700 dark:text-white;
+}
+```
+
+### Button Styles
+```css
+.btn-primary {
+  @apply px-4 py-2 text-sm font-medium text-white 
+    bg-[#f26722] border border-transparent rounded-md shadow-sm 
+    hover:bg-[#f26722]/90 focus:outline-none;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 text-sm font-medium 
+    text-gray-700 dark:text-white 
+    bg-white dark:bg-dark-100 
+    border border-gray-300 dark:border-gray-600 
+    rounded-md shadow-sm 
+    hover:bg-gray-50 dark:hover:bg-dark-200 
+    focus:outline-none;
+}
+```
+
+### Table Styles
+```css
+.table-header {
+  @apply px-6 py-3 text-left text-xs font-medium 
+    text-gray-500 dark:text-gray-300 
+    uppercase tracking-wider 
+    bg-gray-50 dark:bg-dark-200;
+}
+
+.table-cell {
+  @apply px-6 py-4 whitespace-nowrap text-sm 
+    text-gray-900 dark:text-white;
+}
+
+.table-row {
+  @apply hover:bg-gray-50 dark:hover:bg-dark-100 
+    transition-colors;
+}
+```
+
+### Modal Styles
+```css
+.modal-container {
+  @apply relative bg-white dark:bg-dark-150 
+    rounded-lg max-w-md w-full mx-auto p-6 shadow-xl;
+}
+
+.modal-overlay {
+  @apply fixed inset-0 bg-black opacity-30;
+}
+```
+
+### Other Common Styles
+```css
+.section-header {
+  @apply text-xl font-semibold mb-4 
+    text-gray-900 dark:text-white 
+    border-b dark:border-gray-700 pb-2;
+}
+
+.link-primary {
+  @apply text-[#f26722] hover:text-[#f26722]/90 
+    dark:text-[#f26722] dark:hover:text-[#f26722]/90;
+}
+
+.status-badge {
+  @apply px-2 inline-flex text-xs leading-5 
+    font-semibold rounded-full;
+}
+```
+
+## Usage Examples
+
+### Containers and Cards
+```jsx
+<div className="container">
+  {/* Container content */}
+</div>
+
+<div className="card">
+  {/* Card content */}
+</div>
+```
+
+### Forms
+```jsx
+<form>
+  <label className="form-label">
+    Field Label
+  </label>
+  <input className="form-input" type="text" />
+  <select className="form-select">
+    <option>Option 1</option>
+  </select>
+</form>
+```
+
+### Buttons
+```jsx
+<button className="btn-primary">
+  Primary Action
+</button>
+
+<button className="btn-secondary">
+  Secondary Action
+</button>
+```
+
+### Tables
+```jsx
+<table>
+  <thead>
+    <tr>
+      <th className="table-header">Header</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="table-row">
+      <td className="table-cell">Content</td>
+    </tr>
+  </tbody>
+</table>
+```
+
+### Modals
+```jsx
+<div className="modal-overlay" />
+<div className="modal-container">
+  {/* Modal content */}
+</div>
+```
+
+### Headers and Links
+```jsx
+<h2 className="section-header">
+  Section Title
+</h2>
+
+<a className="link-primary" href="#">
+  Link Text
+</a>
+```
+
+## Dark Mode Implementation Notes
+
+1. All components use Tailwind's dark mode modifier `dark:` to handle dark mode styles
+2. Dark mode is triggered by the `dark` class on the root HTML element
+3. Brand orange color (#f26722) is consistent across both light and dark modes
+4. Form elements in dark mode use:
+   - Dark backgrounds (dark-100, dark-150, dark-200)
+   - White text
+   - Gray borders (gray-600)
+   - Orange focus rings
+5. Interactive elements (buttons, links) maintain the same hover/focus states in both modes
+
+## Best Practices
+
+1. Always include both light and dark mode styles when creating new components
+2. Use the predefined color variables instead of hardcoding colors
+3. Maintain consistent spacing using the built-in Tailwind spacing scale
+4. Use semantic class names that describe the component's purpose
+5. Follow the established pattern for interactive states (hover, focus, active)
+6. Ensure sufficient contrast ratios in both light and dark modes
+7. Test components in both modes before deployment
+
+## Accessibility
+
+1. Maintain WCAG 2.1 AA standard contrast ratios
+2. Use semantic HTML elements
+3. Include proper ARIA labels where needed
+4. Ensure focus states are visible in both modes
+5. Test with screen readers in both light and dark modes 

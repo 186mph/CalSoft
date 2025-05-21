@@ -1,0 +1,305 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Developer Catch-Up Guide
+
+## Table of Contents
+1. [Project Overview](mdc:#project-overview)
+2. [Codebase Structure](mdc:#codebase-structure)
+3. [Authentication System](mdc:#authentication-system)
+4. [Database Structure](mdc:#database-structure)
+5. [Portal Architecture](mdc:#portal-architecture)
+6. [Development Workflow](mdc:#development-workflow)
+7. [Common Patterns](mdc:#common-patterns)
+8. [Testing](mdc:#testing)
+9. [Deployment](mdc:#deployment)
+
+## Project Overview
+
+This is a React-based web application built with TypeScript, using Supabase as the backend service. The application serves as a comprehensive portal for managing jobs, opportunities, and sales data across different divisions.
+
+### Tech Stack
+- **Frontend**: React + TypeScript
+- **UI Framework**: Tailwind CSS
+- **Backend**: Supabase (PostgreSQL + Auth)
+- **Build Tool**: Vite
+- **Routing**: React Router
+- **State Management**: React Context + Hooks
+
+## Codebase Structure
+
+```
+src/
+├── app/                    # Main application routes
+│   ├── dashboard/         # Dashboard views
+│   ├── sales-dashboard/   # Sales-specific views
+│   └── portal/           # Portal-specific views
+├── components/            # Reusable UI components
+├── lib/                   # Core functionality
+│   ├── hooks/            # Custom React hooks
+│   ├── types/            # TypeScript type definitions
+│   ├── supabase.ts       # Supabase client configuration
+│   ├── AuthContext.tsx   # Authentication context
+│   └── ThemeContext.tsx  # Theme management
+└── styles/               # Global styles and Tailwind config
+```
+
+## Authentication System
+
+### Overview
+The application uses Supabase Authentication with the following features:
+- Email/password authentication
+- Session persistence
+- Protected routes
+- Automatic token refresh
+
+### Key Components
+1. **AuthContext** (`src/lib/AuthContext.tsx`)
+   - Manages authentication state
+   - Provides user context throughout the app
+   - Handles sign-in/sign-out operations
+
+2. **Protected Routes**
+   - Uses `RequireAuth` component for route protection
+   - Redirects unauthenticated users to login
+
+### Usage Example
+```typescript
+import { useAuth } from '@/lib/AuthContext';
+
+function MyComponent() {
+  const { user, signOut } = useAuth();
+  
+  if (!user) {
+    return <div>Please log in</div>;
+  }
+  
+  return (
+    <div>
+      Welcome, {user.email}
+      <button onClick={signOut}>Sign Out</button>
+    </div>
+  );
+}
+```
+
+## Database Structure
+
+### Supabase Tables
+
+1. **Users Table**
+   - Managed by Supabase Auth
+   - Contains user profiles and authentication data
+
+2. **Jobs Table**
+   ```sql
+   jobs (
+     id: uuid
+     title: text
+     status: text
+     division: text
+     customer_id: uuid (references customers)
+     created_at: timestamp
+     updated_at: timestamp
+   )
+   ```
+
+3. **Opportunities Table**
+   ```sql
+   opportunities (
+     id: uuid
+     quote_number: text
+     title: text
+     status: text
+     expected_value: numeric
+     customer_id: uuid (references customers)
+     created_at: timestamp
+     updated_at: timestamp
+   )
+   ```
+
+4. **Customers Table**
+   ```sql
+   customers (
+     id: uuid
+     company_name: text
+     name: text
+     created_at: timestamp
+     updated_at: timestamp
+   )
+   ```
+
+### Relationships
+- Jobs → Customers (Many-to-One)
+- Opportunities → Customers (Many-to-One)
+- Users → Jobs (Many-to-Many through permissions)
+
+## Portal Architecture
+
+### 1. Dashboard Views
+- **Location**: `src/app/dashboard/`
+- **Purpose**: Main overview of jobs and activities
+- **Key Features**:
+  - Recent jobs list
+  - Statistics cards
+  - Division-specific views
+  - Quick actions
+
+### 2. Sales Dashboard
+- **Location**: `src/app/sales-dashboard/`
+- **Purpose**: Sales performance tracking
+- **Key Features**:
+  - Pipeline metrics
+  - Opportunity tracking
+  - Win rate analysis
+  - Lead generation stats
+
+### 3. Portal Features
+- Division-based access control
+- Real-time updates
+- Responsive design
+- Dark/light theme support
+
+## Development Workflow
+
+### 1. Local Development
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+### 2. Environment Setup
+Required environment variables:
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### 3. Code Organization
+- Use TypeScript interfaces for type safety
+- Follow component composition patterns
+- Implement proper error handling
+- Use React hooks for state management
+
+## Common Patterns
+
+### 1. Data Fetching
+```typescript
+async function fetchData() {
+  try {
+    const { data, error } = await supabase
+      .from('table_name')
+      .select('*')
+      .eq('division', division);
+      
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+}
+```
+
+### 2. Component Structure
+```typescript
+interface Props {
+  // Component props
+}
+
+export function Component({ prop1, prop2 }: Props) {
+  // State management
+  const [state, setState] = useState();
+  
+  // Effects
+  useEffect(() => {
+    // Side effects
+  }, [dependencies]);
+  
+  // Render
+  return (
+    // JSX
+  );
+}
+```
+
+### 3. Error Handling
+```typescript
+try {
+  // Operation
+} catch (error) {
+  if (error instanceof Error) {
+    // Handle specific error types
+  }
+  // Log error
+  console.error('Operation failed:', error);
+  // Show user feedback
+}
+```
+
+## Testing
+
+### 1. Unit Tests
+- Test individual components
+- Test utility functions
+- Test hooks
+
+### 2. Integration Tests
+- Test component interactions
+- Test data flow
+- Test authentication flow
+
+### 3. E2E Tests
+- Test complete user flows
+- Test critical paths
+- Test error scenarios
+
+## Deployment
+
+### 1. Build Process
+```bash
+# Build the application
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+### 2. Deployment Steps
+1. Build the application
+2. Run tests
+3. Deploy to hosting service
+4. Verify deployment
+
+### 3. Environment Management
+- Use different environment variables for development/production
+- Secure sensitive information
+- Monitor deployment status
+
+## Additional Resources
+
+### Documentation
+- [React Documentation](mdc:https:/reactjs.org)
+- [Supabase Documentation](mdc:https:/supabase.com/docs)
+- [TypeScript Documentation](mdc:https:/www.typescriptlang.org/docs)
+- [Tailwind CSS Documentation](mdc:https:/tailwindcss.com/docs)
+
+### Internal Resources
+- `REPORT_GUIDE.md` - Guide for report development
+- `STYLING_GUIDE.md` - UI/UX guidelines
+- `manual_fix_instructions.md` - Manual data fix procedures
+
+### Support
+- Contact the development team for access to:
+  - Development environment
+  - Database access
+  - Deployment credentials
+  - Internal documentation 

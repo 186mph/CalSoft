@@ -1,0 +1,292 @@
+# Product Requirements Document: Multi-Portal Business Management System
+
+## Product Overview
+A comprehensive operational management system for a technical services company that handles different types of jobs, customer relationships, and reporting across multiple divisions or departments (North Alabama, Tennessee, Calibration, Sales, Armadillo, Scavenger, etc.).
+
+## Implementation Status Legend
+- [x] Completed
+- [ ] Pending Implementation
+
+## Core User Roles
+- [x] Administrators
+- [x] Division Technicians (NETA Technician, Lab Technician)
+- [x] Sales Representatives
+- [x] Engineers
+- [x] Office Staff
+- [x] HR Personnel
+
+## Portal System Requirements
+
+### 1. Portal Architecture
+- [x] Multi-portal architecture for different business functions
+- [x] Role-based access control system
+- [x] Unified navigation structure across portals
+- [x] Cross-portal search functionality
+- [ ] Portal-specific dashboards for each division
+
+### 2. Portal Landing Page
+- [x] Display available portals as visual cards
+- [x] Filter by portal type (All, Technician, Administrative)
+- [x] Navigate to appropriate dashboard upon selection
+- [ ] Add customizable shortcuts for frequent destinations
+- [ ] Implement portal access notifications for new permissions
+
+### 3. NETA Operational Portal
+- [x] Division-specific dashboards (North Alabama, Tennessee)
+- [x] Job management interface
+- [x] Technical report templates (Switchgear, Panelboard, Transformer)
+- [x] Asset management functionality
+- [ ] Performance metrics visualization
+- [ ] Technician scheduling and assignment system
+
+### 4. Sales Portal
+- [x] Sales dashboard with opportunity pipeline
+- [x] Customer management interface
+- [x] Opportunity tracking system
+- [x] Contact management
+- [ ] Revenue forecasting and goal tracking
+- [ ] Territory and account ownership assignment
+
+### 5. Lab Portal
+- [x] Lab sample tracking interface
+- [ ] Equipment calibration status monitoring
+- [ ] Testing procedure documentation
+- [ ] Certificate generation and delivery system
+- [ ] Quality control metrics and reporting
+
+### 6. Engineering Portal
+- [x] Project status overview
+- [ ] Design approval workflows
+- [ ] Technical documentation library
+- [ ] Standards and compliance update system
+- [ ] Drawing and schematic repository
+
+### 7. HR Portal
+- [x] Basic HR dashboard
+- [ ] Employee record management
+- [ ] Training tracking and certification management
+- [ ] Performance review scheduling
+- [ ] Policy acknowledgment tracking
+
+### 8. Administrative Portal
+- [x] User management interface
+- [x] Role assignment and permission configuration
+- [ ] System health monitoring
+- [ ] Configuration options for portal features
+- [ ] Data backup and recovery controls
+
+### 9. Office Administration Portal
+- [ ] Document management system
+- [ ] Expense and purchase order tracking
+- [ ] Facility management features
+- [ ] Calendar and scheduling tools
+- [ ] Vendor relationship management
+
+### 10. Armadillo Portal
+- [ ] Inventory management system
+- [ ] Job tracking and workflow
+- [ ] Invoice and financial tracking
+- [ ] Field operations support
+- [ ] Data analytics and reporting
+- [ ] Equipment maintenance scheduling
+
+### 11. Scavenger Portal
+- [ ] Collection route management
+- [ ] Material inventory tracking
+- [ ] Processing operations workflow
+- [ ] Sales and disposition management
+- [ ] Equipment tracking and maintenance
+- [ ] Environmental compliance monitoring
+
+## Customer Management Requirements
+
+### 1. Customer Information Storage
+- [x] Store core customer details (company name, email, phone, address)
+- [x] Track customer status and creation date
+- [ ] Implementation of customer categorization system
+- [ ] Customer document storage and management
+- [ ] Customer preference tracking
+
+### 2. Customer Relationship Features
+- [x] Link customers to multiple contacts
+- [x] Associate customers with jobs and opportunities
+- [x] Provide detailed customer view with related entities
+- [ ] Customer interaction history tracking
+- [ ] Customer satisfaction measurement
+- [ ] Account health monitoring
+
+## Job Management Requirements
+
+### 1. Job Tracking System
+- [x] Create, view, edit, and delete job records
+- [x] Track job details (number, title, status, due date, budget, priority)
+- [x] Associate jobs with specific divisions
+- [x] Link jobs to customer records
+- [ ] Resource allocation tracking
+- [ ] Cost tracking and budget management
+- [ ] Profitability analysis
+
+### 2. Job Workflow Features
+- [x] Convert opportunities to jobs
+- [x] Update job status through defined workflow states
+- [x] Set and modify job priorities
+- [x] Manage job due dates
+- [ ] Automated status notifications
+- [ ] SLA tracking and compliance
+- [ ] Job dependencies and prerequisite management
+
+### 3. Technical Reporting System
+- [x] Specialized report templates (Switchgear, Panelboard, Transformer)
+- [x] File uploads and attachments to job records
+- [x] JSON report format imports
+- [x] Asset linking to job records
+- [ ] Automated report generation
+- [ ] Report approval workflow
+- [ ] Historical comparison of report data
+
+## Sales Features
+
+### 1. Opportunity Management
+- [x] Track sales opportunities
+- [x] Maintain customer and contact associations
+- [x] Convert opportunities to jobs
+- [x] Track opportunity status
+- [ ] Probability and forecast calculation
+- [ ] Sales cycle analysis
+- [ ] Lost opportunity tracking and analysis
+
+### 2. Sales Dashboard
+- [x] Overview of opportunities
+- [x] Customer and contact management
+- [x] Navigation between sales entities
+- [ ] Revenue forecasting visualization
+- [ ] Goal tracking and performance metrics
+- [ ] Territory coverage analysis
+
+## Inventory Management Requirements
+
+### 1. Armadillo Inventory System
+- [ ] Parts and materials inventory tracking
+- [ ] Stock level monitoring with thresholds
+- [ ] Supplier management
+- [ ] Usage tracking by job
+- [ ] Inventory valuation and reporting
+- [ ] Barcode/QR code integration
+
+### 2. Scavenger Materials Tracking
+- [ ] Recovered materials inventory
+- [ ] Material classification and grading
+- [ ] Storage location management
+- [ ] Chain of custody documentation
+- [ ] Material valuation based on market rates
+- [ ] Hazardous material handling procedures
+
+## Financial Tracking
+
+### 1. Invoice Management
+- [ ] Automated invoice generation from jobs
+- [ ] Time and materials billing
+- [ ] Payment tracking and reconciliation
+- [ ] Client-specific pricing rules
+- [ ] Tax calculation and reporting
+- [ ] Accounts receivable aging
+
+### 2. Expense Management
+- [ ] Purchase order creation and approval
+- [ ] Invoice tracking and payment status
+- [ ] Budget allocation and tracking
+- [ ] Receipt management
+- [ ] Approval workflows
+- [ ] Cost center analysis
+
+## Administrative Features
+
+### 1. User Management
+- [x] User account administration
+- [x] Role-based permissions
+- [x] Portal access control
+- [ ] Activity logging and audit trail
+- [ ] Password policy enforcement
+- [ ] Multi-factor authentication options
+
+### 2. System Configuration
+- [x] Basic division settings
+- [x] Report template configuration
+- [x] Workflow state definitions
+- [ ] Notification rule configuration
+- [ ] Custom field creation
+- [ ] Form builder for custom data collection
+
+## Technical Requirements
+
+### 1. Architecture
+- [x] React SPA with react-router-dom
+- [x] Supabase backend integration
+- [x] Context-based state management
+- [ ] Responsive design for mobile access
+- [ ] Progressive web app capabilities
+- [ ] Offline mode for field operations
+
+### 2. Security
+- [x] Role-based access control
+- [x] Authentication via Supabase Auth
+- [x] Protected routes requiring authentication
+- [ ] Data encryption for sensitive information
+- [ ] Session management and timeouts
+- [ ] IP restrictions and access controls
+
+### 3. Data Model
+- [x] Structured schemas (common, neta_ops, business)
+- [x] Relational data with foreign key relationships
+- [x] File storage integration
+- [ ] Data archiving strategy
+- [ ] Historical data tracking
+- [ ] Audit logging for data changes
+
+### 4. Integration Capabilities
+- [ ] API endpoints for third-party integration
+- [ ] Webhook support for external notifications
+- [ ] Import/export functionality for bulk data
+- [ ] Calendar integration (iCal, Google Calendar)
+- [ ] Email integration for notifications
+- [ ] Mobile app integration for field use
+
+## Reporting and Analytics
+
+### 1. Dashboard Capabilities
+- [x] Basic operational dashboards
+- [ ] Executive dashboard with cross-portal KPIs
+- [ ] Customizable dashboard widgets
+- [ ] Interactive data visualization
+- [ ] Drill-down capabilities
+- [ ] Export options for reports
+
+### 2. Analytics Features
+- [ ] Custom report builder
+- [ ] Scheduled report generation
+- [ ] Trend analysis and forecasting
+- [ ] Performance benchmarking
+- [ ] Data mining capabilities
+- [ ] Business intelligence integration
+
+## Implementation Phases
+
+### Phase 1: Core Framework (Completed)
+- [x] Authentication and user management
+- [x] Basic portal structure and navigation
+- [x] Customer, job, and opportunity tracking
+- [x] Technical reporting templates
+
+### Phase 2: Enhanced Functionality (In Progress)
+- [ ] Advanced sales and CRM features
+- [ ] Enhanced reporting and analytics
+- [ ] Document management system
+- [ ] Financial tracking and invoicing
+- [ ] Mobile-responsive interfaces
+
+### Phase 3: Specialized Portals (Planned)
+- [ ] Armadillo portal implementation
+- [ ] Scavenger portal implementation
+- [ ] Office administration portal
+- [ ] Cross-portal integration
+- [ ] Advanced analytics and business intelligence
