@@ -37,7 +37,7 @@ export default function EngineeringDashboard() {
     <PageLayout
       title="Engineering Portal"
       subtitle="Design management, technical documentation, and standards compliance"
-      actions={<Badge className="!bg-[#f26722] !text-white">Engineering</Badge>}
+      actions={<Badge className="!bg-accent-color !text-white">Engineering</Badge>}
     >
       {/* Quick Actions Section */}
       <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -75,12 +75,12 @@ export default function EngineeringDashboard() {
           </Link>
         </Card>
         
-        <Card className="hover:shadow-md hover:border-orange-200 transition-all cursor-pointer">
+        <Card className="hover:shadow-md hover:border-accent-color/30 transition-all cursor-pointer">
           <Link to="/engineering/standards" className="block p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <div className="p-2 bg-orange-50 rounded-full mr-3">
-                  <FileCode className="h-5 w-5 text-orange-500" />
+                <div className="p-2 bg-accent-color/10 rounded-full mr-3">
+                  <FileCode className="h-5 w-5 text-accent-color" />
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-900">Standards & Compliance</h3>
@@ -227,7 +227,7 @@ export default function EngineeringDashboard() {
                 </div>
               </li>
               <li className="flex items-start">
-                <div className="p-1.5 rounded-full bg-orange-50 text-orange-500 mr-3 mt-0.5">
+                <div className="p-1.5 rounded-full bg-accent-color/10 text-accent-color mr-3 mt-0.5">
                   <FileCode className="h-3.5 w-3.5" />
                 </div>
                 <div>

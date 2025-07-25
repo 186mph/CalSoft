@@ -658,7 +658,7 @@ const PanelboardReport: React.FC = () => {
                 value={formData.identifier}
                 onChange={(e) => handleChange(null, 'identifier', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 placeholder="Enter Identifier"
               />
             </div>
@@ -671,7 +671,7 @@ const PanelboardReport: React.FC = () => {
                 value={formData.technicians}
                 onChange={(e) => handleChange(null, 'technicians', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -681,7 +681,7 @@ const PanelboardReport: React.FC = () => {
                 value={formData.substation}
                 onChange={(e) => handleChange(null, 'substation', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -691,7 +691,7 @@ const PanelboardReport: React.FC = () => {
                 value={formData.eqptLocation}
                 onChange={(e) => handleChange(null, 'eqptLocation', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -701,7 +701,7 @@ const PanelboardReport: React.FC = () => {
                 value={formData.date}
                 onChange={(e) => handleChange(null, 'date', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -711,7 +711,7 @@ const PanelboardReport: React.FC = () => {
                 value={formData.userName}
                 onChange={(e) => handleChange(null, 'userName', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 placeholder="Enter User Name"
               />
             </div>
@@ -723,7 +723,7 @@ const PanelboardReport: React.FC = () => {
                   value={formData.temperature.fahrenheit}
                   onChange={(e) => handleFahrenheitChange(Number(e.target.value))}
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
               </div>
               <div>
@@ -733,7 +733,7 @@ const PanelboardReport: React.FC = () => {
                   value={formData.temperature.celsius}
                   onChange={(e) => handleCelsiusChange(Number(e.target.value))}
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
               </div>
               <div>
@@ -762,7 +762,7 @@ const PanelboardReport: React.FC = () => {
                 value={formData.manufacturer}
                 onChange={(e) => handleChange(null, 'manufacturer', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -772,7 +772,7 @@ const PanelboardReport: React.FC = () => {
                 value={formData.catalogNumber}
                 onChange={(e) => handleChange(null, 'catalogNumber', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -782,7 +782,7 @@ const PanelboardReport: React.FC = () => {
                 value={formData.serialNumber}
                 onChange={(e) => handleChange(null, 'serialNumber', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -792,7 +792,7 @@ const PanelboardReport: React.FC = () => {
                 value={formData.type}
                 onChange={(e) => handleChange(null, 'type', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
           </div>
@@ -804,7 +804,7 @@ const PanelboardReport: React.FC = () => {
                 value={formData.systemVoltage}
                 onChange={(e) => handleChange(null, 'systemVoltage', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -814,7 +814,7 @@ const PanelboardReport: React.FC = () => {
                 value={formData.ratedVoltage}
                 onChange={(e) => handleChange(null, 'ratedVoltage', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -824,7 +824,7 @@ const PanelboardReport: React.FC = () => {
                 value={formData.ratedCurrent}
                 onChange={(e) => handleChange(null, 'ratedCurrent', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -834,7 +834,7 @@ const PanelboardReport: React.FC = () => {
                 value={formData.phaseConfiguration}
                 onChange={(e) => handleChange(null, 'phaseConfiguration', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
           </div>
@@ -868,7 +868,7 @@ const PanelboardReport: React.FC = () => {
                         setFormData({ ...formData, visualInspectionItems: newItems });
                       }}
                       disabled={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     >
                       {visualInspectionOptions.map(option => (
                         <option key={option} value={option}>{option}</option>
@@ -885,7 +885,7 @@ const PanelboardReport: React.FC = () => {
                         setFormData({ ...formData, visualInspectionItems: newItems });
                       }}
                       readOnly={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     />
                   </td>
                 </tr>
@@ -911,7 +911,7 @@ const PanelboardReport: React.FC = () => {
                 setFormData({ ...formData, insulationResistanceTests: newTests });
               }}
               disabled={!isEditing}
-              className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             >
               <option value="">Select...</option>
               <option value="250V">250V</option>
@@ -955,7 +955,7 @@ const PanelboardReport: React.FC = () => {
                         setFormData({ ...formData, insulationResistanceTests: newTests });
                       }}
                       readOnly={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     />
                   </td>
                 ))}
@@ -968,7 +968,7 @@ const PanelboardReport: React.FC = () => {
                       setFormData({ ...formData, insulationResistanceTests: newTests });
                     }}
                     disabled={!isEditing}
-                    className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                   >
                     {insulationResistanceUnits.map(unit => (
                       <option key={unit.symbol} value={unit.symbol}>{unit.symbol}</option>
@@ -1047,7 +1047,7 @@ const PanelboardReport: React.FC = () => {
                 setFormData(prev => ({ ...prev, contactResistanceTests: newTests }));
               }}
               disabled={!isEditing}
-              className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             >
               <option value="">Select...</option>
               <option value="250V">250V</option>
@@ -1087,7 +1087,7 @@ const PanelboardReport: React.FC = () => {
                           setFormData(prev => ({ ...prev, contactResistanceTests: newTests }));
                         }}
                         readOnly={!isEditing}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                   ))}
@@ -1100,7 +1100,7 @@ const PanelboardReport: React.FC = () => {
                         setFormData(prev => ({ ...prev, contactResistanceTests: newTests }));
                       }}
                       disabled={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     >
                       {contactResistanceUnits.map(unit => (
                         <option key={unit.symbol} value={unit.symbol} className="dark:bg-dark-100 dark:text-white">{unit.symbol}</option>
@@ -1126,7 +1126,7 @@ const PanelboardReport: React.FC = () => {
                 value={formData.testEquipment.megohmmeter.name}
                 onChange={(e) => handleNestedChange('testEquipment', 'megohmmeter', 'name', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1136,7 +1136,7 @@ const PanelboardReport: React.FC = () => {
                 value={formData.testEquipment.megohmmeter.serialNumber}
                 onChange={(e) => handleNestedChange('testEquipment', 'megohmmeter', 'serialNumber', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1146,7 +1146,7 @@ const PanelboardReport: React.FC = () => {
                 value={formData.testEquipment.megohmmeter.ampId}
                 onChange={(e) => handleNestedChange('testEquipment', 'megohmmeter', 'ampId', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
           </div>
@@ -1161,7 +1161,7 @@ const PanelboardReport: React.FC = () => {
           onChange={(e) => handleChange(null, 'comments', e.target.value)}
           readOnly={!isEditing}
           rows={4}
-          className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+          className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
         />
       </div>
     </div>

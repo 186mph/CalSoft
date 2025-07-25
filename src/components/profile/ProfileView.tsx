@@ -415,7 +415,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     return (
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div className="bg-white dark:bg-dark-100 rounded-xl p-8 flex items-center gap-3">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#f26722]"></div>
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent-color"></div>
           <p className="text-gray-600 dark:text-gray-300">Loading profile...</p>
         </div>
       </div>
@@ -565,7 +565,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{name || 'Anonymous User'}</h1>
                 {role && (
-                  <div className="mt-1 inline-flex items-center rounded-full bg-[#f26722]/10 px-2.5 py-0.5 text-xs font-medium text-[#f26722]">
+                  <div className="mt-1 inline-flex items-center rounded-full bg-accent-color/10 px-2.5 py-0.5 text-xs font-medium text-accent-color">
                     {role}
                   </div>
                 )}
@@ -609,7 +609,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       <Mail className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
                       <div>
                         <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
-                        <a href={`mailto:${profileUser.email}`} className="text-[#f26722] hover:underline">
+                        <a href={`mailto:${profileUser.email}`} className="text-accent-color hover:underline">
                           {profileUser.email}
                         </a>
                       </div>

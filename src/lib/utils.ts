@@ -156,4 +156,85 @@ export function formatUUID(uuid: string): string {
   
   // Return the UUID with proper SQL single quotes
   return `'${cleanUuid}'`;
+}
+
+/**
+ * Check if a division should use the lab_ops schema
+ */
+export function isLabDivision(division?: string | null): boolean {
+  if (!division) return false;
+  const labDivisions = ['calibration', 'lab'];
+  return labDivisions.includes(division.toLowerCase());
+}
+
+/**
+ * Get the accent color for a specific division
+ */
+export function getDivisionAccentColor(division: string | null): string {
+  if (division === 'calibration') {
+    return '#339C5E'; // Green for Calibration Division
+  }
+  return '#f26722'; // Default orange for all other divisions
+}
+
+/**
+ * Get the hover accent color for a specific division
+ */
+export function getDivisionAccentColorHover(division: string | null): string {
+  if (division === 'calibration') {
+    return '#2d8a54'; // Darker green for hover state
+  }
+  return '#e55611'; // Default orange hover for all other divisions
+}
+
+/**
+ * Get Tailwind classes for division-specific accent colors
+ */
+export function getDivisionAccentClasses(division: string | null): {
+  bg: string;
+  bgHover: string;
+  text: string;
+  textHover: string;
+  border: string;
+  ring: string;
+} {
+  if (division === 'calibration') {
+    return {
+      bg: 'bg-[#339C5E]',
+      bgHover: 'hover:bg-[#2d8a54]',
+      text: 'text-[#339C5E]',
+      textHover: 'hover:text-[#2d8a54]',
+      border: 'border-[#339C5E]',
+      ring: 'focus:ring-[#339C5E]'
+    };
+  }
+  
+  return {
+    bg: 'bg-[#f26722]',
+    bgHover: 'hover:bg-[#e55611]',
+    text: 'text-[#f26722]',
+    textHover: 'hover:text-[#f26722]/90',
+    border: 'border-[#f26722]',
+    ring: 'focus:ring-[#f26722]'
+  };
+}
+
+/**
+ * Get division-aware hover classes for sidebar navigation items
+ */
+export function getDivisionHoverClasses(division: string | null): string {
+  if (division === 'calibration') {
+    return 'hover:bg-[#339C5E]/10 dark:hover:bg-[#339C5E]/20'; // Green hover for Calibration
+  }
+  return 'hover:bg-black/5 dark:hover:bg-dark-50'; // Default gray hover for all other divisions
+}
+
+/**
+ * Get division-aware active classes for sidebar navigation items
+ */
+export function getDivisionActiveClasses(division: string | null): string {
+  if (division === 'calibration') {
+    return 'bg-[#339C5E]/10 dark:bg-[#339C5E]/20'; // Green active state for Calibration
+  }
+  return 'bg-black/5 dark:bg-dark-50'; // Default gray active state for all other divisions
 } 

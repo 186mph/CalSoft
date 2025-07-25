@@ -116,7 +116,7 @@ export default function ContactDetail() {
             Back
           </button>
           <div className="flex items-center">
-            <Users className="h-8 w-8 text-[#f26722]" />
+            <Users className="h-8 w-8 text-accent-color" />
             <h1 className="ml-3 text-2xl font-semibold text-gray-900 dark:text-white">
               {contact.first_name} {contact.last_name}
             </h1>
@@ -134,33 +134,33 @@ export default function ContactDetail() {
           <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Contact Information</h2>
           <div className="space-y-4">
             <div className="flex items-start">
-              <Mail className="h-5 w-5 text-[#f26722] mt-0.5" />
+              <Mail className="h-5 w-5 text-accent-color mt-0.5" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</p>
                 <a 
                   href={`mailto:${contact.email}`} 
-                  className="text-sm text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                  className="text-sm text-accent-color hover:text-accent-color/90 dark:text-accent-color dark:hover:text-accent-color/90"
                 >
                   {contact.email}
                 </a>
               </div>
             </div>
             <div className="flex items-start">
-              <Phone className="h-5 w-5 text-[#f26722] mt-0.5" />
+              <Phone className="h-5 w-5 text-accent-color mt-0.5" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</p>
                 <p className="text-sm text-gray-900 dark:text-white">{contact.phone || '-'}</p>
               </div>
             </div>
             <div className="flex items-start">
-              <Briefcase className="h-5 w-5 text-[#f26722] mt-0.5" />
+              <Briefcase className="h-5 w-5 text-accent-color mt-0.5" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Position</p>
                 <p className="text-sm text-gray-900 dark:text-white">{contact.position || '-'}</p>
               </div>
             </div>
             <div className="flex items-start">
-              <Calendar className="h-5 w-5 text-[#f26722] mt-0.5" />
+              <Calendar className="h-5 w-5 text-accent-color mt-0.5" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Created</p>
                 <p className="text-sm text-gray-900 dark:text-white">
@@ -180,10 +180,10 @@ export default function ContactDetail() {
             >
               <div className="space-y-4">
                 <div className="flex items-start">
-                  <Building2 className="h-5 w-5 text-[#f26722] mt-0.5" />
+                  <Building2 className="h-5 w-5 text-accent-color mt-0.5" />
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Company</p>
-                    <p className="text-sm text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90">
+                    <p className="text-sm text-accent-color hover:text-accent-color/90 dark:text-accent-color dark:hover:text-accent-color/90">
                       {customer.company_name || customer.name}
                     </p>
                   </div>

@@ -152,6 +152,31 @@ const LiquidXfmrVisualMTSReport = lazy(() => import('@/components/reports/Liquid
 // Import the new Two Small Dry Type Transformer ATS Report component
 const TwoSmallDryTyperXfmrATSReport = lazy(() => import('@/components/reports/TwoSmallDryTyperXfmrATSReport'));
 
+// Import Calibration Gloves Report
+import CalibrationGlovesReport from './components/reports/CalibrationGlovesReport';
+
+// Import Calibration Sleeve Report  
+import CalibrationSleeveReport from './components/reports/CalibrationSleeveReport';
+
+// Import remaining Calibration Reports
+import CalibrationBlanketReport from './components/reports/CalibrationBlanketReport';
+import CalibrationLineHoseReport from './components/reports/CalibrationLineHoseReport';
+import CalibrationHotstickReport from './components/reports/CalibrationHotstickReport';
+import CalibrationGroundCableReport from './components/reports/CalibrationGroundCableReport';
+import CalibrationBucketTruckReport from './components/reports/CalibrationBucketTruckReport';
+
+// Import Meter Template Report
+import MeterTemplateReport from './components/reports/MeterTemplateReport';
+
+// Import Calibration Jobs Page
+import CalibrationJobsPage from './app/calibration/jobs/page';
+
+// Import Calibration All Assets Page
+import CalibrationAllAssetsPage from './app/calibration/all-assets/page';
+
+// Import Calibration Deleted Assets Page
+import CalibrationDeletedAssetsPage from './app/calibration/deleted-assets/page';
+
 // --- Define Division Context --- Start
 interface DivisionContextType {
   division: string | null;
@@ -394,6 +419,11 @@ function App() {
                   <Route path="/armadillo/dashboard" element={<RequireAuth><Layout><ArmadilloDashboard /></Layout></RequireAuth>} />
                   <Route path="/scavenger/dashboard" element={<RequireAuth><Layout><ScavengerDashboard /></Layout></RequireAuth>} />
                   
+                  {/* === Specific Division Job Routes (must come before generic routes) === */}
+                  <Route path="/calibration/jobs" element={<RequireAuth><Layout><CalibrationJobsPage /></Layout></RequireAuth>} />
+                  <Route path="/calibration/all-assets" element={<RequireAuth><Layout><CalibrationAllAssetsPage /></Layout></RequireAuth>} />
+                  <Route path="/calibration/deleted-assets" element={<RequireAuth><Layout><CalibrationDeletedAssetsPage /></Layout></RequireAuth>} />
+                  
                   {/* Generic dashboard as fallback */}
                   <Route path="/:division/dashboard" element={<RequireAuth><Layout><Dashboard /></Layout></RequireAuth>} />
                   
@@ -472,6 +502,25 @@ function App() {
 
                   {/* Added route for Two Small Dry Type Transformer ATS Report */}
                   <Route path="/jobs/:id/two-small-dry-typer-xfmr-ats-report/:reportId?" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><TwoSmallDryTyperXfmrATSReport /></Suspense></Layout></RequireAuth>} />
+
+                  {/* Added route for Calibration Gloves Report */}
+                  <Route path="/jobs/:id/calibration-gloves/:reportId?" element={<RequireAuth><Layout><CalibrationGlovesReport /></Layout></RequireAuth>} />
+
+                  {/* Added route for Calibration Sleeve Report */}
+                  <Route path="/jobs/:id/calibration-sleeve/:reportId?" element={<RequireAuth><Layout><CalibrationSleeveReport /></Layout></RequireAuth>} />
+
+                  {/* Added routes for remaining calibration reports */}
+                  <Route path="/jobs/:id/calibration-blanket/:reportId?" element={<RequireAuth><Layout><CalibrationBlanketReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/calibration-line-hose/:reportId?" element={<RequireAuth><Layout><CalibrationLineHoseReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/calibration-hotstick/:reportId?" element={<RequireAuth><Layout><CalibrationHotstickReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/calibration-ground-cable/:reportId?" element={<RequireAuth><Layout><CalibrationGroundCableReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/calibration-bucket-truck/:reportId?" element={<RequireAuth><Layout><CalibrationBucketTruckReport /></Layout></RequireAuth>} />
+                  
+                  {/* Added route for Meter Template Report */}
+                  <Route path="/jobs/:id/meter-template/:reportId?" element={<RequireAuth><Layout><MeterTemplateReport /></Layout></RequireAuth>} />
+                  
+                  {/* Standalone route for editing meter templates */}
+                  <Route path="/meter-template/:templateId" element={<RequireAuth><Layout><MeterTemplateReport /></Layout></RequireAuth>} />
                 </Routes>
                 
                 {/* Persistent Chat Windows */}

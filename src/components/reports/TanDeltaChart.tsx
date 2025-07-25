@@ -292,7 +292,7 @@ const TanDeltaChart: React.FC = () => {
             <button
               onClick={handleSave}
               disabled={!isEditing}
-              className={`px-4 py-2 text-sm text-white bg-[#f26722] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] ${!isEditing ? 'hidden' : 'hover:bg-[#f26722]/90'}`}
+              className={`px-4 py-2 text-sm text-white bg-accent-color rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-color ${!isEditing ? 'hidden' : 'hover:bg-accent-color/90'}`}
             >
               Save Report
             </button>
@@ -516,14 +516,14 @@ const TanDeltaChart: React.FC = () => {
                 type="text"
                 value={equipment.megohmeterSerial}
                 onChange={(e) => handleEquipmentChange('megohmeterSerial', e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
               <input
                 type="text"
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white"
               />
             </div>
             <div>
@@ -532,7 +532,7 @@ const TanDeltaChart: React.FC = () => {
                 type="text"
                 value={equipment.megohmmeterAmpId}
                 onChange={(e) => handleEquipmentChange('megohmmeterAmpId', e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white"
               />
             </div>
           </div>
@@ -543,14 +543,14 @@ const TanDeltaChart: React.FC = () => {
                 type="text"
                 value={equipment.vlfHipotSerial}
                 onChange={(e) => handleEquipmentChange('vlfHipotSerial', e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
               <input
                 type="text"
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white"
               />
             </div>
             <div>
@@ -559,7 +559,7 @@ const TanDeltaChart: React.FC = () => {
                 type="text"
                 value={equipment.vlfHipotAmpId}
                 onChange={(e) => handleEquipmentChange('vlfHipotAmpId', e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white"
               />
             </div>
           </div>

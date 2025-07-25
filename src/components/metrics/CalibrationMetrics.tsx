@@ -3,6 +3,7 @@ import Card from '@/components/ui/Card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { Wrench, Users, Database } from 'lucide-react';
+import { getDivisionAccentColor } from '../../lib/utils';
 
 interface CalibrationMetricsProps {
   division: string;
@@ -21,6 +22,8 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
     { name: 'Q3', assets: 65, certifications: 61, completion: 94 },
     { name: 'Q4', assets: 70, certifications: 68, completion: 91 }
   ];
+
+  const accentColor = getDivisionAccentColor('calibration');
 
   // Could be enhanced to fetch real data from Supabase
   useEffect(() => {
@@ -95,7 +98,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="assets" name="Assets Calibrated" fill="#f26722" />
+                  <Bar dataKey="assets" name="Assets Calibrated" fill={accentColor} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -129,7 +132,7 @@ export function CalibrationMetrics({ division }: CalibrationMetricsProps) {
                   <YAxis domain={[85, 100]} />
                   <Tooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="completion" name="Completion %" stroke="#f26722" activeDot={{ r: 8 }} />
+                  <Line type="monotone" dataKey="completion" name="Completion %" stroke={accentColor} activeDot={{ r: 8 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>

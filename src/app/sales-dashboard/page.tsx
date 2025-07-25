@@ -271,7 +271,7 @@ export default function SalesDashboard() {
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card 
-          className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-[#f26722] dark:hover:border-amp-orange-600 transition-colors"
+          className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-accent-color dark:hover:border-amp-orange-600 transition-colors"
           onClick={() => setShowActiveOpportunities(true)}
         >
           <CardHeader className="flex flex-row items-center justify-between p-6">
@@ -284,7 +284,7 @@ export default function SalesDashboard() {
                 <CardDescription className="text-sm text-gray-500 dark:text-dark-400">Current pipeline</CardDescription>
               </div>
             </div>
-            <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Sales</Badge>
+            <Badge className="!bg-accent-color !text-white px-2.5 py-1 text-xs font-medium">Sales</Badge>
           </CardHeader>
           <CardContent className="px-6">
             <div className="text-2xl font-bold text-gray-900 dark:text-dark-900">
@@ -297,7 +297,7 @@ export default function SalesDashboard() {
         </Card>
 
         <Card 
-          className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-[#f26722] dark:hover:border-amp-orange-600 transition-colors"
+          className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-accent-color dark:hover:border-amp-orange-600 transition-colors"
           onClick={() => setShowValueChart(true)}
         >
           <CardHeader className="flex flex-row items-center justify-between p-6">
@@ -310,7 +310,7 @@ export default function SalesDashboard() {
                 <CardDescription className="text-sm text-gray-500 dark:text-dark-400">Total awarded value</CardDescription>
               </div>
             </div>
-            <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Sales</Badge>
+            <Badge className="!bg-accent-color !text-white px-2.5 py-1 text-xs font-medium">Sales</Badge>
           </CardHeader>
           <CardContent className="px-6">
             <div className="text-2xl font-bold text-gray-900 dark:text-dark-900">
@@ -323,7 +323,7 @@ export default function SalesDashboard() {
         </Card>
 
         <Card 
-          className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-[#f26722] dark:hover:border-amp-orange-600 transition-colors"
+          className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-accent-color dark:hover:border-amp-orange-600 transition-colors"
           onClick={() => navigate('/sales-dashboard/opportunities')}
         >
           <CardHeader className="flex flex-row items-center justify-between p-6">
@@ -336,7 +336,7 @@ export default function SalesDashboard() {
                 <CardDescription className="text-sm text-gray-500 dark:text-dark-400">This month</CardDescription>
               </div>
             </div>
-            <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Sales</Badge>
+            <Badge className="!bg-accent-color !text-white px-2.5 py-1 text-xs font-medium">Sales</Badge>
           </CardHeader>
           <CardContent className="px-6">
             <div className="text-2xl font-bold text-gray-900 dark:text-dark-900">
@@ -349,20 +349,20 @@ export default function SalesDashboard() {
         </Card>
 
         <Card 
-          className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-[#f26722] dark:hover:border-amp-orange-600 transition-colors"
+          className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-accent-color dark:hover:border-amp-orange-600 transition-colors"
           onClick={() => navigate('/sales-dashboard/opportunities')}
         >
           <CardHeader className="flex flex-row items-center justify-between p-6">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-full bg-orange-50 dark:bg-orange-900/50">
-                <Calendar className="h-5 w-5 text-orange-500 dark:text-orange-400" />
+              <div className="p-2.5 rounded-full bg-accent-color/10 dark:bg-orange-900/50">
+                <Calendar className="h-5 w-5 text-accent-color dark:text-orange-400" />
               </div>
               <div>
                 <CardTitle className="text-base font-medium text-gray-900 dark:text-dark-900">Win Rate</CardTitle>
                 <CardDescription className="text-sm text-gray-500 dark:text-dark-400">Last 30 days</CardDescription>
               </div>
             </div>
-            <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Sales</Badge>
+            <Badge className="!bg-accent-color !text-white px-2.5 py-1 text-xs font-medium">Sales</Badge>
           </CardHeader>
           <CardContent className="px-6">
             <div className="text-2xl font-bold text-gray-900 dark:text-dark-900">
@@ -376,7 +376,7 @@ export default function SalesDashboard() {
 
         {/* New card for revenue forecast */}
         <Card 
-          className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-[#f26722] dark:hover:border-amp-orange-600 transition-colors"
+          className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-accent-color dark:hover:border-amp-orange-600 transition-colors"
           onClick={() => setShowForecastChart(true)}
         >
           <CardHeader className="flex flex-row items-center justify-between p-6">
@@ -389,7 +389,7 @@ export default function SalesDashboard() {
                 <CardDescription className="text-sm text-gray-500 dark:text-dark-400">Next 6 months</CardDescription>
               </div>
             </div>
-            <Badge className="!bg-[#f26722] !text-white px-2.5 py-1 text-xs font-medium">Forecast</Badge>
+            <Badge className="!bg-accent-color !text-white px-2.5 py-1 text-xs font-medium">Forecast</Badge>
           </CardHeader>
           <CardContent className="px-6">
             <div className="text-2xl font-bold text-gray-900 dark:text-dark-900">
@@ -441,7 +441,7 @@ export default function SalesDashboard() {
                   {activeOpportunities.map((opp) => (
                     <div
                       key={opp.id}
-                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-[#f26722] dark:hover:border-[#f26722] cursor-pointer transition-colors bg-white dark:bg-dark-150"
+                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-accent-color dark:hover:border-accent-color cursor-pointer transition-colors bg-white dark:bg-dark-150"
                       onClick={() => {
                         setShowActiveOpportunities(false);
                         navigate(`/sales-dashboard/opportunities/${opp.id}`);
@@ -456,7 +456,7 @@ export default function SalesDashboard() {
                             {opp.customers?.company_name || 'No company'}
                           </p>
                         </div>
-                        <Badge className="!bg-[#f26722] !text-white">
+                        <Badge className="!bg-accent-color !text-white">
                           ${((opp.expected_value || 0) / 1000).toFixed(1)}k
                         </Badge>
                       </div>
@@ -474,7 +474,7 @@ export default function SalesDashboard() {
             <div className="mt-6 flex justify-end">
               <button
                 type="button"
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-white bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-white bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2"
                 onClick={() => setShowActiveOpportunities(false)}
               >
                 Close
@@ -528,7 +528,7 @@ export default function SalesDashboard() {
             <div className="mt-6 flex justify-end">
               <button
                 type="button"
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-white bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-white bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2"
                 onClick={() => setShowValueChart(false)}
               >
                 Close
@@ -589,7 +589,7 @@ export default function SalesDashboard() {
             <div className="mt-6 flex justify-end">
               <button
                 type="button"
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-white bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-white bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2"
                 onClick={() => setShowForecastChart(false)}
               >
                 Close
@@ -606,7 +606,7 @@ export default function SalesDashboard() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
           <Card 
-            className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-[#f26722] dark:hover:border-amp-orange-600 transition-colors" 
+            className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-accent-color dark:hover:border-amp-orange-600 transition-colors" 
             onClick={() => navigate('/sales-dashboard/opportunities')}
           >
             <CardHeader className="p-6">
@@ -623,7 +623,7 @@ export default function SalesDashboard() {
           </Card>
 
           <Card 
-            className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-[#f26722] dark:hover:border-amp-orange-600 transition-colors" 
+            className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-accent-color dark:hover:border-amp-orange-600 transition-colors" 
             onClick={() => navigate('/sales-dashboard/customers')}
           >
             <CardHeader className="p-6">
@@ -640,7 +640,7 @@ export default function SalesDashboard() {
           </Card>
 
           <Card 
-            className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-[#f26722] dark:hover:border-amp-orange-600 transition-colors" 
+            className="border border-gray-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-accent-color dark:hover:border-amp-orange-600 transition-colors" 
             onClick={() => navigate('/sales-dashboard/contacts')}
           >
             <CardHeader className="p-6">

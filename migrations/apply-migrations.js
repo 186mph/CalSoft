@@ -29,7 +29,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Path to migrations directory
-const migrationsDir = path.join(__dirname, 'supabase', 'migrations');
+const migrationsDir = path.join(__dirname, '..', 'supabase', 'migrations');
 
 // Add this to the migrations array
 const migrations = [

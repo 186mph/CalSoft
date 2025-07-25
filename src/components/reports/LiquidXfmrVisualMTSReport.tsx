@@ -496,7 +496,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-[#f26722]"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-accent-color"></div>
       </div>
     );
   }
@@ -542,7 +542,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
             <button
               onClick={handleSave}
               disabled={!isEditing}
-              className="bg-[#f26722] hover:bg-[#e55611] text-white font-medium px-4 py-2 rounded-md disabled:opacity-50"
+              className="bg-accent-color hover:bg-accent-color-hover text-white font-medium px-4 py-2 rounded-md disabled:opacity-50"
             >
               {reportId ? 'Update Report' : 'Save Report'}
             </button>
@@ -566,16 +566,16 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">User:</label>
-              <input type="text" value={formData.user} onChange={e => handleChange('user', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+              <input type="text" value={formData.user} onChange={e => handleChange('user', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
             </div>
              <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Identifier:</label>
-              <input type="text" value={formData.identifier} onChange={e => handleChange('identifier', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} placeholder="Transformer ID / Name" />
+              <input type="text" value={formData.identifier} onChange={e => handleChange('identifier', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} placeholder="Transformer ID / Name" />
             </div>
             <div className="grid grid-cols-4 gap-2 items-end">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Temp (°F):</label>
-                <input type="number" value={formData.temperature.fahrenheit} onChange={e => handleFahrenheitChange(parseFloat(e.target.value))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+                <input type="number" value={formData.temperature.fahrenheit} onChange={e => handleFahrenheitChange(parseFloat(e.target.value))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">°C:</label>
@@ -587,7 +587,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Humidity (%):</label>
-                <input type="text" value={formData.temperature.humidity} onChange={e => handleChange('temperature.humidity', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+                <input type="text" value={formData.temperature.humidity} onChange={e => handleChange('temperature.humidity', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
               </div>
             </div>
           </div>
@@ -599,19 +599,19 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Technicians:</label>
-              <input type="text" value={formData.technicians} onChange={e => handleChange('technicians', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+              <input type="text" value={formData.technicians} onChange={e => handleChange('technicians', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date:</label>
-              <input type="date" value={formData.date} onChange={e => handleChange('date', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+              <input type="date" value={formData.date} onChange={e => handleChange('date', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Substation:</label>
-              <input type="text" value={formData.substation} onChange={e => handleChange('substation', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+              <input type="text" value={formData.substation} onChange={e => handleChange('substation', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Eqpt. Location:</label>
-              <input type="text" value={formData.eqptLocation} onChange={e => handleChange('eqptLocation', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+              <input type="text" value={formData.eqptLocation} onChange={e => handleChange('eqptLocation', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
             </div>
           </div>
         </div>
@@ -624,37 +624,37 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
           {/* Column 1 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer:</label>
-            <input type="text" value={formData.nameplate.manufacturer} onChange={e => handleChange('nameplate.manufacturer', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+            <input type="text" value={formData.nameplate.manufacturer} onChange={e => handleChange('nameplate.manufacturer', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">KVA:</label>
-            <input type="text" value={formData.nameplate.kVA} onChange={e => handleChange('nameplate.kVA', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+            <input type="text" value={formData.nameplate.kVA} onChange={e => handleChange('nameplate.kVA', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
           </div>
            <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Fluid Type:</label>
-            <input type="text" value={formData.nameplate.fluidType} onChange={e => handleChange('nameplate.fluidType', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+            <input type="text" value={formData.nameplate.fluidType} onChange={e => handleChange('nameplate.fluidType', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
           </div>
           {/* Column 2 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Catalog Number:</label>
-            <input type="text" value={formData.nameplate.catalogNumber} onChange={e => handleChange('nameplate.catalogNumber', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+            <input type="text" value={formData.nameplate.catalogNumber} onChange={e => handleChange('nameplate.catalogNumber', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Temp. Rise (°C):</label>
-            <input type="text" value={formData.nameplate.tempRise} onChange={e => handleChange('nameplate.tempRise', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+            <input type="text" value={formData.nameplate.tempRise} onChange={e => handleChange('nameplate.tempRise', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
           </div>
            <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Fluid Volume (gal):</label>
-            <input type="text" value={formData.nameplate.fluidVolume} onChange={e => handleChange('nameplate.fluidVolume', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+            <input type="text" value={formData.nameplate.fluidVolume} onChange={e => handleChange('nameplate.fluidVolume', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
           </div>
           {/* Column 3 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number:</label>
-            <input type="text" value={formData.nameplate.serialNumber} onChange={e => handleChange('nameplate.serialNumber', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+            <input type="text" value={formData.nameplate.serialNumber} onChange={e => handleChange('nameplate.serialNumber', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Impedance (%):</label>
-            <input type="text" value={formData.nameplate.impedance} onChange={e => handleChange('nameplate.impedance', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+            <input type="text" value={formData.nameplate.impedance} onChange={e => handleChange('nameplate.impedance', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
           </div>
         </div>
         
@@ -669,35 +669,35 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                 {/* Primary Row */}
                 <div className="text-sm font-medium text-gray-700 dark:text-white border-b dark:border-gray-700">Primary</div>
                 <div className="flex justify-center items-center space-x-2">
-                    <input type="text" value={formData.nameplate.primaryVolts1} onChange={e => handleChange('nameplate.primaryVolts1', e.target.value)} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+                    <input type="text" value={formData.nameplate.primaryVolts1} onChange={e => handleChange('nameplate.primaryVolts1', e.target.value)} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
                     <span className="text-gray-500 dark:text-gray-400">/</span>
-                    <input type="text" value={formData.nameplate.primaryVolts2} onChange={e => handleChange('nameplate.primaryVolts2', e.target.value)} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+                    <input type="text" value={formData.nameplate.primaryVolts2} onChange={e => handleChange('nameplate.primaryVolts2', e.target.value)} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
                 </div>
                 <div className="flex justify-center space-x-4">
-                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.primaryConnectionDelta} onChange={() => handleCheckboxChange('nameplate', 'primaryConnectionDelta')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-600 focus:ring-[#f26722]" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Delta</span></label>
-                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.primaryConnectionWye} onChange={() => handleCheckboxChange('nameplate', 'primaryConnectionWye')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-600 focus:ring-[#f26722]" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Wye</span></label>
-                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.primaryConnectionSinglePhase} onChange={() => handleCheckboxChange('nameplate', 'primaryConnectionSinglePhase')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-600 focus:ring-[#f26722]" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Single Phase</span></label>
+                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.primaryConnectionDelta} onChange={() => handleCheckboxChange('nameplate', 'primaryConnectionDelta')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-accent-color border-gray-300 dark:border-gray-600 focus:ring-accent-color" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Delta</span></label>
+                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.primaryConnectionWye} onChange={() => handleCheckboxChange('nameplate', 'primaryConnectionWye')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-accent-color border-gray-300 dark:border-gray-600 focus:ring-accent-color" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Wye</span></label>
+                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.primaryConnectionSinglePhase} onChange={() => handleCheckboxChange('nameplate', 'primaryConnectionSinglePhase')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-accent-color border-gray-300 dark:border-gray-600 focus:ring-accent-color" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Single Phase</span></label>
                 </div>
                  <div className="flex justify-center space-x-4">
-                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.primaryWindingMaterialAluminum} onChange={() => handleCheckboxChange('nameplate', 'primaryWindingMaterialAluminum')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-600 focus:ring-[#f26722]" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Aluminum</span></label>
-                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.primaryWindingMaterialCopper} onChange={() => handleCheckboxChange('nameplate', 'primaryWindingMaterialCopper')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-600 focus:ring-[#f26722]" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Copper</span></label>
+                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.primaryWindingMaterialAluminum} onChange={() => handleCheckboxChange('nameplate', 'primaryWindingMaterialAluminum')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-accent-color border-gray-300 dark:border-gray-600 focus:ring-accent-color" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Aluminum</span></label>
+                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.primaryWindingMaterialCopper} onChange={() => handleCheckboxChange('nameplate', 'primaryWindingMaterialCopper')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-accent-color border-gray-300 dark:border-gray-600 focus:ring-accent-color" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Copper</span></label>
                 </div>
 
                 {/* Secondary Row */}
                 <div className="text-sm font-medium text-gray-700 dark:text-white border-b dark:border-gray-700">Secondary</div>
                  <div className="flex justify-center items-center space-x-2">
-                    <input type="text" value={formData.nameplate.secondaryVolts1} onChange={e => handleChange('nameplate.secondaryVolts1', e.target.value)} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+                    <input type="text" value={formData.nameplate.secondaryVolts1} onChange={e => handleChange('nameplate.secondaryVolts1', e.target.value)} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
                     <span className="text-gray-500 dark:text-gray-400">/</span>
-                    <input type="text" value={formData.nameplate.secondaryVolts2} onChange={e => handleChange('nameplate.secondaryVolts2', e.target.value)} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+                    <input type="text" value={formData.nameplate.secondaryVolts2} onChange={e => handleChange('nameplate.secondaryVolts2', e.target.value)} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
                 </div>
                 <div className="flex justify-center space-x-4">
-                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.secondaryConnectionDelta} onChange={() => handleCheckboxChange('nameplate', 'secondaryConnectionDelta')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-600 focus:ring-[#f26722]" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Delta</span></label>
-                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.secondaryConnectionWye} onChange={() => handleCheckboxChange('nameplate', 'secondaryConnectionWye')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-600 focus:ring-[#f26722]" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Wye</span></label>
-                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.secondaryConnectionSinglePhase} onChange={() => handleCheckboxChange('nameplate', 'secondaryConnectionSinglePhase')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-600 focus:ring-[#f26722]" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Single Phase</span></label>
+                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.secondaryConnectionDelta} onChange={() => handleCheckboxChange('nameplate', 'secondaryConnectionDelta')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-accent-color border-gray-300 dark:border-gray-600 focus:ring-accent-color" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Delta</span></label>
+                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.secondaryConnectionWye} onChange={() => handleCheckboxChange('nameplate', 'secondaryConnectionWye')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-accent-color border-gray-300 dark:border-gray-600 focus:ring-accent-color" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Wye</span></label>
+                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.secondaryConnectionSinglePhase} onChange={() => handleCheckboxChange('nameplate', 'secondaryConnectionSinglePhase')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-accent-color border-gray-300 dark:border-gray-600 focus:ring-accent-color" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Single Phase</span></label>
                 </div>
                 <div className="flex justify-center space-x-4">
-                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.secondaryWindingMaterialAluminum} onChange={() => handleCheckboxChange('nameplate', 'secondaryWindingMaterialAluminum')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-600 focus:ring-[#f26722]" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Aluminum</span></label>
-                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.secondaryWindingMaterialCopper} onChange={() => handleCheckboxChange('nameplate', 'secondaryWindingMaterialCopper')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-600 focus:ring-[#f26722]" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Copper</span></label>
+                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.secondaryWindingMaterialAluminum} onChange={() => handleCheckboxChange('nameplate', 'secondaryWindingMaterialAluminum')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-accent-color border-gray-300 dark:border-gray-600 focus:ring-accent-color" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Aluminum</span></label>
+                    <label className="inline-flex items-center"><input type="checkbox" checked={formData.nameplate.secondaryWindingMaterialCopper} onChange={() => handleCheckboxChange('nameplate', 'secondaryWindingMaterialCopper')} disabled={!isEditing} className="form-checkbox h-4 w-4 text-accent-color border-gray-300 dark:border-gray-600 focus:ring-accent-color" /> <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Copper</span></label>
                 </div>
             </div>
         </div>
@@ -716,7 +716,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     value={voltage}
                     onChange={e => { const newTaps = [...formData.nameplate.tapVoltages]; newTaps[index] = e.target.value; handleChange('nameplate.tapVoltages', newTaps); }}
                     readOnly={!isEditing}
-                    className={`w-full text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`}
+                    className={`w-full text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`}
                     placeholder={index > 4 ? '-' : ''}
                   />
                 ))}
@@ -742,7 +742,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     value={posValue}
                     onChange={e => { const newTaps = [...formData.nameplate.tapPositions]; newTaps[index] = e.target.value; handleChange('nameplate.tapPositions', newTaps); }}
                     readOnly={!isEditing}
-                    className={`w-full text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`}
+                    className={`w-full text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`}
                   />
                 ))}
               </div>
@@ -751,17 +751,17 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
             <div className="flex items-center pt-2">
               <label className="w-32 text-sm font-medium text-gray-700 dark:text-gray-300">Tap Position Left</label>
               <div className="flex items-center space-x-2">
-                <input type="text" value={formData.nameplate.tapPositionLeft1} onChange={e => handleChange('nameplate.tapPositionLeft1', e.target.value)} readOnly={!isEditing} className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+                <input type="text" value={formData.nameplate.tapPositionLeft1} onChange={e => handleChange('nameplate.tapPositionLeft1', e.target.value)} readOnly={!isEditing} className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
                 <span className="text-gray-500 dark:text-gray-400">/</span>
-                <input type="text" value={formData.nameplate.tapPositionLeft2} onChange={e => handleChange('nameplate.tapPositionLeft2', e.target.value)} readOnly={!isEditing} className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+                <input type="text" value={formData.nameplate.tapPositionLeft2} onChange={e => handleChange('nameplate.tapPositionLeft2', e.target.value)} readOnly={!isEditing} className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
               </div>
               <div className="flex items-center space-x-2 ml-8">
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Volts</span>
-                <input type="text" value={formData.nameplate.tapVoltsSpecific} onChange={e => handleChange('nameplate.tapVoltsSpecific', e.target.value)} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+                <input type="text" value={formData.nameplate.tapVoltsSpecific} onChange={e => handleChange('nameplate.tapVoltsSpecific', e.target.value)} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
               </div>
               <div className="flex items-center space-x-2 ml-8">
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Percent</span>
-                <input type="text" value={formData.nameplate.tapPercentSpecific} onChange={e => handleChange('nameplate.tapPercentSpecific', e.target.value)} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+                <input type="text" value={formData.nameplate.tapPercentSpecific} onChange={e => handleChange('nameplate.tapPercentSpecific', e.target.value)} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
               </div>
             </div>
           </div>
@@ -774,27 +774,27 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
             <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Oil Level:</label>
-                <input type="text" value={formData.indicatorGaugeValues.oilLevel} onChange={e => handleChange('indicatorGaugeValues.oilLevel', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+                <input type="text" value={formData.indicatorGaugeValues.oilLevel} onChange={e => handleChange('indicatorGaugeValues.oilLevel', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
             </div>
             <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Oil Temperature (°C):</label>
-                <input type="text" value={formData.indicatorGaugeValues.oilTemperature} onChange={e => handleChange('indicatorGaugeValues.oilTemperature', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+                <input type="text" value={formData.indicatorGaugeValues.oilTemperature} onChange={e => handleChange('indicatorGaugeValues.oilTemperature', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
             </div>
              <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Oil Temp. Range:</label>
-                <input type="text" value={formData.indicatorGaugeValues.oilTempRange} onChange={e => handleChange('indicatorGaugeValues.oilTempRange', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+                <input type="text" value={formData.indicatorGaugeValues.oilTempRange} onChange={e => handleChange('indicatorGaugeValues.oilTempRange', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
             </div>
             <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tank Pressure:</label>
-                <input type="text" value={formData.indicatorGaugeValues.tankPressure} onChange={e => handleChange('indicatorGaugeValues.tankPressure', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+                <input type="text" value={formData.indicatorGaugeValues.tankPressure} onChange={e => handleChange('indicatorGaugeValues.tankPressure', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
             </div>
             <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Winding Temperature (°C):</label>
-                <input type="text" value={formData.indicatorGaugeValues.windingTemperature} onChange={e => handleChange('indicatorGaugeValues.windingTemperature', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+                <input type="text" value={formData.indicatorGaugeValues.windingTemperature} onChange={e => handleChange('indicatorGaugeValues.windingTemperature', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
             </div>
             <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Winding Temp. Range:</label>
-                <input type="text" value={formData.indicatorGaugeValues.windingTempRange} onChange={e => handleChange('indicatorGaugeValues.windingTempRange', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
+                <input type="text" value={formData.indicatorGaugeValues.windingTempRange} onChange={e => handleChange('indicatorGaugeValues.windingTempRange', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} />
             </div>
         </div>
       </section>
@@ -821,7 +821,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                       value={item.result} 
                       onChange={e => handleVisualInspectionChange(index, e.target.value)} 
                       disabled={!isEditing} 
-                      className={`w-full text-sm rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`}
+                      className={`w-full text-sm rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`}
                     >
                       {visualInspectionOptions.map(opt => <option key={opt} value={opt} className="dark:bg-dark-100 dark:text-white">{opt}</option>)}
                     </select>
@@ -841,7 +841,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
             onChange={e => handleChange('visualMechanicalInspectionComments', e.target.value)} 
             readOnly={!isEditing} 
             rows={4} 
-            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} 
+            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} 
         />
       </section>
 
@@ -873,15 +873,15 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                                     <tr key={testKey}>
                                         <td className="td-cell-small font-medium">{title}</td>
                                         <td className="td-cell-small">
-                                            <select value={testData.testVoltage} onChange={e => handleChange(`electricalTestsInsulationResistance.${key}.testVoltage`, e.target.value)} disabled={!isEditing} className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`}>
+                                            <select value={testData.testVoltage} onChange={e => handleChange(`electricalTestsInsulationResistance.${key}.testVoltage`, e.target.value)} disabled={!isEditing} className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`}>
                                                 {testVoltageOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                                             </select>
                                         </td>
-                                        <td className="td-cell-small"><input type="text" value={testData.values.halfMin} onChange={e => handleChange(`electricalTestsInsulationResistance.${key}.values.halfMin`, e.target.value)} readOnly={!isEditing} className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} /></td>
-                                        <td className="td-cell-small"><input type="text" value={testData.values.oneMin} onChange={e => handleChange(`electricalTestsInsulationResistance.${key}.values.oneMin`, e.target.value)} readOnly={!isEditing} className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} /></td>
-                                        <td className="td-cell-small"><input type="text" value={testData.values.tenMin} onChange={e => handleChange(`electricalTestsInsulationResistance.${key}.values.tenMin`, e.target.value)} readOnly={!isEditing} className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} /></td>
+                                        <td className="td-cell-small"><input type="text" value={testData.values.halfMin} onChange={e => handleChange(`electricalTestsInsulationResistance.${key}.values.halfMin`, e.target.value)} readOnly={!isEditing} className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} /></td>
+                                        <td className="td-cell-small"><input type="text" value={testData.values.oneMin} onChange={e => handleChange(`electricalTestsInsulationResistance.${key}.values.oneMin`, e.target.value)} readOnly={!isEditing} className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} /></td>
+                                        <td className="td-cell-small"><input type="text" value={testData.values.tenMin} onChange={e => handleChange(`electricalTestsInsulationResistance.${key}.values.tenMin`, e.target.value)} readOnly={!isEditing} className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} /></td>
                                         <td className="td-cell-small border-r-0">
-                                            <select value={testData.units} onChange={e => handleChange(`electricalTestsInsulationResistance.${key}.units`, e.target.value)} disabled={!isEditing} className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`}>
+                                            <select value={testData.units} onChange={e => handleChange(`electricalTestsInsulationResistance.${key}.units`, e.target.value)} disabled={!isEditing} className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`}>
                                                 {insulationResistanceUnits.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                                             </select>
                                         </td>
@@ -963,9 +963,9 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
       <section className="bg-white dark:bg-dark-150 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Test Equipment Used</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter:</label><input type="text" value={formData.testEquipmentUsed.megohmmeter} onChange={e => handleChange('testEquipmentUsed.megohmmeter', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} /></div>
-            <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number:</label><input type="text" value={formData.testEquipmentUsed.serialNumber} onChange={e => handleChange('testEquipmentUsed.serialNumber', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} /></div>
-            <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID:</label><input type="text" value={formData.testEquipmentUsed.ampId} onChange={e => handleChange('testEquipmentUsed.ampId', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} /></div>
+            <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Megohmmeter:</label><input type="text" value={formData.testEquipmentUsed.megohmmeter} onChange={e => handleChange('testEquipmentUsed.megohmmeter', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} /></div>
+            <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number:</label><input type="text" value={formData.testEquipmentUsed.serialNumber} onChange={e => handleChange('testEquipmentUsed.serialNumber', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} /></div>
+            <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AMP ID:</label><input type="text" value={formData.testEquipmentUsed.ampId} onChange={e => handleChange('testEquipmentUsed.ampId', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} /></div>
         </div>
       </section>
 
@@ -977,7 +977,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
             onChange={e => handleChange('electricalTestComments', e.target.value)} 
             readOnly={!isEditing} 
             rows={4} 
-            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} 
+            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : 'bg-white dark:bg-dark-100'}`} 
         />
       </section>
        <style>{`

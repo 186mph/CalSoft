@@ -846,7 +846,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
           onChange={(e) => handleChange(null, 'comments', e.target.value)}
           readOnly={!isEditing}
           rows={4}
-          className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+          className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
         />
       </section>
 
@@ -860,7 +860,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
             @apply mt-1 block w-full p-2 
               border border-gray-300 dark:border-gray-600 
               rounded-md shadow-sm 
-              focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] 
+              focus:outline-none focus:ring-accent-color focus:border-accent-color 
               text-gray-900 dark:text-white 
               bg-white dark:bg-dark-100;
           }

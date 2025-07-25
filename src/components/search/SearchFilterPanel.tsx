@@ -136,7 +136,7 @@ export const SearchFilterPanel: React.FC<SearchFilterPanelProps> = ({
               checked={localFilters.advancedMode}
               onChange={toggleAdvancedMode}
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-dark-400 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#f26722]"></div>
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-dark-400 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-accent-color"></div>
           </label>
         </div>
         
@@ -153,7 +153,7 @@ export const SearchFilterPanel: React.FC<SearchFilterPanelProps> = ({
                   id={`entity-${entity.id}`}
                   checked={localFilters.entityTypes.includes(entity.id)}
                   onChange={() => toggleEntityType(entity.id)}
-                  className="w-4 h-4 text-[#f26722] bg-gray-100 border-gray-300 rounded focus:ring-[#f26722] dark:focus:ring-[#f26722] dark:ring-offset-gray-800 focus:ring-2 dark:bg-dark-400 dark:border-dark-500"
+                  className="w-4 h-4 text-accent-color bg-gray-100 border-gray-300 rounded focus:ring-accent-color dark:focus:ring-accent-color dark:ring-offset-gray-800 focus:ring-2 dark:bg-dark-400 dark:border-dark-500"
                 />
                 <label
                   htmlFor={`entity-${entity.id}`}
@@ -179,7 +179,7 @@ export const SearchFilterPanel: React.FC<SearchFilterPanelProps> = ({
                   id={`division-${division.id}`}
                   checked={localFilters.divisions.includes(division.id)}
                   onChange={() => toggleDivision(division.id)}
-                  className="w-4 h-4 text-[#f26722] bg-gray-100 border-gray-300 rounded focus:ring-[#f26722] dark:focus:ring-[#f26722] dark:ring-offset-gray-800 focus:ring-2 dark:bg-dark-400 dark:border-dark-500"
+                  className="w-4 h-4 text-accent-color bg-gray-100 border-gray-300 rounded focus:ring-accent-color dark:focus:ring-accent-color dark:ring-offset-gray-800 focus:ring-2 dark:bg-dark-400 dark:border-dark-500"
                 />
                 <label
                   htmlFor={`division-${division.id}`}

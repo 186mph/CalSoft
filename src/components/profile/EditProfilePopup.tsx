@@ -752,9 +752,9 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center font-medium transition-colors ${
                       step === i
-                        ? 'bg-[#f26722] text-white'
+                        ? 'bg-accent-color text-white'
                         : step > i
-                        ? 'bg-[#f26722]/20 text-[#f26722]'
+                        ? 'bg-accent-color/20 text-accent-color'
                         : 'bg-gray-100 dark:bg-dark-200 text-gray-500 dark:text-gray-400'
                     }`}
                   >
@@ -763,7 +763,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                   {i < 3 && (
                     <div
                       className={`h-1 flex-1 ${
-                        step > i ? 'bg-[#f26722]' : 'bg-gray-100 dark:bg-dark-200'
+                        step > i ? 'bg-accent-color' : 'bg-gray-100 dark:bg-dark-200'
                       }`}
                     />
                   )}
@@ -796,7 +796,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-200 text-gray-900 dark:text-white"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent bg-white dark:bg-dark-200 text-gray-900 dark:text-white"
                             placeholder="Enter your name"
                           />
                         </div>
@@ -840,7 +840,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                         <textarea
                           value={bio}
                           onChange={(e) => setBio(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-200 text-gray-900 dark:text-white min-h-[100px]"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent bg-white dark:bg-dark-200 text-gray-900 dark:text-white min-h-[100px]"
                           placeholder="Tell us about yourself..."
                         />
                       </div>
@@ -854,7 +854,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                           <select
                             value={division}
                             onChange={(e) => setDivision(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-200 text-gray-900 dark:text-white"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent bg-white dark:bg-dark-200 text-gray-900 dark:text-white"
                           >
                             <option value="">Select a division</option>
                             {divisions.map((div) => (
@@ -871,7 +871,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                             type="date"
                             value={birthday}
                             onChange={(e) => setBirthday(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent bg-white dark:bg-dark-200 text-gray-900 dark:text-white"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent bg-white dark:bg-dark-200 text-gray-900 dark:text-white"
                           />
                         </div>
                       </div>
@@ -938,7 +938,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                   <Button
                     type="button"
                     onClick={nextStep}
-                    className="bg-[#f26722] hover:bg-[#f26722]/90 text-white px-4 py-2 flex items-center justify-center min-w-[120px]"
+                    className="bg-accent-color hover:bg-accent-color/90 text-white px-4 py-2 flex items-center justify-center min-w-[120px]"
                   >
                     <span className="flex items-center">
                       Continue<ChevronRight className="ml-2 h-4 w-4" />
@@ -958,7 +958,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                       type="submit"
                       onClick={handleSubmit}
                       disabled={isSubmitting}
-                      className="bg-[#f26722] hover:bg-[#f26722]/90 text-white px-4 py-2 min-w-[100px]"
+                      className="bg-accent-color hover:bg-accent-color/90 text-white px-4 py-2 min-w-[100px]"
                     >
                       {isSubmitting ? (
                         <div className="flex items-center">
@@ -1030,7 +1030,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                 <Button 
                   onClick={handleCropConfirm} 
                   disabled={!completedCrop || isSubmitting} 
-                  className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                  className="bg-accent-color hover:bg-accent-color/90 text-white"
                 >
                   {isSubmitting ? 'Saving...' : 'Save Cropped Image'}
                 </Button>

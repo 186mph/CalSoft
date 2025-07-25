@@ -552,7 +552,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
             onChange={(e) => handleChange(fieldKey, type === "number" ? parseFloat(e.target.value) || 0 : e.target.value)}
             readOnly={!isEditMode || isReadOnly}
             placeholder={placeholder}
-            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${(!isEditMode || isReadOnly) ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
+            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${(!isEditMode || isReadOnly) ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
         />
         </div>
     );
@@ -671,7 +671,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
                         value={item.results}
                         onChange={(e) => handleChange('visualInspectionItems', e.target.value, index, 'results')}
                         disabled={!isEditMode}
-                        className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
+                        className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
                       >
                         {visualInspectionResultOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                       </select>
@@ -709,7 +709,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
             onChange={(e) => handleChange('comments', e.target.value)}
             readOnly={!isEditMode}
             rows={3}
-            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
+            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
           />
         </section>
 

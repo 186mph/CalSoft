@@ -4,13 +4,17 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { ArrowLeft, Edit, Trash2, Eye, Clock, PlusIcon, Plus } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Eye, Clock, Plus, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/Separator';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import Card, { CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { JobCreationForm } from '@/components/jobs/JobCreationForm';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
+import { CalibrationJobButton } from '@/components/jobs/CalibrationJobButton';
+import { toast } from 'react-hot-toast';
 
 interface Customer {
   company_name?: string;
@@ -21,7 +25,9 @@ interface Job {
   id: string;
   job_number: string;
   title: string;
+  description?: string;
   status: string;
+  priority?: string;
   start_date: string;
   due_date: string;
   budget: number;
@@ -29,6 +35,7 @@ interface Job {
   created_at: string;
   customers: Customer;
   division: string;
+  notes?: string;
 }
 
 export default function CalibrationJobsPage() {
@@ -37,11 +44,19 @@ export default function CalibrationJobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [activeFilter, setActiveFilter] = useState<'all' | 'calibration' | 'armadillo'>('all');
+  const [activeFilter, setActiveFilter] = useState<'calibration' | 'armadillo'>('calibration');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [labCustomersExists, setLabCustomersExists] = useState<boolean | null>(null);
+  
+  // Edit job states
+  const [isEditing, setIsEditing] = useState(false);
+  const [editFormData, setEditFormData] = useState<Job | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Redirect to portal if user is not authenticated
   useEffect(() => {
-    if (!user || !user?.user_metadata?.divisions?.includes('Calibration')) {
+    // Only redirect if user is not authenticated, allow all authenticated users
+    if (!user) {
       navigate('/portal');
     }
   }, [user, navigate]);
@@ -57,53 +72,124 @@ export default function CalibrationJobsPage() {
     checkUser();
   }, []);
 
-  // Fetch NETA Technician jobs specific to the Calibration division
+  // Check if lab_customers table exists on first load
+  useEffect(() => {
+    const checkLabCustomersTable = async () => {
+      try {
+        const { data, error } = await supabase
+          .schema('lab_ops')
+          .from('lab_customers')
+          .select('id')
+          .limit(1);
+        
+        // If we get data or a different error (not 406), the table exists
+        setLabCustomersExists(!error || !error.message.includes('relation') && !error.message.includes('does not exist'));
+      } catch (err) {
+        // Table doesn't exist
+        setLabCustomersExists(false);
+      }
+    };
+
+    if (labCustomersExists === null) {
+      checkLabCustomersTable();
+    }
+  }, [labCustomersExists]);
+
+  // Fetch lab jobs specific to the Calibration and Armadillo divisions
   useEffect(() => {
     fetchJobs(activeFilter);
-  }, [refreshTrigger, activeFilter]);
+  }, [refreshTrigger, activeFilter, statusFilter]);
 
-  const fetchJobs = async (filter: 'all' | 'calibration' | 'armadillo' = 'all') => {
+  const fetchJobs = async (filter: 'calibration' | 'armadillo' = 'calibration') => {
     try {
       setLoading(true);
 
+      // Query lab_ops.lab_jobs without nested customer join to avoid schema issues
       let query = supabase
-        .schema('neta_ops')
-        .from('jobs')
-        .select(`
-          id, job_number, title, status, start_date, due_date, budget, customer_id, created_at,
-          customers:customer_id(company_name, name),
-          division
-        `)
-        .eq('job_type', 'neta_technician')
+        .schema('lab_ops')
+        .from('lab_jobs')
+        .select('id, job_number, title, description, status, priority, start_date, due_date, budget, customer_id, created_at, division, notes')
+        .eq('division', filter)
         .order('created_at', { ascending: false });
-      
-      if (filter !== 'all') {
-        query = query.eq('division', filter);
-      } else {
-        query = query.in('division', ['calibration', 'armadillo']);
-      }
 
-      const { data, error } = await query;
+      const { data: jobData, error: jobError } = await query;
 
-      if (error) {
-        console.error('Error fetching jobs:', error);
+      if (jobError) {
+        console.error('Error fetching lab jobs:', jobError);
         return;
       }
 
-      // Transform the data to match the Job interface
-      const formattedJobs = data?.map(job => {
-        // Transform nested array to object if needed
-        const customerData = Array.isArray(job.customers) 
-          ? (job.customers[0] || { name: '', company_name: '' })
-          : (job.customers || { name: '', company_name: '' });
+      // Fetch customers separately for each job
+      const jobsWithCustomers = await Promise.all((jobData || []).map(async (job) => {
+        if (!job.customer_id) {
+          return { ...job, customers: { name: '', company_name: '' } as Customer };
+        }
         
-        return {
-          ...job,
-          customers: customerData as Customer
-        };
-      }) || [];
+        try {
+          // Try both lab_ops.lab_customers and common.customers with better error handling
+          let customerData: Customer | null = null;
+          
+          // First try lab_ops.lab_customers (if we know table exists or haven't checked yet)
+          if (labCustomersExists !== false) {
+            try {
+              const labCustomerResult = await supabase
+                .schema('lab_ops')
+                .from('lab_customers')
+                .select('company_name, name')
+                .eq('id', job.customer_id)
+                .single();
 
-      setJobs(formattedJobs);
+              if (labCustomerResult.data && !labCustomerResult.error) {
+                customerData = labCustomerResult.data as Customer;
+                console.log(`✓ Found customer in lab_ops.lab_customers for job ${job.id}`);
+              }
+            } catch (labError) {
+              // Lab customers table might not exist or other error, continue to common.customers
+              console.log(`Lab customers query failed for job ${job.id}, trying common.customers`);
+            }
+          }
+          
+          // If lab customer not found, try common.customers
+          if (!customerData) {
+            try {
+              const commonCustomerResult = await supabase
+                .schema('common')
+                .from('customers')
+                .select('company_name, name')
+                .eq('id', job.customer_id)
+                .single();
+
+              if (commonCustomerResult.data && !commonCustomerResult.error) {
+                customerData = commonCustomerResult.data as Customer;
+                console.log(`✓ Found customer in common.customers for job ${job.id}`);
+              } else {
+                console.warn(`⚠️ Customer ${job.customer_id} not found in common.customers for job ${job.id}`);
+              }
+            } catch (commonError) {
+              console.warn(`⚠️ Error fetching customer ${job.customer_id} from common.customers:`, commonError);
+            }
+          }
+
+          if (customerData) {
+            return {
+              ...job,
+              customers: customerData as Customer
+            };
+          } else {
+            return { ...job, customers: { name: 'Unknown Customer', company_name: '' } as Customer };
+          }
+        } catch (err) {
+          console.warn(`Error fetching customer for job ${job.id}:`, err);
+          return { ...job, customers: { name: 'Unknown Customer', company_name: '' } as Customer };
+        }
+      }));
+
+      // Apply status filtering
+      const filteredJobs = statusFilter === 'all' 
+        ? jobsWithCustomers 
+        : jobsWithCustomers.filter(job => job.status === statusFilter);
+
+      setJobs(filteredJobs);
     } catch (err) {
       console.error('Error in fetchJobs:', err);
     } finally {
@@ -113,6 +199,57 @@ export default function CalibrationJobsPage() {
 
   const handleJobCreated = () => {
     setRefreshTrigger(prev => prev + 1);
+  };
+
+  // Handle edit form input changes
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    if (!editFormData) return;
+    const { name, value } = e.target;
+    setEditFormData(prev => prev ? { ...prev, [name]: value } : null);
+  };
+
+  // Handle edit form submission
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editFormData || !editFormData.id) return;
+
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase
+        .schema('lab_ops')
+        .from('lab_jobs')
+        .update({
+          title: editFormData.title,
+          description: editFormData.description,
+          status: editFormData.status,
+          priority: editFormData.priority,
+          start_date: editFormData.start_date || null,
+          due_date: editFormData.due_date || null,
+          budget: editFormData.budget ? parseFloat(editFormData.budget.toString()) : null,
+          notes: editFormData.notes || null,
+        })
+        .eq('id', editFormData.id);
+
+      if (error) throw error;
+
+      setIsEditing(false);
+      setEditFormData(null);
+      toast.success('Job updated successfully!');
+      
+      // Refresh the jobs list
+      setRefreshTrigger(prev => prev + 1);
+    } catch (error) {
+      console.error('Error updating job:', error);
+      toast.error('Failed to update job');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle starting edit mode
+  const handleStartEdit = (job: Job) => {
+    setEditFormData(job);
+    setIsEditing(true);
   };
 
   const getStatusColor = (status: string) => {
@@ -134,88 +271,213 @@ export default function CalibrationJobsPage() {
     }
   };
 
+  const handleDeleteJob = async (job: Job) => {
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${job.title}" (Job #${job.job_number})?\n\nThis action cannot be undone.`
+    );
+    
+    if (!confirmed) return;
+
+    try {
+      // Delete the job from the appropriate schema based on division
+      const { error } = await supabase
+        .schema('lab_ops')
+        .from('lab_jobs')
+        .delete()
+        .eq('id', job.id);
+
+      if (error) throw error;
+
+      toast.success(`Job "${job.title}" has been deleted successfully`);
+      
+      // Refresh the jobs list
+      setRefreshTrigger(prev => prev + 1);
+    } catch (error) {
+      console.error('Error deleting job:', error);
+      toast.error('Failed to delete job. Please try again.');
+    }
+  };
+
   return (
     <div className="space-y-6 p-6">
-      <div className="flex items-center mb-4">
-        <Link 
-          to="/calibration/dashboard" 
-          className="mr-4 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-2xl font-bold">Calibration Division - NETA Technician Jobs</h1>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h1 className="text-2xl font-bold">
+            Jobs
+          </h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            {loading ? 'Loading...' : `${jobs.length} ${jobs.length === 1 ? 'job' : 'jobs'} found${statusFilter !== 'all' ? ` (${statusFilter} status)` : ''}`}
+          </p>
+        </div>
+        
+        {/* Quick Stats */}
+        {!loading && jobs.length > 0 && (
+          <div className="flex space-x-4 text-sm">
+            <div className="text-center">
+              <div className="font-semibold text-lg text-blue-600">
+                {jobs.filter(job => job.division === 'calibration').length}
+              </div>
+              <div className="text-gray-500">Calibration</div>
+            </div>
+            <div className="text-center">
+              <div className="font-semibold text-lg text-green-600">
+                {jobs.filter(job => job.division === 'armadillo').length}
+              </div>
+              <div className="text-gray-500">Armadillo</div>
+            </div>
+            <div className="text-center">
+              <div className="font-semibold text-lg text-yellow-600">
+                {jobs.filter(job => job.status === 'pending').length}
+              </div>
+              <div className="text-gray-500">Pending</div>
+            </div>
+          </div>
+        )}
       </div>
       
-      {/* The section below can be uncommented if you want additional job creation options */}
-      {/* 
-      <div className="mb-8 flex justify-center">
-        <Button 
-          onClick={() => document.getElementById('calibration-job-button')?.click()} 
-          className="bg-blue-600 hover:bg-blue-700 text-white text-xl font-bold py-8 px-12 rounded-xl shadow-xl transform hover:scale-105 transition-transform duration-200 relative animate-pulse"
-          size="lg"
-        >
-          <span className="absolute -top-1 -right-1 flex h-6 w-6">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-6 w-6 bg-red-500 items-center justify-center text-white text-xs">+</span>
-          </span>
-          <Plus className="h-8 w-8 mr-4" />
-          ADD NEW JOB
-        </Button>
-      </div>
-      
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-3">Create a New Job</h2>
-        <div className="flex flex-wrap gap-4 p-4 border rounded-md bg-gray-50 dark:bg-gray-800">
-          <div id="calibration-job-button">
-            <JobCreationForm 
-              division="calibration" 
-              onJobCreated={handleJobCreated} 
-              compact={true}
-              buttonText="Create Calibration Job" 
-            />
+      {/* Job Creation Section */}
+      <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+        <CardContent className="px-8 pb-8 pt-10">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                Create New Job
+              </h2>
+              <p className="text-base text-gray-600 dark:text-gray-400">
+                Start a new calibration or armadillo job for lab operations. Jobs will be automatically assigned unique job numbers.
+              </p>
+            </div>
+            <div className="flex space-x-4">
+              <CalibrationJobButton 
+                onJobCreated={handleJobCreated}
+                buttonText="New Calibration Job"
+                division="calibration"
+              />
+              <CalibrationJobButton 
+                onJobCreated={handleJobCreated}
+                buttonText="New Armadillo Job"
+                division="armadillo"
+              />
+            </div>
           </div>
           
-          <JobCreationForm 
-            division="armadillo" 
-            onJobCreated={handleJobCreated} 
-            compact={true}
-            buttonText="Create Armadillo Job" 
-          />
-        </div>
-      </div>
-      */}
-      
-      {/* We're using a hidden element to store the actual form button */}
-      <div className="hidden">
-        <div id="calibration-job-button">
-          <JobCreationForm 
-            division="calibration" 
-            onJobCreated={handleJobCreated} 
-            compact={true}
-          />
-        </div>
-      </div>
+          {/* Quick info about job types */}
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-base">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-[#339C5E] rounded-full"></div>
+                <span className="text-gray-600 dark:text-gray-400">
+                  <strong>Calibration Jobs:</strong> Equipment calibration and testing services
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-gray-600 rounded-full"></div>
+                <span className="text-gray-600 dark:text-gray-400">
+                  <strong>Armadillo Jobs:</strong> Specialized armadillo division services
+                </span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
       
       {/* Filter Controls */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-3">Filter Jobs</h2>
-        <div className="flex flex-wrap gap-4 p-4 border rounded-md bg-gray-50 dark:bg-gray-800">
-          <Button variant="outline" className="flex items-center bg-white dark:bg-gray-700" onClick={() => setRefreshTrigger(prev => prev + 1)}>
-            <Clock className="h-4 w-4 mr-2" />
-            Refresh Jobs
-          </Button>
-          
-          <div className="flex items-center">
-            <span className="mr-2 text-sm font-medium">Show:</span>
-            <select 
-              className="px-4 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700" 
-              value={activeFilter}
-              onChange={(e) => setActiveFilter(e.target.value as 'all' | 'calibration' | 'armadillo')}
+        <div className="space-y-4 p-4 border rounded-md bg-gray-50 dark:bg-gray-800">
+          <div className="flex flex-wrap gap-4 items-center">
+            <button 
+              className="flex items-center px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md transition-all duration-200 hover:bg-[#339C5E]/10 hover:text-[#339C5E] dark:hover:bg-[#339C5E]/20 focus:outline-none focus:ring-2 focus:ring-[#339C5E] focus:ring-offset-2 font-medium" 
+              onClick={() => setRefreshTrigger(prev => prev + 1)}
             >
-              <option value="all">All Jobs</option>
-              <option value="calibration">Calibration Jobs</option>
-              <option value="armadillo">Armadillo Jobs</option>
-            </select>
+              <Clock className="h-4 w-4 mr-2" />
+              Refresh Jobs
+            </button>
+            
+            {/* Division Tab Interface */}
+            <div className="flex items-center gap-2">
+              <button 
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                  activeFilter === 'calibration' 
+                    ? 'bg-[#339C5E] text-white' 
+                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'
+                }`}
+                onClick={() => {
+                  setActiveFilter('calibration');
+                  setStatusFilter('all');
+                }}
+              >
+                Calibration Jobs
+              </button>
+              <button 
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                  activeFilter === 'armadillo' 
+                    ? 'bg-gray-600 text-white' 
+                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'
+                }`}
+                onClick={() => {
+                  setActiveFilter('armadillo');
+                  setStatusFilter('all');
+                }}
+              >
+                Armadillo Jobs
+              </button>
+            </div>
+          </div>
+          
+          {/* Status Filter Tabs */}
+          <div className="flex flex-wrap gap-2">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 self-center mr-2">Filter by Status:</span>
+            <button 
+              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                statusFilter === 'all' 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 border border-gray-300 dark:border-gray-600'
+              }`}
+              onClick={() => setStatusFilter('all')}
+            >
+              All
+            </button>
+            <button 
+              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                statusFilter === 'pending' 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 border border-gray-300 dark:border-gray-600'
+              }`}
+              onClick={() => setStatusFilter('pending')}
+            >
+              Pending
+            </button>
+            <button 
+              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                statusFilter === 'in-progress' 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 border border-gray-300 dark:border-gray-600'
+              }`}
+              onClick={() => setStatusFilter('in-progress')}
+            >
+              In Progress
+            </button>
+            <button 
+              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                statusFilter === 'ready-to-bill' 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 border border-gray-300 dark:border-gray-600'
+              }`}
+              onClick={() => setStatusFilter('ready-to-bill')}
+            >
+              Ready To Bill
+            </button>
+            <button 
+              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                statusFilter === 'completed' 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 border border-gray-300 dark:border-gray-600'
+              }`}
+              onClick={() => setStatusFilter('completed')}
+            >
+              Completed
+            </button>
           </div>
         </div>
       </div>
@@ -223,14 +485,9 @@ export default function CalibrationJobsPage() {
       {/* Jobs List */}
       <Card className="bg-white dark:bg-dark-100 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm">
         <div className="border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">NETA Technician Jobs</h2>
-          <Button 
-            onClick={() => document.getElementById('calibration-job-button')?.click()} 
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add New Job
-          </Button>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {activeFilter === 'calibration' ? 'Calibration Jobs' : 'Armadillo Jobs'}
+          </h2>
         </div>
         
         {loading ? (
@@ -238,16 +495,12 @@ export default function CalibrationJobsPage() {
         ) : jobs.length === 0 ? (
           <div className="p-8 text-center">
             <div className="mb-4 text-gray-500 dark:text-gray-400">
-              No jobs found. Create a new job to get started.
+              No lab jobs found. Create a new job to get started.
             </div>
-            <Button 
-              onClick={() => document.getElementById('calibration-job-button')?.click()} 
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium mx-auto"
-              size="lg"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Create Your First Job
-            </Button>
+            <CalibrationJobButton 
+              onJobCreated={handleJobCreated}
+              buttonText="Create Your First Lab Job"
+            />
           </div>
         ) : (
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -257,7 +510,7 @@ export default function CalibrationJobsPage() {
                   <div>
                     <div className="flex items-center">
                       <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                        {job.title}
+                        {job.job_number}
                       </h3>
                       <Badge className={`ml-2 ${getStatusColor(job.status)}`}>
                         {job.status}
@@ -267,41 +520,44 @@ export default function CalibrationJobsPage() {
                       </Badge>
                     </div>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      Job #{job.job_number} • {job.customers?.company_name || job.customers?.name || 'Unknown Customer'}
+                      {job.customers?.company_name || job.customers?.name || 'Unknown Customer'}
                     </p>
+                    <div className="flex items-center mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      <span>Start: {formatDate(job.start_date)}</span>
+                      <span className="mx-2">•</span>
+                      <span>Due: {formatDate(job.due_date)}</span>
+                      {job.budget && (
+                        <>
+                          <span className="mx-2">•</span>
+                          <span>Budget: ${job.budget.toLocaleString()}</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                   <div className="flex space-x-2">
-                    <Button variant="outline" size="sm" className="flex items-center">
+                    <button 
+                      className="flex items-center px-3 py-1.5 text-sm font-medium bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg transition-all duration-200 hover:bg-[#339C5E]/10 hover:text-[#339C5E] dark:hover:bg-[#339C5E]/20 focus:outline-none focus:ring-2 focus:ring-[#339C5E] focus:ring-offset-2"
+                      onClick={() => navigate(`/jobs/${job.id}`)}
+                    >
                       <Eye className="h-4 w-4 mr-1" />
                       View
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex items-center">
-                      <Edit className="h-4 w-4 mr-1" />
+                    </button>
+                    <button 
+                      className="flex items-center px-3 py-1.5 text-sm font-medium bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg transition-all duration-200 hover:bg-[#339C5E]/10 hover:text-[#339C5E] dark:hover:bg-[#339C5E]/20 focus:outline-none focus:ring-2 focus:ring-[#339C5E] focus:ring-offset-2"
+                      onClick={() => handleStartEdit(job)}
+                    >
+                      <Pencil className="h-4 w-4 mr-1" />
                       Edit
+                    </button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex items-center border-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20 text-red-600"
+                      onClick={() => handleDeleteJob(job)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete
                     </Button>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                  <div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Start Date</p>
-                    <p className="text-sm flex items-center">
-                      <Clock className="h-3 w-3 mr-1 text-gray-400" />
-                      {formatDate(job.start_date)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Due Date</p>
-                    <p className="text-sm flex items-center">
-                      <Clock className="h-3 w-3 mr-1 text-gray-400" />
-                      {formatDate(job.due_date)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Budget</p>
-                    <p className="text-sm">
-                      {job.budget ? `$${job.budget.toLocaleString()}` : 'Not set'}
-                    </p>
                   </div>
                 </div>
               </div>
@@ -309,6 +565,139 @@ export default function CalibrationJobsPage() {
           </div>
         )}
       </Card>
+
+      {/* Edit Job Dialog */}
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Edit Job</DialogTitle>
+          </DialogHeader>
+          
+          {editFormData && (
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Job Title</label>
+                  <Input
+                    name="title"
+                    value={editFormData.title}
+                    onChange={handleEditInputChange}
+                    placeholder="Enter job title"
+                    required
+                    className="!border-gray-300 dark:!border-gray-600 focus:!ring-[#339C5E] focus:!border-[#339C5E] hover:!border-[#339C5E]"
+                  />
+                </div>
+
+                {/* Job Number field - read-only */}
+                {editFormData.job_number && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Job Number</label>
+                    <Input
+                      value={editFormData.job_number}
+                      readOnly
+                      className="bg-gray-100 dark:bg-gray-700 cursor-not-allowed !border-gray-300 dark:!border-gray-600"
+                    />
+                  </div>
+                )}
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Description</label>
+                  <Textarea
+                    name="description"
+                    value={editFormData.description || ''}
+                    onChange={handleEditInputChange}
+                    placeholder="Enter job description"
+                    rows={3}
+                    className="!border-gray-300 dark:!border-gray-600 focus:!ring-[#339C5E] focus:!border-[#339C5E] hover:!border-[#339C5E]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Start Date</label>
+                  <Input
+                    name="start_date"
+                    type="date"
+                    value={editFormData.start_date || ''}
+                    onChange={handleEditInputChange}
+                    className="!border-gray-300 dark:!border-gray-600 focus:!ring-[#339C5E] focus:!border-[#339C5E] hover:!border-[#339C5E]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Due Date</label>
+                  <Input
+                    name="due_date"
+                    type="date"
+                    value={editFormData.due_date || ''}
+                    onChange={handleEditInputChange}
+                    className="!border-gray-300 dark:!border-gray-600 focus:!ring-[#339C5E] focus:!border-[#339C5E] hover:!border-[#339C5E]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Status</label>
+                  <select
+                    name="status"
+                    value={editFormData.status}
+                    onChange={handleEditInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#339C5E] focus:border-[#339C5E] dark:bg-dark-100 dark:text-white"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="ready-to-bill">Ready To Bill</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Priority</label>
+                  <select
+                    name="priority"
+                    value={editFormData.priority || 'medium'}
+                    onChange={handleEditInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#339C5E] focus:border-[#339C5E] dark:bg-dark-100 dark:text-white"
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Notes</label>
+                  <Textarea
+                    name="notes"
+                    value={editFormData.notes || ''}
+                    onChange={handleEditInputChange}
+                    placeholder="Additional notes or special requirements..."
+                    rows={3}
+                    className="!border-gray-300 dark:!border-gray-600 focus:!ring-[#339C5E] focus:!border-[#339C5E] hover:!border-[#339C5E]"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditing(false)}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-[#339C5E] hover:bg-[#2d8a54] text-white"
+                >
+                  {isSubmitting ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 } 

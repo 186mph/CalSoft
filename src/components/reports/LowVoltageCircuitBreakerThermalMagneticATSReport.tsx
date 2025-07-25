@@ -174,8 +174,8 @@ const tableStyles = {
   table: "w-full min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700",
   headerCell: "px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider whitespace-normal",
   cell: "px-2 py-2 text-sm text-gray-900 dark:text-white whitespace-normal",
-  input: "w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white",
-  select: "w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+  input: "w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white",
+  select: "w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white"
 };
 
 // Rename component
@@ -1339,7 +1339,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
              value={formData.comments}
              onChange={(e) => handleChange('comments', e.target.value)}
              readOnly={!isEditing}
-             className={`w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+             className={`w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
              rows={4}
            />
          </div>

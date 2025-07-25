@@ -31,7 +31,7 @@ export function useChat() {
   const checkDatabaseSetup = async () => {
     try {
       // Try to call the get_user_chat_rooms function
-      const { data, error: rpcError } = await supabase.rpc('get_user_chat_rooms');
+      const { data, error: rpcError } = await supabase.schema('common').rpc('get_user_chat_rooms');
       
       if (rpcError) {
         console.error("Database setup check failed - RPC error:", rpcError);
@@ -66,7 +66,7 @@ export function useChat() {
       }
       
       console.log("Fetching chat rooms for user:", user?.id);
-      const { data, error } = await supabase.rpc('get_user_chat_rooms');
+      const { data, error } = await supabase.schema('common').rpc('get_user_chat_rooms');
       
       if (error) {
         console.error("Error fetching chat rooms:", error);
@@ -94,7 +94,7 @@ export function useChat() {
       if (!user) return;
       
       // Call the RPC function to mark messages as read
-      const { error } = await supabase.rpc('mark_room_messages_read', { p_room_id: roomId });
+      const { error } = await supabase.schema('common').rpc('mark_room_messages_read', { p_room_id: roomId });
       
       if (error) {
         console.error('Error marking room as read:', error);
@@ -126,6 +126,7 @@ export function useChat() {
       // DEBUG: List all profiles
       console.log("DEBUG: Listing all profiles to find Jack Lyons");
       const { data: allProfiles, error: profilesError } = await supabase
+        .schema('common')
         .from('profiles')
         .select('id, full_name, email, avatar_url')
         .limit(20);
@@ -134,6 +135,7 @@ export function useChat() {
       
       // DEBUG: Try to find specific user by name
       const { data: jackUsers, error: jackError } = await supabase
+        .schema('common')
         .from('profiles')
         .select('*')
         .ilike('full_name', '%jack%')
@@ -147,6 +149,7 @@ export function useChat() {
       try {
         // This query gets distinct user_ids from chat_messages in this room
         const { data: participants, error: participantsError } = await supabase
+          .schema('common')
           .from('chat_messages')
           .select('user_id')
           .eq('room_id', roomId)
@@ -161,7 +164,7 @@ export function useChat() {
             
             // Try profiles table first
             const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
+              .schema('common').from('profiles')
               .select('id, full_name, email, avatar_url')
               .eq('id', userId)
               .single();
@@ -180,11 +183,11 @@ export function useChat() {
       }
       
       // Mark as read before fetching messages
-      await supabase.rpc('mark_room_messages_read', { p_room_id: roomId });
+      await supabase.schema('common').rpc('mark_room_messages_read', { p_room_id: roomId });
       
       // Fetch messages
       const { data: messageData, error: messageError } = await supabase
-        .from('chat_messages')
+        .schema('common').from('chat_messages')
         .select('*')
         .eq('room_id', roomId)
         .order('created_at', { ascending: true });
@@ -229,10 +232,9 @@ export function useChat() {
             try {
               console.log(`Fetching user details for user_id: ${message.user_id}`);
               
-              // PROFILE TABLE FIRST APPROACH - Changed order to prioritize the profiles table
               // First attempt: try profiles table directly - this seems most likely to work
               const { data: profileData, error: profileError } = await supabase
-                .from('profiles')
+                .schema('common').from('profiles')
                 .select('id, full_name, email, avatar_url')
                 .eq('id', message.user_id)
                 .single();
@@ -254,7 +256,7 @@ export function useChat() {
               
               // Second attempt: Try RPC method
               const { data: rpcUserDetails, error: rpcError } = await supabase
-                .rpc('get_user_details', { user_id: message.user_id });
+                .schema('common').rpc('get_user_details', { user_id: message.user_id });
               
               console.log('RPC get_user_details result:', { data: rpcUserDetails, error: rpcError?.message });
                   
@@ -273,7 +275,7 @@ export function useChat() {
 
               // Third attempt: Try to use a raw query to get user info
               const { data: rawUserData, error: rawError } = await supabase
-                .rpc('get_user_metadata', { p_user_id: message.user_id });
+                .schema('common').rpc('get_user_metadata', { p_user_id: message.user_id });
               
               console.log('get_user_metadata result:', { data: rawUserData, error: rawError?.message });
               
@@ -404,7 +406,7 @@ export function useChat() {
       
       // Insert the message into the database
       const { data, error } = await supabase
-        .from('chat_messages')
+        .schema('common').from('chat_messages')
         .insert({
           room_id: roomId,
           user_id: user.id,
@@ -443,12 +445,11 @@ export function useChat() {
     // Subscribe to new messages for the CURRENT room only
     const messagesSubscription = supabase
       .channel(`chat-messages-room-${currentRoom.id}`)
-      .on('postgres_changes', 
-        { 
+      .on('postgres_changes', {
           event: 'INSERT', 
           schema: 'common', 
           table: 'chat_messages',
-          filter: `room_id=eq.${currentRoom.id}`  // Only listen for messages in this room
+        filter: `room_id=eq.${currentRoom.id}` // Only listen for messages in this room
         },
         (payload) => {
           const newMessage = payload.new as ChatMessage;
@@ -504,7 +505,7 @@ export function useChat() {
               // For other users, immediately fetch their details
               // PROFILES TABLE FIRST - prioritize the most reliable approach
               supabase
-                .from('profiles')
+              .schema('common').from('profiles')
                 .select('id, full_name, email, avatar_url')
                 .eq('id', newMessage.user_id)
                 .single()
@@ -525,6 +526,7 @@ export function useChat() {
                     
                     // Second attempt: try RPC method
                     supabase
+                    .schema('common')
                       .rpc('get_user_details', { user_id: newMessage.user_id })
                       .then(({ data: rpcData, error: rpcError }) => {
                         if (!rpcError && rpcData && rpcData.length > 0) {
@@ -578,8 +580,7 @@ export function useChat() {
     // Subscribe to changes in chat rooms
     const roomsSubscription = supabase
       .channel('chat-rooms-changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'common', table: 'chat_rooms' },
+      .on('postgres_changes', { event: '*', schema: 'common', table: 'chat_rooms' },
         () => {
           fetchChatRooms();
         }
@@ -613,6 +614,7 @@ export function useChat() {
       
       // Get all distinct user_ids from messages in this room
       const { data: participants, error: participantsError } = await supabase
+        .schema('common')
         .from('chat_messages')
         .select('user_id')
         .eq('room_id', roomId);
@@ -630,12 +632,13 @@ export function useChat() {
         const userIds = [...new Set(participants.map(p => p.user_id))];
         
         // First try to get all profiles at once
-        const { data: profiles, error: profilesError } = await supabase
+        const { data: profiles, error: profilesErrors } = await supabase
+          .schema('common')
           .from('profiles')
           .select('id, full_name, email, avatar_url')
           .in('id', userIds);
           
-        if (!profilesError && profiles && profiles.length > 0) {
+        if (!profilesErrors && profiles && profiles.length > 0) {
           console.log("Preloaded profiles:", profiles);
           
           // Map profiles to user IDs for quick lookup

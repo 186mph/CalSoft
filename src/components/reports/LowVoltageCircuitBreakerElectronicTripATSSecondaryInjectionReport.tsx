@@ -173,8 +173,8 @@ const tableStyles = {
   table: "w-full min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700",
   headerCell: "px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider whitespace-normal",
   cell: "px-2 py-2 text-sm text-gray-900 dark:text-white whitespace-normal",
-  input: "w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white",
-  select: "w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white"
+  input: "w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white",
+  select: "w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white"
 };
 
 const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.FC = () => {
@@ -1585,7 +1585,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
             bg-gray-50 dark:bg-dark-100
             border border-gray-300 dark:border-gray-600
             rounded-md shadow-sm
-            focus:outline-none focus:ring-[#f26722] focus:border-[#f26722]
+            focus:outline-none focus:ring-accent-color focus:border-accent-color
             text-gray-900 dark:text-white;
         }
         .form-input[readonly], .form-select[disabled] {
@@ -1601,7 +1601,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
             bg-gray-50 dark:bg-dark-100
             border border-gray-300 dark:border-gray-600
             rounded-md shadow-sm
-            focus:outline-none focus:ring-[#f26722] focus:border-[#f26722]
+            focus:outline-none focus:ring-accent-color focus:border-accent-color
             text-gray-900 dark:text-white;
         }
         .form-textarea {
@@ -1609,7 +1609,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
             bg-gray-50 dark:bg-dark-100
             border border-gray-300 dark:border-gray-600
             rounded-md shadow-sm
-            focus:outline-none focus:ring-[#f26722] focus:border-[#f26722]
+            focus:outline-none focus:ring-accent-color focus:border-accent-color
             text-gray-900 dark:text-white;
         }
         .form-textarea[readonly] {
@@ -1718,7 +1718,7 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
 
         /* Checkbox styles */
         .form-checkbox-table {
-            @apply h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 rounded block mx-auto;
+            @apply h-4 w-4 text-accent-color focus:ring-accent-color border-gray-300 rounded block mx-auto;
         }
         .form-checkbox-table[disabled] {
              opacity: 0.7;

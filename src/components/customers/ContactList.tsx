@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Search } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
+import { useDivision } from '../../App';
+import { getDivisionAccentClasses } from '../../lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 interface Contact {
@@ -48,6 +50,8 @@ const initialFormData: ContactFormData = {
 
 export default function ContactList() {
   const { user } = useAuth();
+  const { division } = useDivision();
+  const accentClasses = getDivisionAccentClasses(division);
   const navigate = useNavigate();
   const location = useLocation();
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -62,6 +66,7 @@ export default function ContactList() {
   const [customerSearch, setCustomerSearch] = useState('');
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [showCustomerResults, setShowCustomerResults] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Log location pathname whenever it changes
   useEffect(() => {
@@ -87,6 +92,24 @@ export default function ContactList() {
       setShowCustomerResults(false);
     }
   }, [customerSearch, customers]);
+
+  // Filter contacts based on search query
+  const filteredContacts = contacts.filter(contact => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase();
+    const fullName = `${contact.first_name} ${contact.last_name}`.toLowerCase();
+    const customerName = contact.customers?.company_name?.toLowerCase() || '';
+    const email = contact.email?.toLowerCase() || '';
+    const phone = contact.phone?.toLowerCase() || '';
+    const position = contact.position?.toLowerCase() || '';
+    
+    return fullName.includes(query) ||
+           customerName.includes(query) ||
+           email.includes(query) ||
+           phone.includes(query) ||
+           position.includes(query);
+  });
 
   async function fetchContacts() {
     setLoading(true);
@@ -295,7 +318,7 @@ export default function ContactList() {
               setFormData(initialFormData);
               setIsOpen(true);
             }}
-            className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:w-auto"
+            className={`inline-flex items-center justify-center rounded-md border border-transparent ${accentClasses.bg} ${accentClasses.bgHover} px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 ${accentClasses.ring} focus:ring-offset-2 sm:w-auto`}
           >
             <Plus className="h-4 w-4 mr-2" />
             Add contact
@@ -303,9 +326,61 @@ export default function ContactList() {
         </div>
       </div>
 
+      {/* Search Bar */}
+      <div className="mb-6">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search contacts by name, customer, email, phone, or position..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-dark-100 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-accent-color"
+          />
+        </div>
+        {searchQuery && (
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            Showing {filteredContacts.length} of {contacts.length} contacts
+          </p>
+        )}
+      </div>
+
       <div className="mt-8">
         <div className="-mx-4 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:-mx-6 md:mx-0 md:rounded-lg">
-          <table className="min-w-full divide-y divide-gray-300">
+          {filteredContacts.length === 0 ? (
+            <div className="bg-white dark:bg-dark-150 px-6 py-14 text-center">
+              <Search className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+                {searchQuery ? 'No contacts found' : 'No contacts'}
+              </h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {searchQuery 
+                  ? `No contacts match "${searchQuery}". Try a different search term.`
+                  : 'Get started by adding a new contact.'
+                }
+              </p>
+              {!searchQuery && (
+                <div className="mt-6">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditMode(false);
+                      setEditingContactId(null);
+                      setFormData(initialFormData);
+                      setIsOpen(true);
+                    }}
+                    className={`inline-flex items-center rounded-md border border-transparent ${accentClasses.bg} px-4 py-2 text-sm font-medium text-white shadow-sm ${accentClasses.bgHover} focus:outline-none focus:ring-2 ${accentClasses.ring} focus:ring-offset-2`}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add contact
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <table className="min-w-full divide-y divide-gray-300">
             <thead className="bg-gray-50 dark:bg-dark-150">
               <tr>
                 <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
@@ -321,7 +396,7 @@ export default function ContactList() {
                   Phone
                 </th>
                 <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                  Primary
+                  Customer
                 </th>
                 <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
                   <span className="sr-only">Actions</span>
@@ -329,7 +404,7 @@ export default function ContactList() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-dark-150">
-              {contacts.map((contact) => (
+              {filteredContacts.map((contact) => (
                 <tr 
                   key={contact.id}
                   className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -342,41 +417,37 @@ export default function ContactList() {
                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">{contact.email}</td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">{contact.phone}</td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                    {contact.is_primary ? (
-                      <span className="inline-flex rounded-full bg-green-100 dark:bg-green-900 px-2 text-xs font-semibold leading-5 text-green-800 dark:text-green-200">
-                        Yes
-                      </span>
-                    ) : (
-                      <span className="inline-flex rounded-full bg-gray-100 dark:bg-gray-700 px-2 text-xs font-semibold leading-5 text-gray-800 dark:text-gray-200">
-                        No
-                      </span>
-                    )}
+                    {contact.customers?.company_name || 'No Customer'}
                   </td>
                   <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                    {/* Temporarily commented out buttons for debugging */}
-                    {/* 
-                    <button 
-                      className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-2"
-                      onClick={(e) => {
-                        handleEdit(contact);
-                      }}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                    <button 
-                      className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                      onClick={(e) => {
-                        handleDelete(contact.id);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                    */}
+                    <div className="flex justify-end space-x-1">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(contact);
+                        }}
+                        className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+                      >
+                        <Pencil className="h-5 w-5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(contact.id);
+                        }}
+                        className="text-gray-400 hover:text-red-500 dark:hover:text-red-400"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          )}
         </div>
       </div>
 
@@ -413,7 +484,7 @@ export default function ContactList() {
                     }
                   }}
                   placeholder="Search for a customer..."
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                   required
                 />
                 {showCustomerResults && filteredCustomers.length > 0 && (
@@ -444,7 +515,7 @@ export default function ContactList() {
                   required
                   value={formData.first_name}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                 />
               </div>
               <div>
@@ -458,7 +529,7 @@ export default function ContactList() {
                   required
                   value={formData.last_name}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                 />
               </div>
               <div>
@@ -471,7 +542,7 @@ export default function ContactList() {
                   id="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                 />
               </div>
               <div>
@@ -484,7 +555,7 @@ export default function ContactList() {
                   id="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                 />
               </div>
               <div>
@@ -497,33 +568,21 @@ export default function ContactList() {
                   id="position"
                   value={formData.position}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                 />
               </div>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="is_primary"
-                  id="is_primary"
-                  checked={formData.is_primary}
-                  onChange={(e) => setFormData(prev => ({ ...prev, is_primary: e.target.checked }))}
-                  className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 dark:border-gray-600 rounded"
-                />
-                <label htmlFor="is_primary" className="ml-2 block text-sm text-gray-700 dark:text-white">
-                  Primary Contact
-                </label>
-              </div>
+
               <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                 <button
                   type="submit"
-                  className="inline-flex w-full justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-2 sm:text-sm"
+                  className={`inline-flex w-full justify-center rounded-md border border-transparent ${accentClasses.bg} ${accentClasses.bgHover} px-4 py-2 text-base font-medium text-white shadow-sm focus:outline-none focus:ring-2 ${accentClasses.ring} focus:ring-offset-2 sm:col-start-2 sm:text-sm`}
                 >
                   {isEditMode ? 'Save Changes' : 'Add Contact'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-100 px-4 py-2 text-base font-medium text-gray-700 dark:text-white shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
+                  className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-100 px-4 py-2 text-base font-medium text-gray-700 dark:text-white shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
                 >
                   Cancel
                 </button>

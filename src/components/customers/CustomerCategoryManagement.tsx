@@ -204,7 +204,7 @@ export default function CustomerCategoryManagement() {
             setFormData(initialFormData);
             setIsOpen(true);
           }}
-          className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:w-auto"
+          className="inline-flex items-center justify-center rounded-md border border-transparent bg-accent-color px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-accent-color/90 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2 sm:w-auto"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Category
@@ -289,7 +289,7 @@ export default function CustomerCategoryManagement() {
                     value={formData.name}
                     onChange={handleInputChange}
                     required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-accent-color focus:ring-accent-color sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   />
                 </div>
 
@@ -303,7 +303,7 @@ export default function CustomerCategoryManagement() {
                     value={formData.description}
                     onChange={handleInputChange}
                     rows={3}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-accent-color focus:ring-accent-color sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   />
                 </div>
 
@@ -356,7 +356,7 @@ export default function CustomerCategoryManagement() {
                               <select
                                 value={rule.field}
                                 onChange={(e) => updateRule(index, 'field', e.target.value)}
-                                className="block w-1/3 rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                className="block w-1/3 rounded-md border-gray-300 shadow-sm focus:border-accent-color focus:ring-accent-color sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                               >
                                 {availableFields.map(field => (
                                   <option key={field.id} value={field.id}>{field.label}</option>
@@ -366,7 +366,7 @@ export default function CustomerCategoryManagement() {
                               <select
                                 value={rule.operator}
                                 onChange={(e) => updateRule(index, 'operator', e.target.value)}
-                                className="block w-1/3 rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                className="block w-1/3 rounded-md border-gray-300 shadow-sm focus:border-accent-color focus:ring-accent-color sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                               >
                                 {operators.map(op => (
                                   <option key={op.id} value={op.id}>{op.label}</option>
@@ -378,7 +378,7 @@ export default function CustomerCategoryManagement() {
                                 value={rule.value}
                                 onChange={(e) => updateRule(index, 'value', e.target.value)}
                                 placeholder="Value"
-                                className="block w-1/3 rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                className="block w-1/3 rounded-md border-gray-300 shadow-sm focus:border-accent-color focus:ring-accent-color sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                               />
                               
                               <button
@@ -412,13 +412,13 @@ export default function CustomerCategoryManagement() {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-color dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#f26722] hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722]"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-accent-color hover:bg-accent-color/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-color"
                 >
                   {isEditing ? 'Update' : 'Create'}
                 </button>
@@ -444,7 +444,7 @@ export default function CustomerCategoryManagement() {
               <button
                 type="button"
                 onClick={() => setDeleteConfirmOpen(false)}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-color dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
               >
                 Cancel
               </button>

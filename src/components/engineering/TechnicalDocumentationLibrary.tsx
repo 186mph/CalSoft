@@ -226,7 +226,7 @@ export function TechnicalDocumentationLibrary() {
       manual: 'bg-green-500',
       procedure: 'bg-purple-500',
       standard: 'bg-yellow-500',
-      guide: 'bg-orange-500',
+      guide: 'bg-accent-color/100',
       reference: 'bg-gray-500'
     };
     

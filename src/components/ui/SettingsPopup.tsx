@@ -60,7 +60,7 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({
               onClick={() => setShowEditProfile(true)}
               className="flex items-center w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-dark-50 rounded-md"
             >
-              <UserIcon className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+              <UserIcon className="mr-3 h-5 w-5 text-gray-400 dark:text-accent-color" />
               Edit Profile
             </button>
             
@@ -77,7 +77,7 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({
               }}
               className="flex items-center w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-dark-50 rounded-md"
             >
-              <FileText className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+              <FileText className="mr-3 h-5 w-5 text-gray-400 dark:text-accent-color" />
               About
             </button>
           </div>

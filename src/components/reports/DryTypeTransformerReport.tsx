@@ -831,7 +831,7 @@ const DryTypeTransformerReport: React.FC = () => {
             <button
               onClick={handleSave}
               disabled={!isEditing}
-              className={`px-4 py-2 text-sm text-white bg-[#f26722] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] ${!isEditing ? 'hidden' : 'hover:bg-[#f26722]/90'}`}
+              className={`px-4 py-2 text-sm text-white bg-accent-color rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-color ${!isEditing ? 'hidden' : 'hover:bg-accent-color/90'}`}
             >
               {reportId ? 'Update Report' : 'Save New Report'}
             </button>
@@ -878,7 +878,7 @@ const DryTypeTransformerReport: React.FC = () => {
                 value={formData.substation}
                 onChange={(e) => handleChange(null, 'substation', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] bg-gray-50 dark:bg-dark-100 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color bg-gray-50 dark:bg-dark-100 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 placeholder="Enter Substation"
               />
             </div>
@@ -889,7 +889,7 @@ const DryTypeTransformerReport: React.FC = () => {
                 value={formData.eqptLocation}
                 onChange={(e) => handleChange(null, 'eqptLocation', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] bg-gray-50 dark:bg-dark-100 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color bg-gray-50 dark:bg-dark-100 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 placeholder="Enter Equipment Location"
               />
             </div>
@@ -900,7 +900,7 @@ const DryTypeTransformerReport: React.FC = () => {
                 value={formData.identifier}
                 onChange={(e) => handleChange(null, 'identifier', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] bg-gray-50 dark:bg-dark-100 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color bg-gray-50 dark:bg-dark-100 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 placeholder="Enter Identifier"
               />
             </div>
@@ -913,7 +913,7 @@ const DryTypeTransformerReport: React.FC = () => {
                 value={formData.technicians}
                 onChange={(e) => handleChange(null, 'technicians', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] bg-gray-50 dark:bg-dark-100 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color bg-gray-50 dark:bg-dark-100 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -923,7 +923,7 @@ const DryTypeTransformerReport: React.FC = () => {
                 value={formData.date}
                 onChange={(e) => handleChange(null, 'date', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] bg-gray-50 dark:bg-dark-100 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color bg-gray-50 dark:bg-dark-100 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -933,7 +933,7 @@ const DryTypeTransformerReport: React.FC = () => {
                 value={formData.userName}
                 onChange={(e) => handleChange(null, 'userName', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] bg-gray-50 dark:bg-dark-100 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color bg-gray-50 dark:bg-dark-100 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 placeholder="Enter User Name"
               />
             </div>
@@ -945,7 +945,7 @@ const DryTypeTransformerReport: React.FC = () => {
                   value={formData.temperature.ambient}
                   onChange={(e) => handleTemperatureChange(Number(e.target.value))}
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] bg-gray-50 dark:bg-dark-100 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color bg-gray-50 dark:bg-dark-100 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
               </div>
               <div>
@@ -1302,7 +1302,7 @@ const DryTypeTransformerReport: React.FC = () => {
                       value={item.result}
                       onChange={(e) => handleVisualInspectionChange(index, 'result', e.target.value)}
                       disabled={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     >
                       {visualInspectionOptions.map(option => (
                         <option key={option} value={option}>{option}</option>

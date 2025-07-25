@@ -647,7 +647,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
           <button
             onClick={handleSave}
             disabled={loading || !isEditing}
-            className="bg-[#f26722] hover:bg-[#e55611] text-white font-medium px-4 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-accent-color hover:bg-accent-color-hover text-white font-medium px-4 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Saving...' : (reportId ? 'Update Report' : 'Save Report')}
           </button>
@@ -682,16 +682,16 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">User</label>
-                <input type="text" value={formData.userName} onChange={(e) => handleChange(null, 'userName', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} placeholder="Enter User Name" />
+                <input type="text" value={formData.userName} onChange={(e) => handleChange(null, 'userName', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} placeholder="Enter User Name" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Identifier</label>
-                <input type="text" value={formData.identifier} onChange={(e) => handleChange(null, 'identifier', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} placeholder="Transformer ID / Name" />
+                <input type="text" value={formData.identifier} onChange={(e) => handleChange(null, 'identifier', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} placeholder="Transformer ID / Name" />
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Temp. °F</label>
-                  <input type="number" value={formData.temperature.fahrenheit} onChange={(e) => handleTemperatureChange(Number(e.target.value))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                  <input type="number" value={formData.temperature.fahrenheit} onChange={(e) => handleTemperatureChange(Number(e.target.value))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">°C</label>
@@ -712,23 +712,23 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Technicians</label>
-                <input type="text" value={formData.technicians} onChange={(e) => handleChange(null, 'technicians', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                <input type="text" value={formData.technicians} onChange={(e) => handleChange(null, 'technicians', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
-                <input type="date" value={formData.date} onChange={(e) => handleChange(null, 'date', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                <input type="date" value={formData.date} onChange={(e) => handleChange(null, 'date', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Substation</label>
-                <input type="text" value={formData.substation} onChange={(e) => handleChange(null, 'substation', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                <input type="text" value={formData.substation} onChange={(e) => handleChange(null, 'substation', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Eqpt. Location</label>
-                <input type="text" value={formData.eqptLocation} onChange={(e) => handleChange(null, 'eqptLocation', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                <input type="text" value={formData.eqptLocation} onChange={(e) => handleChange(null, 'eqptLocation', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Humidity %</label>
-                <input type="number" value={formData.temperature.humidity || ''} onChange={(e) => handleChange('temperature', 'humidity', Number(e.target.value))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                <input type="number" value={formData.temperature.humidity || ''} onChange={(e) => handleChange('temperature', 'humidity', Number(e.target.value))} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
               </div>
             </div>
           </div>
@@ -740,29 +740,29 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer</label>
-              <input type="text" value={formData.nameplateData.manufacturer} onChange={(e) => handleNestedChange('nameplateData', 'manufacturer', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <input type="text" value={formData.nameplateData.manufacturer} onChange={(e) => handleNestedChange('nameplateData', 'manufacturer', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Catalog Number</label>
-              <input type="text" value={formData.nameplateData.catalogNumber} onChange={(e) => handleNestedChange('nameplateData', 'catalogNumber', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <input type="text" value={formData.nameplateData.catalogNumber} onChange={(e) => handleNestedChange('nameplateData', 'catalogNumber', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
-              <input type="text" value={formData.nameplateData.serialNumber} onChange={(e) => handleNestedChange('nameplateData', 'serialNumber', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <input type="text" value={formData.nameplateData.serialNumber} onChange={(e) => handleNestedChange('nameplateData', 'serialNumber', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4 mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">KVA</label>
-              <input type="text" value={formData.nameplateData.kva} onChange={(e) => handleNestedChange('nameplateData', 'kva', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <input type="text" value={formData.nameplateData.kva} onChange={(e) => handleNestedChange('nameplateData', 'kva', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Temp. Rise (°C)</label>
-              <input type="text" value={formData.nameplateData.tempRise} onChange={(e) => handleNestedChange('nameplateData', 'tempRise', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <input type="text" value={formData.nameplateData.tempRise} onChange={(e) => handleNestedChange('nameplateData', 'tempRise', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Impedance (%)</label>
-              <input type="text" value={formData.nameplateData.impedance} onChange={(e) => handleNestedChange('nameplateData', 'impedance', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+              <input type="text" value={formData.nameplateData.impedance} onChange={(e) => handleNestedChange('nameplateData', 'impedance', e.target.value)} readOnly={!isEditing} className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
             </div>
           </div>
           
@@ -776,32 +776,32 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
             <div className="flex items-center">
               <div className="w-20 font-medium text-gray-700 dark:text-gray-300">Primary</div>
               <div className="flex-1 flex items-center space-x-2">
-                <input type="text" value={formData.nameplateData.primary.volts} onChange={(e) => handleNestedChange('nameplateData', 'primary', { ...formData.nameplateData.primary, volts: e.target.value })} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                <input type="text" value={formData.nameplateData.primary.volts} onChange={(e) => handleNestedChange('nameplateData', 'primary', { ...formData.nameplateData.primary, volts: e.target.value })} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                 <span>/</span>
-                <input type="text" value={formData.nameplateData.primary.voltsSecondary || ''} onChange={(e) => handleNestedChange('nameplateData', 'primary', { ...formData.nameplateData.primary, voltsSecondary: e.target.value })} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                <input type="text" value={formData.nameplateData.primary.voltsSecondary || ''} onChange={(e) => handleNestedChange('nameplateData', 'primary', { ...formData.nameplateData.primary, voltsSecondary: e.target.value })} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
               </div>
             </div>
             <div className="flex justify-around">
               <label className="inline-flex items-center">
-                <input type="radio" name="primary-connection" value="Delta" checked={formData.nameplateData.primary.connection === 'Delta'} onChange={() => handleNestedChange('nameplateData', 'primary', { ...formData.nameplateData.primary, connection: 'Delta' })} disabled={!isEditing} className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]" />
+                <input type="radio" name="primary-connection" value="Delta" checked={formData.nameplateData.primary.connection === 'Delta'} onChange={() => handleNestedChange('nameplateData', 'primary', { ...formData.nameplateData.primary, connection: 'Delta' })} disabled={!isEditing} className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color" />
                 <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Delta</span>
               </label>
               <label className="inline-flex items-center">
-                <input type="radio" name="primary-connection" value="Wye" checked={formData.nameplateData.primary.connection === 'Wye'} onChange={() => handleNestedChange('nameplateData', 'primary', { ...formData.nameplateData.primary, connection: 'Wye' })} disabled={!isEditing} className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]" />
+                <input type="radio" name="primary-connection" value="Wye" checked={formData.nameplateData.primary.connection === 'Wye'} onChange={() => handleNestedChange('nameplateData', 'primary', { ...formData.nameplateData.primary, connection: 'Wye' })} disabled={!isEditing} className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color" />
                 <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Wye</span>
               </label>
               <label className="inline-flex items-center">
-                <input type="radio" name="primary-connection" value="Single Phase" checked={formData.nameplateData.primary.connection === 'Single Phase'} onChange={() => handleNestedChange('nameplateData', 'primary', { ...formData.nameplateData.primary, connection: 'Single Phase' })} disabled={!isEditing} className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]" />
+                <input type="radio" name="primary-connection" value="Single Phase" checked={formData.nameplateData.primary.connection === 'Single Phase'} onChange={() => handleNestedChange('nameplateData', 'primary', { ...formData.nameplateData.primary, connection: 'Single Phase' })} disabled={!isEditing} className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color" />
                 <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Single Phase</span>
               </label>
             </div>
             <div className="flex justify-around">
               <label className="inline-flex items-center">
-                <input type="radio" name="primary-material" value="Aluminum" checked={formData.nameplateData.primary.material === 'Aluminum'} onChange={() => handleNestedChange('nameplateData', 'primary', { ...formData.nameplateData.primary, material: 'Aluminum' })} disabled={!isEditing} className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]" />
+                <input type="radio" name="primary-material" value="Aluminum" checked={formData.nameplateData.primary.material === 'Aluminum'} onChange={() => handleNestedChange('nameplateData', 'primary', { ...formData.nameplateData.primary, material: 'Aluminum' })} disabled={!isEditing} className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color" />
                 <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Aluminum</span>
               </label>
               <label className="inline-flex items-center">
-                <input type="radio" name="primary-material" value="Copper" checked={formData.nameplateData.primary.material === 'Copper'} onChange={() => handleNestedChange('nameplateData', 'primary', { ...formData.nameplateData.primary, material: 'Copper' })} disabled={!isEditing} className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]" />
+                <input type="radio" name="primary-material" value="Copper" checked={formData.nameplateData.primary.material === 'Copper'} onChange={() => handleNestedChange('nameplateData', 'primary', { ...formData.nameplateData.primary, material: 'Copper' })} disabled={!isEditing} className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color" />
                 <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Copper</span>
               </label>
             </div>
@@ -811,32 +811,32 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
             <div className="flex items-center">
               <div className="w-20 font-medium text-gray-700 dark:text-gray-300">Secondary</div>
               <div className="flex-1 flex items-center space-x-2">
-                <input type="text" value={formData.nameplateData.secondary.volts} onChange={(e) => handleNestedChange('nameplateData', 'secondary', { ...formData.nameplateData.secondary, volts: e.target.value })} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                <input type="text" value={formData.nameplateData.secondary.volts} onChange={(e) => handleNestedChange('nameplateData', 'secondary', { ...formData.nameplateData.secondary, volts: e.target.value })} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
                 <span>/</span>
-                <input type="text" value={formData.nameplateData.secondary.voltsSecondary || ''} onChange={(e) => handleNestedChange('nameplateData', 'secondary', { ...formData.nameplateData.secondary, voltsSecondary: e.target.value })} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
+                <input type="text" value={formData.nameplateData.secondary.voltsSecondary || ''} onChange={(e) => handleNestedChange('nameplateData', 'secondary', { ...formData.nameplateData.secondary, voltsSecondary: e.target.value })} readOnly={!isEditing} className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} />
               </div>
             </div>
             <div className="flex justify-around">
               <label className="inline-flex items-center">
-                <input type="radio" name="secondary-connection" value="Delta" checked={formData.nameplateData.secondary.connection === 'Delta'} onChange={() => handleNestedChange('nameplateData', 'secondary', { ...formData.nameplateData.secondary, connection: 'Delta' })} disabled={!isEditing} className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]" />
+                <input type="radio" name="secondary-connection" value="Delta" checked={formData.nameplateData.secondary.connection === 'Delta'} onChange={() => handleNestedChange('nameplateData', 'secondary', { ...formData.nameplateData.secondary, connection: 'Delta' })} disabled={!isEditing} className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color" />
                 <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Delta</span>
               </label>
               <label className="inline-flex items-center">
-                <input type="radio" name="secondary-connection" value="Wye" checked={formData.nameplateData.secondary.connection === 'Wye'} onChange={() => handleNestedChange('nameplateData', 'secondary', { ...formData.nameplateData.secondary, connection: 'Wye' })} disabled={!isEditing} className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]" />
+                <input type="radio" name="secondary-connection" value="Wye" checked={formData.nameplateData.secondary.connection === 'Wye'} onChange={() => handleNestedChange('nameplateData', 'secondary', { ...formData.nameplateData.secondary, connection: 'Wye' })} disabled={!isEditing} className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color" />
                 <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Wye</span>
               </label>
               <label className="inline-flex items-center">
-                <input type="radio" name="secondary-connection" value="Single Phase" checked={formData.nameplateData.secondary.connection === 'Single Phase'} onChange={() => handleNestedChange('nameplateData', 'secondary', { ...formData.nameplateData.secondary, connection: 'Single Phase' })} disabled={!isEditing} className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]" />
+                <input type="radio" name="secondary-connection" value="Single Phase" checked={formData.nameplateData.secondary.connection === 'Single Phase'} onChange={() => handleNestedChange('nameplateData', 'secondary', { ...formData.nameplateData.secondary, connection: 'Single Phase' })} disabled={!isEditing} className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color" />
                 <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Single Phase</span>
               </label>
             </div>
             <div className="flex justify-around">
               <label className="inline-flex items-center">
-                <input type="radio" name="secondary-material" value="Aluminum" checked={formData.nameplateData.secondary.material === 'Aluminum'} onChange={() => handleNestedChange('nameplateData', 'secondary', { ...formData.nameplateData.secondary, material: 'Aluminum' })} disabled={!isEditing} className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]" />
+                <input type="radio" name="secondary-material" value="Aluminum" checked={formData.nameplateData.secondary.material === 'Aluminum'} onChange={() => handleNestedChange('nameplateData', 'secondary', { ...formData.nameplateData.secondary, material: 'Aluminum' })} disabled={!isEditing} className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color" />
                 <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Aluminum</span>
               </label>
               <label className="inline-flex items-center">
-                <input type="radio" name="secondary-material" value="Copper" checked={formData.nameplateData.secondary.material === 'Copper'} onChange={() => handleNestedChange('nameplateData', 'secondary', { ...formData.nameplateData.secondary, material: 'Copper' })} disabled={!isEditing} className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]" />
+                <input type="radio" name="secondary-material" value="Copper" checked={formData.nameplateData.secondary.material === 'Copper'} onChange={() => handleNestedChange('nameplateData', 'secondary', { ...formData.nameplateData.secondary, material: 'Copper' })} disabled={!isEditing} className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color" />
                 <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Copper</span>
               </label>
             </div>
@@ -865,7 +865,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                     });
                   }}
                   readOnly={!isEditing}
-                  className={`w-full text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  className={`w-full text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
               ))}
             </div>
@@ -884,7 +884,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                   min="1"
                   max="7"
                   readOnly={!isEditing}
-                  className={`w-12 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  className={`w-12 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
                 <span>/</span>
                 <input
@@ -895,7 +895,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                     currentPositionSecondary: e.target.value
                   })}
                   readOnly={!isEditing}
-                  className={`w-12 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  className={`w-12 text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
               </div>
             </div>
@@ -910,7 +910,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                     tapVoltsSpecific: e.target.value
                   })}
                   readOnly={!isEditing}
-                  className={`w-full text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  className={`w-full text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
               </div>
               <div>
@@ -923,7 +923,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                     tapPercentSpecific: e.target.value
                   })}
                   readOnly={!isEditing}
-                  className={`w-full text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  className={`w-full text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
               </div>
             </div>
@@ -953,7 +953,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                         value={formData.visualInspection[`${item.id}_result`] || 'Select One'}
                         onChange={(e) => handleVisualInspectionChange(item.id, 'result', e.target.value)}
                         disabled={!isEditing}
-                        className={`w-full text-sm rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        className={`w-full text-sm rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       >
                         {visualInspectionOptions.map(option => (
                           <option key={option} value={option} className="dark:bg-dark-100 dark:text-white">{option}</option>
@@ -999,7 +999,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                           value={formData.insulationResistance.primaryToGround.testVoltage}
                           onChange={(e) => handleNestedChange('insulationResistance', 'primaryToGround', { ...formData.insulationResistance.primaryToGround, testVoltage: e.target.value })}
                           disabled={!isEditing}
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                         >
                           {testVoltageOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                         </select>
@@ -1010,7 +1010,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                           value={formData.insulationResistance.primaryToGround.readings.halfMinute} 
                           onChange={(e) => handleDeepNestedChange('insulationResistance', 'primaryToGround', 'readings', 'halfMinute', e.target.value)} 
                           readOnly={!isEditing} 
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
                         />
                       </td>
                       <td className="px-1 py-2">
@@ -1019,7 +1019,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                           value={formData.insulationResistance.primaryToGround.readings.oneMinute} 
                           onChange={(e) => handleDeepNestedChange('insulationResistance', 'primaryToGround', 'readings', 'oneMinute', e.target.value)} 
                           readOnly={!isEditing} 
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
                         />
                       </td>
                       <td className="px-1 py-2">
@@ -1028,7 +1028,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                           value={formData.insulationResistance.primaryToGround.readings.tenMinute} 
                           onChange={(e) => handleDeepNestedChange('insulationResistance', 'primaryToGround', 'readings', 'tenMinute', e.target.value)} 
                           readOnly={!isEditing} 
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
                         />
                       </td>
                       <td className="px-1 py-2">
@@ -1036,7 +1036,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                           value={formData.insulationResistance.primaryToGround.unit}
                           onChange={(e) => handleNestedChange('insulationResistance', 'primaryToGround', { ...formData.insulationResistance.primaryToGround, unit: e.target.value })}
                           disabled={!isEditing}
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                         >
                           {insulationResistanceUnits.map(u => <option key={u.symbol} value={u.symbol}> ({u.symbol})</option>)}
                         </select>
@@ -1050,7 +1050,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                           value={formData.insulationResistance.secondaryToGround.testVoltage}
                           onChange={(e) => handleNestedChange('insulationResistance', 'secondaryToGround', { ...formData.insulationResistance.secondaryToGround, testVoltage: e.target.value })}
                           disabled={!isEditing}
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                         >
                           {testVoltageOptions.map(option => (
                             <option key={option} value={option}>{option}</option>
@@ -1063,7 +1063,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                           value={formData.insulationResistance.secondaryToGround.readings.halfMinute} 
                           onChange={(e) => handleDeepNestedChange('insulationResistance', 'secondaryToGround', 'readings', 'halfMinute', e.target.value)} 
                           readOnly={!isEditing} 
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
                         />
                       </td>
                       <td className="px-1 py-2">
@@ -1072,7 +1072,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                           value={formData.insulationResistance.secondaryToGround.readings.oneMinute} 
                           onChange={(e) => handleDeepNestedChange('insulationResistance', 'secondaryToGround', 'readings', 'oneMinute', e.target.value)} 
                           readOnly={!isEditing} 
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
                         />
                       </td>
                       <td className="px-1 py-2">
@@ -1081,7 +1081,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                           value={formData.insulationResistance.secondaryToGround.readings.tenMinute} 
                           onChange={(e) => handleDeepNestedChange('insulationResistance', 'secondaryToGround', 'readings', 'tenMinute', e.target.value)} 
                           readOnly={!isEditing} 
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
                         />
                       </td>
                       <td className="px-1 py-2">
@@ -1089,7 +1089,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                           value={formData.insulationResistance.secondaryToGround.unit}
                           onChange={(e) => handleNestedChange('insulationResistance', 'secondaryToGround', { ...formData.insulationResistance.secondaryToGround, unit: e.target.value })}
                           disabled={!isEditing}
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                         >
                           {insulationResistanceUnits.map(unit => (
                             <option key={unit.symbol} value={unit.symbol}>{unit.symbol}</option>
@@ -1105,7 +1105,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                           value={formData.insulationResistance.primaryToSecondary.testVoltage}
                           onChange={(e) => handleNestedChange('insulationResistance', 'primaryToSecondary', { ...formData.insulationResistance.primaryToSecondary, testVoltage: e.target.value })}
                           disabled={!isEditing}
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                         >
                           {testVoltageOptions.map(option => (
                             <option key={option} value={option}>{option}</option>
@@ -1118,7 +1118,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                           value={formData.insulationResistance.primaryToSecondary.readings.halfMinute} 
                           onChange={(e) => handleDeepNestedChange('insulationResistance', 'primaryToSecondary', 'readings', 'halfMinute', e.target.value)} 
                           readOnly={!isEditing} 
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
                         />
                       </td>
                       <td className="px-1 py-2">
@@ -1127,7 +1127,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                           value={formData.insulationResistance.primaryToSecondary.readings.oneMinute} 
                           onChange={(e) => handleDeepNestedChange('insulationResistance', 'primaryToSecondary', 'readings', 'oneMinute', e.target.value)} 
                           readOnly={!isEditing} 
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
                         />
                       </td>
                       <td className="px-1 py-2">
@@ -1136,7 +1136,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                           value={formData.insulationResistance.primaryToSecondary.readings.tenMinute} 
                           onChange={(e) => handleDeepNestedChange('insulationResistance', 'primaryToSecondary', 'readings', 'tenMinute', e.target.value)} 
                           readOnly={!isEditing} 
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
                         />
                       </td>
                       <td className="px-1 py-2">
@@ -1144,7 +1144,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                           value={formData.insulationResistance.primaryToSecondary.unit}
                           onChange={(e) => handleNestedChange('insulationResistance', 'primaryToSecondary', { ...formData.insulationResistance.primaryToSecondary, unit: e.target.value })}
                           disabled={!isEditing}
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                         >
                           {insulationResistanceUnits.map(unit => (
                             <option key={unit.symbol} value={unit.symbol}>{unit.symbol}</option>
@@ -1311,7 +1311,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                 value={formData.testEquipment.megohmmeter.name}
                 onChange={(e) => handleDeepNestedChange('testEquipment', 'megohmmeter', 'name', '', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 placeholder="Enter megohmmeter name"
               />
             </div>
@@ -1322,7 +1322,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                 value={formData.testEquipment.megohmmeter.serialNumber}
                 onChange={(e) => handleDeepNestedChange('testEquipment', 'megohmmeter', 'serialNumber', '', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 placeholder="Enter serial number"
               />
             </div>
@@ -1333,7 +1333,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
                 value={formData.testEquipment.megohmmeter.ampId}
                 onChange={(e) => handleDeepNestedChange('testEquipment', 'megohmmeter', 'ampId', '', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 placeholder="Enter AMP ID"
               />
             </div>
@@ -1349,7 +1349,7 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
               onChange={(e) => handleChange(null, 'comments', e.target.value)}
               readOnly={!isEditing}
               rows={4}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               placeholder="Enter any additional comments or observations"
             />
           </div>
@@ -1365,7 +1365,7 @@ export default LargeDryTypeXfmrMTSReport;
 // .form-label { @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1; }
 // .form-input, .form-select, .form-textarea {
 //   @apply mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm
-//   focus:outline-none focus:ring-[#f26722] focus:border-[#f26722]
+//   focus:outline-none focus:ring-accent-color focus:border-accent-color
 //   bg-white dark:bg-dark-100 text-gray-900 dark:text-white;
 // }
 // .form-input[readonly], .form-select[disabled], .form-textarea[readonly] {

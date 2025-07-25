@@ -262,7 +262,7 @@ const ChatPopup: React.FC<ChatPopupProps> = ({ onClose }) => {
                           className={`
                             px-3 py-2 rounded-lg
                             ${isCurrentUser 
-                              ? 'bg-[#f26722] text-white rounded-br-none' 
+                              ? 'bg-accent-color text-white rounded-br-none' 
                               : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-none'}
                           `}
                         >
@@ -302,7 +302,7 @@ const ChatPopup: React.FC<ChatPopupProps> = ({ onClose }) => {
               <Button
                 type="submit"
                 disabled={!messageText.trim() || sendingMessage}
-                className="rounded-full h-9 w-9 p-2 bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                className="rounded-full h-9 w-9 p-2 bg-accent-color hover:bg-accent-color/90 text-white"
               >
                 <Send className="h-4 w-4" />
               </Button>

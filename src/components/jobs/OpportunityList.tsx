@@ -398,7 +398,7 @@ export default function OpportunityList() {
               setIsOpen(true);
               setFormData(initialFormData);
             }}
-            className="inline-flex items-center justify-center rounded-md bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+            className="inline-flex items-center justify-center rounded-md bg-accent-color px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-accent-color/90 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add opportunity
@@ -484,7 +484,7 @@ export default function OpportunityList() {
                                 setSelectedDivision(opportunity.amp_division);
                                 setShowDivisionAnalytics(true);
                               }}
-                              className="text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                              className="text-accent-color hover:text-accent-color/90 dark:text-accent-color dark:hover:text-accent-color/90"
                             >
                               {formatDivisionName(opportunity.amp_division)}
                             </button>
@@ -518,7 +518,7 @@ export default function OpportunityList() {
                               e.stopPropagation();
                               navigate(`/sales-dashboard/opportunities/${opportunity.id}`);
                             }}
-                            className="text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                            className="text-accent-color hover:text-accent-color/90 dark:text-accent-color dark:hover:text-accent-color/90"
                           >
                             <Pencil className="h-5 w-5" />
                           </button>
@@ -568,7 +568,7 @@ export default function OpportunityList() {
                   name="sales_person"
                   value={user?.email || ''}
                   disabled
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-dark-200 focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:text-white cursor-not-allowed"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-dark-200 focus:outline-none focus:ring-accent-color focus:border-accent-color dark:text-white cursor-not-allowed"
                 />
               </div>
 
@@ -580,7 +580,7 @@ export default function OpportunityList() {
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                   required
                 >
                   <option value="awareness" className="dark:bg-dark-100 dark:text-white">Awareness</option>
@@ -603,7 +603,7 @@ export default function OpportunityList() {
                   name="customer_id"
                   value={formData.customer_id}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                   required
                 >
                   <option value="" className="dark:bg-dark-100 dark:text-white">Select a customer</option>
@@ -623,7 +623,7 @@ export default function OpportunityList() {
                   name="contact_id"
                   value={formData.contact_id}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                   required
                   disabled={!formData.customer_id}
                 >
@@ -645,7 +645,7 @@ export default function OpportunityList() {
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                   required
                 />
               </div>
@@ -659,7 +659,7 @@ export default function OpportunityList() {
                   value={formData.description}
                   onChange={handleChange}
                   rows={3}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                   required
                 />
               </div>
@@ -674,7 +674,7 @@ export default function OpportunityList() {
                     name="expected_value"
                     value={formData.expected_value}
                     onChange={handleChange}
-                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                     required
                   />
                 </div>
@@ -688,7 +688,7 @@ export default function OpportunityList() {
                     name="probability"
                     value={formData.probability}
                     onChange={handleChange}
-                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                     min="0"
                     max="100"
                     required
@@ -705,7 +705,7 @@ export default function OpportunityList() {
                   name="expected_close_date"
                   value={formData.expected_close_date}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                   required
                 />
               </div>
@@ -718,7 +718,7 @@ export default function OpportunityList() {
                   name="amp_division"
                   value={formData.amp_division}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                   required
                 >
                   <option value="" className="dark:bg-dark-100 dark:text-white">Select a division</option>
@@ -739,7 +739,7 @@ export default function OpportunityList() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#f26722] border border-transparent rounded-md shadow-sm hover:bg-[#f26722]/90 focus:outline-none"
+                  className="px-4 py-2 text-sm font-medium text-white bg-accent-color border border-transparent rounded-md shadow-sm hover:bg-accent-color/90 focus:outline-none"
                 >
                   Create
                 </button>

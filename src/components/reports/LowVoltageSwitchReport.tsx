@@ -1051,7 +1051,7 @@ export default function LowVoltageSwitchReport() {
                 value={formData.customer}
                 onChange={(e) => handleChange('customer', e.target.value)}
                 readOnly={!isEditMode}
-                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1063,7 +1063,7 @@ export default function LowVoltageSwitchReport() {
                 value={formData.jobNumber}
                 onChange={(e) => handleChange('jobNumber', e.target.value)}
                 readOnly={!isEditMode}
-                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1075,7 +1075,7 @@ export default function LowVoltageSwitchReport() {
                 value={formData.address}
                 onChange={(e) => handleChange('address', e.target.value)}
                 readOnly={!isEditMode}
-                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1087,7 +1087,7 @@ export default function LowVoltageSwitchReport() {
                 value={formData.identifier}
                 onChange={(e) => handleChange('identifier', e.target.value)}
                 readOnly={!isEditMode}
-                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1099,7 +1099,7 @@ export default function LowVoltageSwitchReport() {
                 value={formData.technicians}
                 onChange={(e) => handleChange('technicians', e.target.value)}
                 readOnly={!isEditMode}
-                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1111,7 +1111,7 @@ export default function LowVoltageSwitchReport() {
                 value={formData.substation}
                 onChange={(e) => handleChange('substation', e.target.value)}
                 readOnly={!isEditMode}
-                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1123,7 +1123,7 @@ export default function LowVoltageSwitchReport() {
                 value={formData.date}
                 onChange={(e) => handleChange('date', e.target.value)}
                 readOnly={!isEditMode}
-                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1135,7 +1135,7 @@ export default function LowVoltageSwitchReport() {
                 value={formData.eqptLocation}
                 onChange={(e) => handleChange('eqptLocation', e.target.value)}
                 readOnly={!isEditMode}
-                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div className="flex gap-4 items-start">
@@ -1149,7 +1149,7 @@ export default function LowVoltageSwitchReport() {
                     value={formData.temperature.fahrenheit}
                     onChange={(e) => handleChange('temperature', { ...formData.temperature, fahrenheit: Number(e.target.value) })}
                     readOnly={!isEditMode}
-                    className={`block w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    className={`block w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                   />
                   <span className="text-gray-600 dark:text-gray-400">°F</span>
                   <input
@@ -1178,7 +1178,7 @@ export default function LowVoltageSwitchReport() {
                     value={formData.humidity}
                     onChange={(e) => handleChange('humidity', Number(e.target.value))}
                     readOnly={!isEditMode}
-                    className={`block w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    className={`block w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                   />
                   <span className="text-gray-600 dark:text-gray-400">%</span>
                 </div>
@@ -1565,7 +1565,7 @@ export default function LowVoltageSwitchReport() {
                 value={formData.insulationResistance.testVoltage}
                 onChange={(e) => handleChange('insulationResistance.testVoltage', e.target.value)}
                 disabled={!isEditMode}
-                className={`block w-32 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`block w-32 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               >
                 {TEST_VOLTAGE_OPTIONS.map(voltage => (
                   <option key={voltage} value={voltage}>{voltage}</option>
@@ -1579,7 +1579,7 @@ export default function LowVoltageSwitchReport() {
                 value={formData.insulationResistance.units}
                 onChange={(e) => handleChange('insulationResistance.units', e.target.value)}
                 disabled={!isEditMode}
-                className={`block w-24 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`block w-24 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               >
                 {INSULATION_RESISTANCE_UNITS.map(unit => (
                   <option key={unit} value={unit}>{unit}</option>
@@ -1618,7 +1618,7 @@ export default function LowVoltageSwitchReport() {
                         'P1-P2': createMeasurement(e.target.value) 
                       })}
                       readOnly={!isEditMode}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     />
                   </td>
                   <td className="border border-gray-200 dark:border-gray-700 p-1">
@@ -1630,7 +1630,7 @@ export default function LowVoltageSwitchReport() {
                         'P2-P3': createMeasurement(e.target.value) 
                       })}
                       readOnly={!isEditMode}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     />
                   </td>
                   <td className="border border-gray-200 dark:border-gray-700 p-1">
@@ -1642,7 +1642,7 @@ export default function LowVoltageSwitchReport() {
                         'P3-P1': createMeasurement(e.target.value) 
                       })}
                       readOnly={!isEditMode}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     />
                   </td>
                   <td className="border border-gray-200 dark:border-gray-700 p-1">
@@ -1654,7 +1654,7 @@ export default function LowVoltageSwitchReport() {
                         'P1': createMeasurement(e.target.value) 
                       })}
                       readOnly={!isEditMode}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     />
                   </td>
                   <td className="border border-gray-200 dark:border-gray-700 p-1">
@@ -1666,7 +1666,7 @@ export default function LowVoltageSwitchReport() {
                         'P2': createMeasurement(e.target.value) 
                       })}
                       readOnly={!isEditMode}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     />
                   </td>
                   <td className="border border-gray-200 dark:border-gray-700 p-1">
@@ -1678,7 +1678,7 @@ export default function LowVoltageSwitchReport() {
                         'P3': createMeasurement(e.target.value) 
                       })}
                       readOnly={!isEditMode}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     />
                   </td>
                   <td className="border border-gray-200 dark:border-gray-700 p-1">
@@ -1690,7 +1690,7 @@ export default function LowVoltageSwitchReport() {
                         'P1': createMeasurement(e.target.value) 
                       })}
                       readOnly={!isEditMode}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     />
                   </td>
                   <td className="border border-gray-200 dark:border-gray-700 p-1">
@@ -1702,7 +1702,7 @@ export default function LowVoltageSwitchReport() {
                         'P2': createMeasurement(e.target.value) 
                       })}
                       readOnly={!isEditMode}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     />
                   </td>
                   <td className="border border-gray-200 dark:border-gray-700 p-1">
@@ -1714,7 +1714,7 @@ export default function LowVoltageSwitchReport() {
                         'P3': createMeasurement(e.target.value) 
                       })}
                       readOnly={!isEditMode}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     />
                   </td>
                 </tr>
@@ -1818,7 +1818,7 @@ export default function LowVoltageSwitchReport() {
               value={formData.contactResistance.units}
               onChange={(e) => handleChange('contactResistance.units', e.target.value)}
               disabled={!isEditMode}
-              className={`block w-24 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              className={`block w-24 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white text-base ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             >
               {CONTACT_RESISTANCE_UNITS.map(unit => (
                 <option key={unit} value={unit}>{unit}</option>
@@ -1960,7 +1960,7 @@ export default function LowVoltageSwitchReport() {
                         value={value}
                         onChange={(e) => handleChange('visualMechanicalInspection', { ...formData.visualMechanicalInspection, [key]: e.target.value })}
                         disabled={!isEditMode}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       >
                         <option value="">Select One</option>
                         <option value="Satisfactory">Satisfactory</option>
@@ -1997,7 +1997,7 @@ export default function LowVoltageSwitchReport() {
                   })}
                   placeholder="Fluke 1587FC"
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -2011,7 +2011,7 @@ export default function LowVoltageSwitchReport() {
                   })}
                   placeholder="Test"
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -2025,7 +2025,7 @@ export default function LowVoltageSwitchReport() {
                   })}
                   placeholder="Test"
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
               </div>
             </div>
@@ -2043,7 +2043,7 @@ export default function LowVoltageSwitchReport() {
                   })}
                   placeholder="Megger DLRO"
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -2057,7 +2057,7 @@ export default function LowVoltageSwitchReport() {
                   })}
                   placeholder="Test"
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -2071,7 +2071,7 @@ export default function LowVoltageSwitchReport() {
                   })}
                   placeholder="Test"
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
               </div>
             </div>
@@ -2093,7 +2093,7 @@ export default function LowVoltageSwitchReport() {
                 onChange={(e) => handleChange('comments', { ...formData.comments, enclosure: e.target.value })}
                 readOnly={!isEditMode}
                 rows={6}
-                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditMode ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
           </div>

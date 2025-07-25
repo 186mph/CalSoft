@@ -615,7 +615,7 @@ export const ArmadilloDashboard: React.FC<ArmadilloDashboardProps> = ({ division
         <Tabs defaultValue="jobs" className="w-full">
           <TabsList className="flex justify-between bg-transparent space-x-0 border-b">
             <TabsTrigger 
-              className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-16 text-base"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-accent-color data-[state=active]:text-accent-color data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-16 text-base"
               value="jobs"
             >
               <div className="flex flex-col items-center justify-center">
@@ -627,7 +627,7 @@ export const ArmadilloDashboard: React.FC<ArmadilloDashboardProps> = ({ division
             </TabsTrigger>
             
             <TabsTrigger 
-              className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-16 text-base"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-accent-color data-[state=active]:text-accent-color data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-16 text-base"
               value="documents"
             >
               <div className="flex flex-col items-center justify-center">

@@ -409,7 +409,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
         {(['p1', 'p2', 'p3'] as const).map(pole => (
           <React.Fragment key={pole}>
             <td className="border px-1 py-1">
-              <input type="text" value={rowData[pole + 'Reading']} onChange={e => handleChange('insulationResistance.' + stateKey + '.' + pole + 'Reading', e.target.value)} readOnly={!isEditing} className={`w-full text-center p-1.5 rounded text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : 'bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]'}`} />
+              <input type="text" value={rowData[pole + 'Reading']} onChange={e => handleChange('insulationResistance.' + stateKey + '.' + pole + 'Reading', e.target.value)} readOnly={!isEditing} className={`w-full text-center p-1.5 rounded text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : 'bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 focus:ring-1 focus:ring-accent-color focus:border-accent-color'}`} />
             </td>
             <td className="border px-1 py-1">
               <input type="text" value={rowData[pole + 'Corrected']} readOnly className="w-full text-center p-1.5 rounded text-sm bg-gray-100 dark:bg-dark-200 cursor-not-allowed" />
@@ -419,7 +419,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
         {hasNeutral ? (
            <React.Fragment>
             <td className="border px-1 py-1">
-              <input type="text" value={rowData.neutralReading || ''} onChange={e => handleChange('insulationResistance.' + stateKey + '.neutralReading', e.target.value)} readOnly={!isEditing} className={`w-full text-center p-1.5 rounded text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : 'bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]'}`} />
+              <input type="text" value={rowData.neutralReading || ''} onChange={e => handleChange('insulationResistance.' + stateKey + '.neutralReading', e.target.value)} readOnly={!isEditing} className={`w-full text-center p-1.5 rounded text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : 'bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 focus:ring-1 focus:ring-accent-color focus:border-accent-color'}`} />
             </td>
             <td className="border px-1 py-1">
               <input type="text" value={rowData.neutralCorrected || ''} readOnly className="w-full text-center p-1.5 rounded text-sm bg-gray-100 dark:bg-dark-200 cursor-not-allowed" />
@@ -429,7 +429,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
           <><td className="border px-1 py-1 bg-gray-50 dark:bg-dark-200"></td><td className="border px-1 py-1 bg-gray-50 dark:bg-dark-200"></td></>
         )}
         <td className="border px-1 py-1">
-          <select value={rowData.units} onChange={e => handleChange('insulationResistance.' + stateKey + '.units', e.target.value)} disabled={!isEditing} className={`w-full p-1.5 rounded text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : 'bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]'}`}>
+          <select value={rowData.units} onChange={e => handleChange('insulationResistance.' + stateKey + '.units', e.target.value)} disabled={!isEditing} className={`w-full p-1.5 rounded text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : 'bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 focus:ring-1 focus:ring-accent-color focus:border-accent-color'}`}>
             {insulationResistanceUnitsOptions.map(u => <option key={u} value={u}>{u}</option>)}
           </select>
         </td>
@@ -437,7 +437,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
     );
   };
 
-  const commonInputClass = 'mt-1 block w-full p-2 rounded-md shadow-sm text-sm focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]';
+  const commonInputClass = 'mt-1 block w-full p-2 rounded-md shadow-sm text-sm focus:ring-1 focus:ring-accent-color focus:border-accent-color';
   const editableInputClass = 'bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600';
   const readOnlyInputClass = 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed';
   const labelClass = "block text-sm font-medium text-gray-700 dark:text-gray-300";
@@ -458,7 +458,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
           {reportId && !isEditing ? (
             <button onClick={() => setIsEditing(true)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md text-sm">Edit Report</button>
           ) : (
-            <button onClick={handleSave} disabled={!isEditing} className={`px-4 py-2 bg-[#f26722] hover:bg-[#e55611] text-white font-medium rounded-md text-sm ${!isEditing ? 'hidden' : ''}`}>
+            <button onClick={handleSave} disabled={!isEditing} className={`px-4 py-2 bg-accent-color hover:bg-accent-color-hover text-white font-medium rounded-md text-sm ${!isEditing ? 'hidden' : ''}`}>
               {reportId ? 'Update Report' : 'Save Report'}
             </button>
           )}
@@ -665,11 +665,11 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                   <td className="border px-2 py-1.5 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">{state.charAt(0).toUpperCase() + state.slice(1)}</td>
                   {(['p1', 'p2', 'p3', 'neutral'] as const).map(pole => (
                     <td key={pole} className="border px-1 py-1">
-                      <input type="text" value={formData.contactResistance[state][pole]} onChange={e => handleChange(`contactResistance.${state}.${pole}`, e.target.value)} readOnly={!isEditing} className={`w-full text-center p-1.5 rounded text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : 'bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]'}`} />
+                      <input type="text" value={formData.contactResistance[state][pole]} onChange={e => handleChange(`contactResistance.${state}.${pole}`, e.target.value)} readOnly={!isEditing} className={`w-full text-center p-1.5 rounded text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : 'bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 focus:ring-1 focus:ring-accent-color focus:border-accent-color'}`} />
                     </td>
                   ))}
                   <td className="border px-1 py-1">
-                    <select value={formData.contactResistance[state].units} onChange={e => handleChange(`contactResistance.${state}.units`, e.target.value)} disabled={!isEditing} className={`w-full p-1.5 rounded text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : 'bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]'}`}>
+                    <select value={formData.contactResistance[state].units} onChange={e => handleChange(`contactResistance.${state}.units`, e.target.value)} disabled={!isEditing} className={`w-full p-1.5 rounded text-sm ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : 'bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 focus:ring-1 focus:ring-accent-color focus:border-accent-color'}`}>
                       {contactResistanceUnitsOptions.map(u => <option key={u} value={u}>{u}</option>)}
                     </select>
                   </td>

@@ -897,7 +897,7 @@ export default function EstimateSheet({ opportunityId }: EstimateSheetProps) {
     <div className="flex space-x-4">
       <Button
         onClick={handleGenerateNewQuote}
-        className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors flex items-center"
+        className="bg-accent-color text-white hover:bg-accent-color/90 transition-colors flex items-center"
       >
         Generate Estimate
       </Button>
@@ -908,7 +908,7 @@ export default function EstimateSheet({ opportunityId }: EstimateSheetProps) {
             setIsNewQuote(false);
             setIsOpen(true);
           }}
-          className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors flex items-center"
+          className="bg-accent-color text-white hover:bg-accent-color/90 transition-colors flex items-center"
         >
           Show Estimates
         </Button>
@@ -928,7 +928,7 @@ export default function EstimateSheet({ opportunityId }: EstimateSheetProps) {
                 <Button
                   onClick={saveQuote}
                   disabled={isSaving}
-                  className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
+                  className="bg-accent-color text-white hover:bg-accent-color/90 transition-colors"
                 >
                   {isSaving ? 'Saving...' : 'Save Quote'}
                 </Button>
@@ -957,7 +957,7 @@ export default function EstimateSheet({ opportunityId }: EstimateSheetProps) {
                         className={({ selected }) =>
                           `px-4 py-2 text-sm font-medium rounded-t-lg focus:outline-none ${
                             selected
-                              ? 'bg-[#f26722] text-white'
+                              ? 'bg-accent-color text-white'
                               : 'bg-gray-100 dark:bg-dark-200 text-gray-500 dark:text-dark-400 hover:bg-gray-200 dark:hover:bg-dark-300'
                           }`
                         }
@@ -1185,13 +1185,13 @@ export default function EstimateSheet({ opportunityId }: EstimateSheetProps) {
                     <div className="mt-4 flex justify-end space-x-4">
                       <Button
                         onClick={handleAddLine}
-                        className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
+                        className="bg-accent-color text-white hover:bg-accent-color/90 transition-colors"
                       >
                         Add Line
                       </Button>
                       <Button
                         onClick={toggleTravel}
-                        className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
+                        className="bg-accent-color text-white hover:bg-accent-color/90 transition-colors"
                       >
                         {showTravel ? 'Hide Travel' : 'Add Travel'}
                       </Button>

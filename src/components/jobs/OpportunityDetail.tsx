@@ -673,7 +673,7 @@ export default function OpportunityDetail() {
                       });
                     }
                   }}
-                  className="px-4 py-2 bg-[#f26722] text-white rounded hover:bg-[#f26722]/90 transition-colors flex items-center"
+                  className="px-4 py-2 bg-accent-color text-white rounded hover:bg-accent-color/90 transition-colors flex items-center"
                 >
                   <Edit className="h-4 w-4 mr-1" />
                   Edit
@@ -695,7 +695,7 @@ export default function OpportunityDetail() {
                     value={editFormData.customer_id}
                     onChange={handleInputChange}
                     required
-                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                   >
                     <option value="" className="dark:bg-dark-100 dark:text-white">Select a customer</option>
                     {customers.map((customer) => (
@@ -717,7 +717,7 @@ export default function OpportunityDetail() {
                     value={editFormData.title}
                     onChange={handleInputChange}
                     required
-                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                   />
                 </div>
 
@@ -731,7 +731,7 @@ export default function OpportunityDetail() {
                     value={editFormData.description}
                     onChange={handleInputChange}
                     rows={3}
-                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                   />
                 </div>
 
@@ -746,7 +746,7 @@ export default function OpportunityDetail() {
                       name="expected_value"
                       value={editFormData.expected_value}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                     />
                   </div>
 
@@ -760,7 +760,7 @@ export default function OpportunityDetail() {
                       name="probability"
                       value={editFormData.probability}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                       min="0"
                       max="100"
                     />
@@ -778,7 +778,7 @@ export default function OpportunityDetail() {
                       value={editFormData.status}
                       onChange={handleInputChange}
                       required
-                      className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                     >
                       <option value="awareness" className="dark:bg-dark-100 dark:text-white">Awareness</option>
                       <option value="interest" className="dark:bg-dark-100 dark:text-white">Interest</option>
@@ -802,7 +802,7 @@ export default function OpportunityDetail() {
                       name="expected_close_date"
                       value={editFormData.expected_close_date}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                     />
                   </div>
                 </div>
@@ -817,7 +817,7 @@ export default function OpportunityDetail() {
                     value={editFormData.amp_division}
                     onChange={handleInputChange}
                     required
-                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                   >
                     <option value="" className="dark:bg-dark-100 dark:text-white">Select a division</option>
                     <option value="north_alabama" className="dark:bg-dark-100 dark:text-white">North Alabama Division</option>
@@ -837,7 +837,7 @@ export default function OpportunityDetail() {
                     value={editFormData.notes}
                     onChange={handleInputChange}
                     rows={3}
-                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                   />
                 </div>
 
@@ -851,7 +851,7 @@ export default function OpportunityDetail() {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white bg-[#f26722] border border-transparent rounded-md shadow-sm hover:bg-[#f26722]/90 focus:outline-none"
+                    className="px-4 py-2 text-sm font-medium text-white bg-accent-color border border-transparent rounded-md shadow-sm hover:bg-accent-color/90 focus:outline-none"
                   >
                     Save
                   </button>
@@ -927,7 +927,7 @@ export default function OpportunityDetail() {
                                 setShowDivisionAnalytics(true);
                               }
                             }}
-                            className="text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                            className="text-accent-color hover:text-accent-color/90 dark:text-accent-color dark:hover:text-accent-color/90"
                           >
                             {formatDivisionName(opportunity.amp_division)}
                           </button>
@@ -979,7 +979,7 @@ export default function OpportunityDetail() {
                       <div className="mt-6">
                         <Button 
                           variant="outline"
-                          className="bg-[#f26722] text-white hover:bg-[#f26722]/90"
+                          className="bg-accent-color text-white hover:bg-accent-color/90"
                           onClick={() => setShowJobDialog(true)}
                         >
                           View Associated Job
@@ -1041,14 +1041,14 @@ export default function OpportunityDetail() {
                 <div className="mt-5 flex justify-end space-x-3">
                   <button
                     type="button"
-                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-white bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-white bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2"
                     onClick={() => setConfirmAwardOpen(false)}
                   >
                     Cancel
                   </button>
                   <button
                     type="button"
-                    className="px-4 py-2 text-sm font-medium text-white bg-[#f26722] border border-transparent rounded-md shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                    className="px-4 py-2 text-sm font-medium text-white bg-accent-color border border-transparent rounded-md shadow-sm hover:bg-accent-color/90 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2"
                     onClick={handleAwardOpportunity}
                   >
                     Confirm Award

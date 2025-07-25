@@ -210,7 +210,7 @@ export function DivisionAnalyticsDialog({ division, isOpen, onClose }: DivisionA
 
                 <div className="bg-gray-50 dark:bg-dark-100 p-4 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-orange-500" />
+                    <Calendar className="h-5 w-5 text-accent-color" />
                     <h3 className="text-sm font-medium text-gray-900 dark:text-white">Win Rate</h3>
                   </div>
                   <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">

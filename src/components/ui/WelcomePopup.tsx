@@ -65,7 +65,7 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
           onClick={onClose}
           className="absolute top-4 right-4 z-50 p-2 rounded-full bg-white/80 hover:bg-white dark:bg-dark-100/80 dark:hover:bg-dark-100 shadow-md transition-all"
         >
-          <X className="w-6 h-6 text-orange-500 dark:text-orange-400" />
+          <X className="w-6 h-6 text-accent-color dark:text-orange-400" />
         </button>
 
         {/* Hero Section */}
@@ -73,14 +73,14 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
           <div className="absolute inset-0 bg-[url('/placeholder.svg')] opacity-5 bg-cover bg-center" />
           <div className="container mx-auto px-4 h-full flex flex-col justify-center items-center relative z-10">
             <div className="flex items-center gap-4 mb-6">
-              <h1 className="text-4xl md:text-5xl font-extrabold text-orange-500 dark:text-orange-400 tracking-tight">WELCOME</h1>
+              <h1 className="text-4xl md:text-5xl font-extrabold text-accent-color dark:text-orange-400 tracking-tight">WELCOME</h1>
               <img
                 src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
                 alt="AMP Logo"
                 className="h-12"
               />
             </div>
-            <p className="text-orange-500 dark:text-orange-400 text-lg max-w-2xl text-center">
+            <p className="text-accent-color dark:text-orange-400 text-lg max-w-2xl text-center">
               Thank you for joining the AMP Portal System
             </p>
           </div>
@@ -91,7 +91,7 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
           <div className="container mx-auto px-4">
             <div className="flex justify-center mb-8">
               <div className="inline-flex items-center gap-2 px-6 py-3 bg-orange-50 dark:bg-dark-200 rounded-full border border-orange-200 dark:border-dark-300">
-                <Zap className="w-5 h-5 text-orange-500 dark:text-orange-400" />
+                <Zap className="w-5 h-5 text-accent-color dark:text-orange-400" />
                 <span className="text-orange-600 dark:text-orange-400 font-semibold tracking-wide">GETTING STARTED</span>
               </div>
             </div>
@@ -111,7 +111,7 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
                 <div className="space-y-4 mb-6">
                   <div className="flex items-start">
                     <div className="flex-shrink-0 w-8 h-8 bg-orange-100 dark:bg-dark-300 rounded-full flex items-center justify-center mr-3">
-                      <Globe className="w-4 h-4 text-orange-500" />
+                      <Globe className="w-4 h-4 text-accent-color" />
                     </div>
                     <div>
                       <h4 className="font-medium text-gray-900 dark:text-white">Explore Our Portals</h4>
@@ -123,7 +123,7 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
 
                   <div className="flex items-start">
                     <div className="flex-shrink-0 w-8 h-8 bg-orange-100 dark:bg-dark-300 rounded-full flex items-center justify-center mr-3">
-                      <ArrowRight className="w-4 h-4 text-orange-500" />
+                      <ArrowRight className="w-4 h-4 text-accent-color" />
                     </div>
                     <div>
                       <h4 className="font-medium text-gray-900 dark:text-white">Complete Your Profile</h4>
@@ -135,7 +135,7 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
 
                   <div className="flex items-start">
                     <div className="flex-shrink-0 w-8 h-8 bg-orange-100 dark:bg-dark-300 rounded-full flex items-center justify-center mr-3">
-                      <Briefcase className="w-4 h-4 text-orange-500" />
+                      <Briefcase className="w-4 h-4 text-accent-color" />
                     </div>
                     <div>
                       <h4 className="font-medium text-gray-900 dark:text-white">Access Your Tools</h4>
@@ -148,7 +148,7 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
 
                 <div className="flex justify-center">
                   <Button
-                    className="bg-[#f26722] hover:bg-[#f26722]/90 text-white h-11 px-8 text-base rounded-full inline-flex items-center whitespace-nowrap"
+                    className="bg-accent-color hover:bg-accent-color/90 text-white h-11 px-8 text-base rounded-full inline-flex items-center whitespace-nowrap"
                     onClick={onClose}
                   >
                     Get Started <span className="ml-1">›</span>

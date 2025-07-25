@@ -472,7 +472,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
         onChange={handleInputChange}
         placeholder={placeholder}
         readOnly={!isEditing || readOnlyOverride}
-        className={`mt-1 block ${widthClass} rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${(!isEditing || readOnlyOverride) ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+        className={`mt-1 block ${widthClass} rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${(!isEditing || readOnlyOverride) ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
       />
     );
   }
@@ -486,7 +486,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
         value={displayValue}
         onChange={handleInputChange}
         disabled={!isEditing || readOnlyOverride}
-        className={`mt-1 block ${widthClass} rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${(!isEditing || readOnlyOverride) ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
+        className={`mt-1 block ${widthClass} rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${(!isEditing || readOnlyOverride) ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
       >
         {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
       </select>
@@ -525,7 +525,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
             <button
               onClick={handleSave}
               disabled={!isEditing || saving}
-              className={`px-4 py-2 text-sm text-white bg-[#f26722] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] ${!isEditing ? 'hidden' : 'hover:bg-[#f26722]/90'}`}
+              className={`px-4 py-2 text-sm text-white bg-accent-color rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-color ${!isEditing ? 'hidden' : 'hover:bg-accent-color/90'}`}
             >
               {saving ? 'Saving...' : (reportId ? 'Update Report' : 'Save Report')}
             </button>
@@ -555,7 +555,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
               value={formData.temperature.fahrenheit}
               onChange={(e) => handleFahrenheitChange(Number(e.target.value))}
               readOnly={!isEditing}
-              className={`mt-1 block w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              className={`mt-1 block w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             />
           </div>
           <div>
@@ -565,7 +565,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
               value={formData.temperature.celsius}
               onChange={(e) => handleCelsiusChange(Number(e.target.value))}
               readOnly={!isEditing}
-              className={`mt-1 block w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              className={`mt-1 block w-20 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             />
           </div>
           <div>
@@ -1022,7 +1022,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
           placeholder="Enter any comments or notes here..."
           readOnly={!isEditing}
           rows={4}
-          className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+          className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
         />
       </div>
     </div>

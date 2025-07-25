@@ -279,7 +279,7 @@ export function StandardsComplianceUpdates() {
             Export
           </Button>
           <Button 
-            className="bg-[#f26722] hover:bg-[#f26722]/90"
+            className="bg-accent-color hover:bg-accent-color/90"
             onClick={() => activeTab === "standards" ? setShowStandardModal(true) : setShowComplianceModal(true)}
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -611,7 +611,7 @@ export function StandardsComplianceUpdates() {
                 <Button type="button" variant="outline" onClick={() => setShowStandardModal(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-[#f26722] hover:bg-[#f26722]/90">
+                <Button type="submit" className="bg-accent-color hover:bg-accent-color/90">
                   Add Standard
                 </Button>
               </div>
@@ -691,7 +691,7 @@ export function StandardsComplianceUpdates() {
                 <Button type="button" variant="outline" onClick={() => setShowComplianceModal(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-[#f26722] hover:bg-[#f26722]/90">
+                <Button type="submit" className="bg-accent-color hover:bg-accent-color/90">
                   Add Requirement
                 </Button>
               </div>

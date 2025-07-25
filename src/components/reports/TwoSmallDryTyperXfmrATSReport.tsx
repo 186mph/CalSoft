@@ -597,7 +597,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
           <button
             onClick={handleSave}
             disabled={loading || !isEditing}
-            className="bg-[#f26722] hover:bg-[#e55611] text-white font-medium px-4 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-accent-color hover:bg-accent-color-hover text-white font-medium px-4 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Saving...' : (reportId ? 'Update Report' : 'Save Report')}
           </button>
@@ -728,7 +728,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
             <div className="col-span-4 flex justify-around items-center">
               {connectionOptions.map(opt => (
                 <label key={`pri-${opt}`} className="inline-flex items-center">
-                  <input type="radio" name="nameplate.connectionsPrimary" value={opt} checked={formData.nameplate.connectionsPrimary === opt} onChange={(e) => handleChange(e.target.name, e.target.value)} disabled={!isEditing} className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]" />
+                  <input type="radio" name="nameplate.connectionsPrimary" value={opt} checked={formData.nameplate.connectionsPrimary === opt} onChange={(e) => handleChange(e.target.name, e.target.value)} disabled={!isEditing} className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color" />
                   <span className="ml-1 text-sm text-gray-700 dark:text-gray-300">{opt}</span>
                 </label>
               ))}
@@ -736,7 +736,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
             <div className="col-span-3 flex justify-around items-center">
               {materialOptions.map(opt => (
                 <label key={`pri-mat-${opt}`} className="inline-flex items-center">
-                  <input type="radio" name="nameplate.windingMaterialPrimary" value={opt} checked={formData.nameplate.windingMaterialPrimary === opt} onChange={(e) => handleChange(e.target.name, e.target.value)} disabled={!isEditing} className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]" />
+                  <input type="radio" name="nameplate.windingMaterialPrimary" value={opt} checked={formData.nameplate.windingMaterialPrimary === opt} onChange={(e) => handleChange(e.target.name, e.target.value)} disabled={!isEditing} className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color" />
                   <span className="ml-1 text-sm text-gray-700 dark:text-gray-300">{opt}</span>
                 </label>
               ))}
@@ -753,7 +753,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
             <div className="col-span-4 flex justify-around items-center">
               {connectionOptions.map(opt => (
                 <label key={`sec-${opt}`} className="inline-flex items-center">
-                  <input type="radio" name="nameplate.connectionsSecondary" value={opt} checked={formData.nameplate.connectionsSecondary === opt} onChange={(e) => handleChange(e.target.name, e.target.value)} disabled={!isEditing} className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]" />
+                  <input type="radio" name="nameplate.connectionsSecondary" value={opt} checked={formData.nameplate.connectionsSecondary === opt} onChange={(e) => handleChange(e.target.name, e.target.value)} disabled={!isEditing} className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color" />
                   <span className="ml-1 text-sm text-gray-700 dark:text-gray-300">{opt}</span>
                 </label>
               ))}
@@ -761,7 +761,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
             <div className="col-span-3 flex justify-around items-center">
               {materialOptions.map(opt => (
                 <label key={`sec-mat-${opt}`} className="inline-flex items-center">
-                  <input type="radio" name="nameplate.windingMaterialSecondary" value={opt} checked={formData.nameplate.windingMaterialSecondary === opt} onChange={(e) => handleChange(e.target.name, e.target.value)} disabled={!isEditing} className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]" />
+                  <input type="radio" name="nameplate.windingMaterialSecondary" value={opt} checked={formData.nameplate.windingMaterialSecondary === opt} onChange={(e) => handleChange(e.target.name, e.target.value)} disabled={!isEditing} className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color" />
                   <span className="ml-1 text-sm text-gray-700 dark:text-gray-300">{opt}</span>
                 </label>
               ))}

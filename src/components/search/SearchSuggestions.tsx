@@ -109,7 +109,7 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
     <div className="absolute z-10 top-full mt-1 w-full bg-white dark:bg-dark-100 shadow-lg rounded-md border border-gray-200 dark:border-dark-300">
       {loading ? (
         <div className="p-3 text-center">
-          <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-solid border-[#f26722] border-r-transparent"></div>
+          <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-solid border-accent-color border-r-transparent"></div>
           <span className="ml-2 text-sm text-gray-500 dark:text-dark-400">Searching...</span>
         </div>
       ) : (
@@ -132,7 +132,7 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
             onClick={() => handleSelectSuggestion(query)}
             className="flex items-center px-3 py-2 mt-1 hover:bg-gray-100 dark:hover:bg-dark-200 cursor-pointer rounded-md border-t border-gray-200 dark:border-dark-300"
           >
-            <SearchIcon size={16} className="text-[#f26722] mr-2" />
+            <SearchIcon size={16} className="text-accent-color mr-2" />
             <span className="text-sm text-gray-800 dark:text-dark-200">
               Search for "{query}"
             </span>

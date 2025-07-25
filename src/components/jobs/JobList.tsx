@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, X, MapPin } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, MapPin, Calendar, ChevronRight, Building, User, Globe, Users } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 import { format } from 'date-fns';
 import { supabase, isConnectionError } from '@/lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
-import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams, useLocation } from 'react-router-dom';
 import { useDivision } from '../../App';
 import { JobNotifications } from './JobNotifications';
 import { Database } from '@/types/supabase'; // Assuming this is the correct path to your generated types
+import { getDivisionAccentClasses } from '../../lib/utils';
 
 // Helper function to determine if the division is lab-related
 const isLabDivision = (div: string | null | undefined): boolean => {
@@ -76,12 +77,14 @@ const initialFormData: JobFormData = {
 
 export default function JobList() {
   const { user } = useAuth();
+  const { division } = useDivision();
+  const accentClasses = getDivisionAccentClasses(division);
+  const location = useLocation();
   const navigate = useNavigate();
-  const { division: contextDivision } = useDivision();
   const { division: urlDivision } = useParams();
   const [searchParams] = useSearchParams();
   
-  const division = urlDivision || contextDivision || searchParams.get('division');
+  const divisionValue = urlDivision || division || searchParams.get('division');
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -96,14 +99,14 @@ export default function JobList() {
       fetchJobs();
       fetchCustomers();
     }
-  }, [user, division]);
+  }, [user, divisionValue]);
 
   async function fetchJobs() {
     setLoading(true);
     try {
-      console.log('Fetching jobs for division:', division);
-      const currentSchema = isLabDivision(division) ? 'lab_ops' : 'neta_ops';
-      const currentTable = isLabDivision(division) ? 'lab_jobs' : 'jobs';
+      console.log('Fetching jobs for division:', divisionValue);
+      const currentSchema = isLabDivision(divisionValue) ? 'lab_ops' : 'neta_ops';
+      const currentTable = isLabDivision(divisionValue) ? 'lab_jobs' : 'jobs';
 
       console.log(`Using schema: ${currentSchema}, table: ${currentTable}`);
 
@@ -113,8 +116,8 @@ export default function JobList() {
         .select('*') 
         .order('created_at', { ascending: false });
 
-      if (division) {
-        jobQuery = jobQuery.eq('division', division);
+      if (divisionValue) {
+        jobQuery = jobQuery.eq('division', divisionValue);
       }
 
       const { data: jobData, error: jobError } = await jobQuery;
@@ -138,9 +141,14 @@ export default function JobList() {
         }
         
         try {
+          // Use lab_ops.lab_customers for lab divisions, common.customers for others
+          const isLab = isLabDivision(divisionValue);
+          const customerSchema = isLab ? 'lab_ops' : 'common';
+          const customerTable = isLab ? 'lab_customers' : 'customers';
+          
           const { data: customerData, error: customerError } = await supabase
-            .schema('common')
-            .from('customers')
+            .schema(customerSchema)
+            .from(customerTable)
             .select('id, name, company_name')
             .eq('id', job.customer_id)
             .single();
@@ -168,10 +176,18 @@ export default function JobList() {
 
   async function fetchCustomers() {
     try {
-      console.log('Fetching customers');
+      console.log('Fetching customers for division:', divisionValue);
+      
+      // Use lab_ops.lab_customers for lab divisions, common.customers for others
+      const isLab = isLabDivision(divisionValue);
+      const schema = isLab ? 'lab_ops' : 'common';
+      const table = isLab ? 'lab_customers' : 'customers';
+      
+      console.log(`Using schema: ${schema}, table: ${table}`);
+      
       const { data, error } = await supabase
-        .schema('common')
-        .from('customers')
+        .schema(schema)
+        .from(table)
         .select('id, name, company_name')
         .order('name', { ascending: true });
 
@@ -196,9 +212,9 @@ export default function JobList() {
     let payloadToLog: any = null; // For logging
 
     try {
-      const currentSchema = isLabDivision(division) ? 'lab_ops' : 'neta_ops';
-      const currentTable = isLabDivision(division) ? 'lab_jobs' : 'jobs';
-      const activeDivision = division;
+      const currentSchema = isLabDivision(divisionValue) ? 'lab_ops' : 'neta_ops';
+      const currentTable = isLabDivision(divisionValue) ? 'lab_jobs' : 'jobs';
+      const activeDivision = divisionValue;
 
       console.log(`Saving job to schema: ${currentSchema}, table: ${currentTable} for division: ${activeDivision}`);
 
@@ -387,7 +403,7 @@ export default function JobList() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-            Jobs {formatDivisionName(division)}
+            Jobs {formatDivisionName(divisionValue)}
           </h1>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
             A list of all the jobs in the selected division.
@@ -396,11 +412,11 @@ export default function JobList() {
         <div className="flex items-center gap-3">
           <JobNotifications />
           
-          {(division?.toLowerCase() === 'calibration' || division?.toLowerCase() === 'armadillo') && (
+          {(divisionValue?.toLowerCase() === 'calibration' || divisionValue?.toLowerCase() === 'armadillo') && (
             <button
               type="button"
               onClick={() => setIsOpen(true)}
-              className="inline-flex items-center p-2 border border-transparent rounded-md shadow-sm text-white bg-[#f26722] hover:bg-[#d94e00] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722]"
+              className={`inline-flex items-center p-2 border border-transparent rounded-md shadow-sm text-white ${accentClasses.bg} ${accentClasses.bgHover} focus:outline-none focus:ring-2 focus:ring-offset-2 ${accentClasses.ring}`}
             >
               <Plus className="h-5 w-5" />
             </button>
@@ -699,7 +715,7 @@ export default function JobList() {
                 </div>
 
                 {/* Budget field visibility: always hidden if division is calibration or armadillo */}
-                {!(division?.toLowerCase() === 'calibration' || division?.toLowerCase() === 'armadillo') && (
+                {!(divisionValue?.toLowerCase() === 'calibration' || divisionValue?.toLowerCase() === 'armadillo') && (
                   <div className="sm:col-span-1">
                     <label htmlFor="budget" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Budget

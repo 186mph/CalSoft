@@ -1036,7 +1036,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
             <button
               onClick={handleSave}
               disabled={!isEditing}
-              className={`px-4 py-2 text-sm text-white bg-[#f26722] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] ${!isEditing ? 'hidden' : 'hover:bg-[#f26722]/90'}`}
+              className={`px-4 py-2 text-sm text-white bg-accent-color rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-color ${!isEditing ? 'hidden' : 'hover:bg-accent-color/90'}`}
             >
               Save Report
             </button>
@@ -1058,7 +1058,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="customer"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1069,7 +1069,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="address"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1080,7 +1080,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="userName"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1091,7 +1091,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="date"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1102,7 +1102,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="identifier"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
           </div>
@@ -1126,7 +1126,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="technicians"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
               </div>
               <div>
@@ -1137,7 +1137,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="substation"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
               </div>
               <div>
@@ -1148,7 +1148,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="eqptLocation"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
               </div>
             <div className="grid grid-cols-12 gap-4">
@@ -1161,7 +1161,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                     onChange={(e) => handleFahrenheitChange(parseFloat(e.target.value))}
                     name="temperature.fahrenheit"
                     readOnly={!isEditing}
-                    className={`mt-1 block w-16 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    className={`mt-1 block w-16 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                   />
                   <span className="text-gray-700 dark:text-gray-300">°F</span>
                   <input
@@ -1170,7 +1170,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                     onChange={(e) => handleCelsiusChange(parseFloat(e.target.value))}
                     name="temperature.celsius"
                     readOnly={!isEditing}
-                    className={`mt-1 block w-16 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    className={`mt-1 block w-16 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                   />
                   <span className="text-gray-700 dark:text-gray-300">°C</span>
                   <span className="text-gray-700 dark:text-gray-300">TCF</span>
@@ -1191,7 +1191,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                     onChange={(e) => handleInputChange(e)}
                     name="temperature.humidity"
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                   />
                   <span className="text-gray-700 dark:text-gray-300">%</span>
                 </div>
@@ -1215,7 +1215,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="manufacturer"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1226,7 +1226,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="catalogNo"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1237,7 +1237,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="serialNumber"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1248,7 +1248,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="series"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1259,7 +1259,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="type"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
           </div>
@@ -1274,7 +1274,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="systemVoltage"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1285,7 +1285,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="ratedVoltage"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1296,7 +1296,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="ratedCurrent"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1307,7 +1307,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="acRating"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1318,7 +1318,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="phaseConfiguration"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             </div>
@@ -1950,7 +1950,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                   }));
                 }}
                 placeholder="Fluke 1587FC"
-                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-700 focus:border-[#f26722] focus:ring-0"
+                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-700 focus:border-accent-color focus:ring-0"
               />
             </div>
             <div className="col-span-1 text-right">
@@ -1973,7 +1973,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                   }));
                 }}
                 placeholder="Test"
-                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-700 focus:border-[#f26722] focus:ring-0"
+                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-700 focus:border-accent-color focus:ring-0"
               />
             </div>
             <div className="col-span-1 text-right">
@@ -1996,7 +1996,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                   }));
                 }}
                 placeholder="Test"
-                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-700 focus:border-[#f26722] focus:ring-0"
+                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-700 focus:border-accent-color focus:ring-0"
               />
             </div>
           </div>
@@ -2021,7 +2021,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                   }));
                 }}
                 placeholder="Megger DLRO"
-                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-700 focus:border-[#f26722] focus:ring-0"
+                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-700 focus:border-accent-color focus:ring-0"
               />
             </div>
             <div className="col-span-1 text-right">
@@ -2044,7 +2044,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                   }));
                 }}
                 placeholder="Test"
-                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-700 focus:border-[#f26722] focus:ring-0"
+                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-700 focus:border-accent-color focus:ring-0"
               />
             </div>
             <div className="col-span-1 text-right">
@@ -2067,7 +2067,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                   }));
                 }}
                 placeholder="Test"
-                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-700 focus:border-[#f26722] focus:ring-0"
+                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-700 focus:border-accent-color focus:ring-0"
               />
             </div>
           </div>
@@ -2087,7 +2087,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => handleInputChange(e)}
                 name="comments"
                 readOnly={!isEditing}
-                className={`w-full bg-transparent border-b border-gray-300 dark:border-gray-700 focus:border-[#f26722] focus:ring-0 ${!isEditing ? 'cursor-not-allowed' : ''}`}
+                className={`w-full bg-transparent border-b border-gray-300 dark:border-gray-700 focus:border-accent-color focus:ring-0 ${!isEditing ? 'cursor-not-allowed' : ''}`}
               />
             </div>
           </div>

@@ -206,38 +206,38 @@ export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
                         </div>
                         <button
                           onClick={() => navigate('/portal')}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-accent-color hover:bg-gray-100 dark:hover:bg-dark-50"
                         >
-                          <MapPin className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                          <MapPin className="mr-3 h-5 w-5 text-gray-400 dark:text-accent-color" />
                           Back to Portal
                         </button>
                         <button
                           onClick={handleViewProfile}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-accent-color hover:bg-gray-100 dark:hover:bg-dark-50"
                         >
-                          <Eye className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                          <Eye className="mr-3 h-5 w-5 text-gray-400 dark:text-accent-color" />
                           View Profile
                         </button>
                         <button
                           onClick={handleSettings}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-accent-color hover:bg-gray-100 dark:hover:bg-dark-50"
                         >
-                          <Settings className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                          <Settings className="mr-3 h-5 w-5 text-gray-400 dark:text-accent-color" />
                           Settings
                         </button>
                         <button
                           onClick={handleAbout}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-accent-color hover:bg-gray-100 dark:hover:bg-dark-50"
                         >
-                          <FileText className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                          <FileText className="mr-3 h-5 w-5 text-gray-400 dark:text-accent-color" />
                           About
                         </button>
                         <button
                           onClick={handleSignOut}
                           disabled={isSigningOut}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-accent-color hover:bg-gray-100 dark:hover:bg-dark-50"
                         >
-                          <LogOut className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                          <LogOut className="mr-3 h-5 w-5 text-gray-400 dark:text-accent-color" />
                           {isSigningOut ? 'Signing out...' : 'Sign Out'}
                         </button>
                       </div>

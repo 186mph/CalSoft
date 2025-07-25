@@ -20,6 +20,7 @@ export interface Customer {
   id: string;
   name: string;
   company_name: string;
+  company_id?: string;
   email: string;
   phone: string;
   address: string;
@@ -451,42 +452,51 @@ export async function syncGoogleDriveDocuments(customerId: string) {
 }
 
 // Customer Functions
-export async function getCustomers(filters?: { category_id?: string | null, status?: string | null }) {
-  try {
-    console.log("Getting customers with filters:", filters);
-    let query = supabase
-      .schema('common')
-      .from('customers')
-      .select('*'); // Don't try to join with category
+export async function getCustomers(filters?: { category_id?: string | null; status?: string | null }) {
+  const currentPath = window.location.pathname;
+  const isCalibration = currentPath.startsWith('/calibration');
+  const schema = isCalibration ? 'lab_ops' : 'common';
+  const table = isCalibration ? 'lab_customers' : 'customers';
 
-    if (filters?.category_id) {
+  console.log(`[customerService.getCustomers] Path: ${currentPath}, isCalibration: ${isCalibration}, Schema: ${schema}, Table: ${table}`);
+
+  let query = supabase
+    .schema(schema)
+    .from(table)
+    .select('*');
+
+  if (filters) {
+    if (filters.category_id) {
+      console.log(`[customerService.getCustomers] Applying filter category_id: ${filters.category_id}`);
       query = query.eq('category_id', filters.category_id);
     }
-    
-    if (filters?.status) {
+    if (filters.status) {
+      console.log(`[customerService.getCustomers] Applying filter status: ${filters.status}`);
       query = query.eq('status', filters.status);
     }
-
-    const { data, error } = await query.order('created_at', { ascending: false });
-
-    if (error) {
-      console.error("Error fetching customers:", error);
-      throw error;
-    }
-    
-    console.log(`Retrieved ${data?.length || 0} customers from common.customers`);
-    return data || [];
-  } catch (err) {
-    console.error("Unexpected error in getCustomers:", err);
-    throw err;
   }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error(`[customerService.getCustomers] Error fetching from ${schema}.${table}:`, error);
+    throw error;
+  }
+  
+  console.log(`[customerService.getCustomers] Fetched ${data?.length || 0} customers from ${schema}.${table}. Data:`, data);
+  return data || [];
 }
 
 export async function getCustomerById(id: string) {
+  // Determine schema based on division context from URL
+  const isCalibration = window.location.pathname.startsWith('/calibration');
+  const schema = isCalibration ? 'lab_ops' : 'common';
+  const table = isCalibration ? 'lab_customers' : 'customers';
+
   const { data, error } = await supabase
-    .schema('common')
-    .from('customers')
-    .select('*') // Don't try to join with category
+    .schema(schema)
+    .from(table)
+    .select('*')
     .eq('id', id)
     .single();
 
@@ -511,44 +521,133 @@ export async function createCustomer(customer: Omit<Customer, 'id' | 'created_at
   try {
     console.log("Creating new customer:", customer);
     
-    // Ensure we're using the common schema
+    // Determine schema based on division context from URL
+    const isCalibration = window.location.pathname.startsWith('/calibration');
+    const schema = isCalibration ? 'lab_ops' : 'common';
+    const table = isCalibration ? 'lab_customers' : 'customers';
+    
+    // For calibration division, we need to modify the customer object
+    let customerData = { ...customer };
+    
+    if (isCalibration) {
+      // The lab_customers table might not have these columns
+      // so we'll remove them to avoid errors
+      if ('category_id' in customerData) {
+        delete (customerData as any).category_id;
+      }
+      
+      // Always remove user_id for lab_customers to avoid UUID format issues
+      if ('user_id' in customerData) {
+        delete (customerData as any).user_id;
+      }
+      
+      // Validate that company_id is provided for calibration division
+      if (!customerData.company_id) {
+        throw new Error('Customer ID is required for Calibration Division customers. Please ensure the Customer ID is auto-generated or manually entered.');
+      }
+      
+      // Ensure status is explicitly set for calibration division
+      if (!customerData.status) {
+        customerData.status = 'active';
+      }
+      
+      console.log("Modified customer data for lab_ops schema:", customerData);
+    }
+    
+    // Ensure we're using the correct schema
     const { data, error } = await supabase
-      .schema('common')
-      .from('customers')
-      .insert([customer])
+      .schema(schema)
+      .from(table)
+      .insert([customerData])
       .select()
       .single();
 
     if (error) {
-      console.error("Error creating customer in common schema:", error);
+      console.error("Error creating customer:", error);
       throw error;
     }
-    
-    console.log("Customer created successfully:", data);
+
     return data;
-  } catch (err) {
-    console.error("Unexpected error in createCustomer:", err);
-    throw err;
+  } catch (error) {
+    console.error("Error in createCustomer:", error);
+    throw error;
   }
 }
 
 export async function updateCustomer(id: string, customer: Partial<Customer>) {
-  const { data, error } = await supabase
-    .schema('common')
-    .from('customers')
-    .update(customer)
-    .eq('id', id)
-    .select()
-    .single();
+  // Determine schema based on division context from URL
+  const isCalibration = window.location.pathname.startsWith('/calibration');
+  const schema = isCalibration ? 'lab_ops' : 'common';
+  const table = isCalibration ? 'lab_customers' : 'customers';
 
-  if (error) throw error;
-  return data;
+  // For calibration division, we need to modify the customer object
+  let customerData = { ...customer };
+  
+  if (isCalibration) {
+    // The lab_customers table might not have these columns
+    // so we'll remove them to avoid errors
+    if ('category_id' in customerData) {
+      delete (customerData as any).category_id;
+    }
+    
+    // Always remove user_id for lab_customers to avoid UUID format issues
+    if ('user_id' in customerData) {
+      delete (customerData as any).user_id;
+    }
+    
+    // Ensure company_id is not accidentally deleted or updated
+    // since it's used as the primary identifier
+    if ('company_id' in customerData && !customerData.company_id) {
+      delete (customerData as any).company_id;
+    }
+    
+    // Ensure status is explicitly set for calibration division
+    if ('status' in customerData && !customerData.status) {
+      customerData.status = 'active';
+    }
+    
+    console.log("Modified customer data for update in lab_ops schema:", customerData);
+  }
+
+  try {
+    const { data, error } = await supabase
+      .schema(schema)
+      .from(table)
+      .update(customerData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error(`Error updating customer in ${schema} schema:`, error);
+      
+      // Check if it's a schema cache error for a specific column
+      if (error.message && (
+        error.message.includes("category_id") || 
+        error.message.includes("company_id") ||
+        error.message.includes("status"))) {
+        console.error(`Schema cache error for column in ${table}. This usually means the column exists in the database but not in the cache.`);
+      }
+      
+      throw error;
+    }
+    
+    return data;
+  } catch (err) {
+    console.error("Unexpected error in updateCustomer:", err);
+    throw err;
+  }
 }
 
 export async function deleteCustomer(id: string) {
+  // Determine schema based on division context from URL
+  const isCalibration = window.location.pathname.startsWith('/calibration');
+  const schema = isCalibration ? 'lab_ops' : 'common';
+  const table = isCalibration ? 'lab_customers' : 'customers';
+
   const { error } = await supabase
-    .schema('common')
-    .from('customers')
+    .schema(schema)
+    .from(table)
     .delete()
     .eq('id', id);
 

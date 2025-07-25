@@ -204,7 +204,7 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({ isOpen, onClos
 
           {loading && !isFormOpen ? (
             <div className="flex justify-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#f26722]"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent-color"></div>
             </div>
           ) : shortcuts.length === 0 ? (
             <div className="text-center py-6 border border-dashed border-gray-300 rounded-md dark:border-gray-600">
@@ -214,8 +214,8 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({ isOpen, onClos
             </div>
           ) : (
             <>
-              <div className="mb-2 flex items-center bg-gray-50 dark:bg-dark-200 p-3 rounded text-sm border border-orange-100 dark:border-[#f26722]/30">
-                <MoveVertical className="h-4 w-4 mr-2 text-[#f26722]" />
+              <div className="mb-2 flex items-center bg-gray-50 dark:bg-dark-200 p-3 rounded text-sm border border-accent-color/30 dark:border-accent-color/30">
+                <MoveVertical className="h-4 w-4 mr-2 text-accent-color" />
                 <span><strong>To reorder:</strong> Click and drag any shortcut up or down to change its position</span>
               </div>
               <DragDropContext 
@@ -243,12 +243,12 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({ isOpen, onClos
                                 style={provided.draggableProps.style}
                                 className={`flex items-center p-3 bg-white dark:bg-dark-100 border cursor-grab ${
                                   snapshot.isDragging 
-                                    ? 'border-[#f26722] ring-2 ring-[#f26722]/50 shadow-lg bg-orange-50 dark:bg-[#f26722]/10' 
-                                    : 'border-gray-200 dark:border-gray-700 shadow-sm hover:border-orange-200 dark:hover:border-[#f26722]/30'
+                                    ? 'border-accent-color ring-2 ring-accent-color/50 shadow-lg bg-accent-color/10 dark:bg-accent-color/10' 
+                                    : 'border-gray-200 dark:border-gray-700 shadow-sm hover:border-accent-color/30 dark:hover:border-accent-color/30'
                                 } rounded-md transition-all ${snapshot.isDragging ? 'cursor-grabbing' : ''}`}
                               >
                                 <div className="flex items-center w-full">
-                                  <MoveVertical className="h-5 w-5 text-[#f26722] mr-3 flex-shrink-0" />
+                                  <MoveVertical className="h-5 w-5 text-accent-color mr-3 flex-shrink-0" />
                                   <div className="flex-grow">
                                     <div className="font-medium">{shortcut.title}</div>
                                     <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[240px]">
@@ -356,7 +356,7 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({ isOpen, onClos
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-[#f26722] text-white rounded-md hover:bg-[#f26722]/90"
+                    className="px-4 py-2 bg-accent-color text-white rounded-md hover:bg-accent-color/90"
                     disabled={loading}
                   >
                     {loading ? (

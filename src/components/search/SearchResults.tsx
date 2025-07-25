@@ -262,7 +262,7 @@ export const SearchResults: React.FC = () => {
   if (loading) {
     return (
       <div className="mt-4 p-8 text-center">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#f26722] border-r-transparent"></div>
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-accent-color border-r-transparent"></div>
         <p className="mt-2 text-sm text-gray-500 dark:text-dark-400">Searching...</p>
       </div>
     );

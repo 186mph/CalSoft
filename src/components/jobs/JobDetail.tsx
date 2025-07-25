@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
-import { ArrowLeft, Users, ChevronDown, Plus, Paperclip, X, FileEdit, Pencil, Upload, FileText, Package, Trash2, ClipboardCheck } from 'lucide-react';
+import { ArrowLeft, Users, ChevronDown, Plus, Paperclip, X, FileEdit, Pencil, Upload, FileText, Package, Trash2, Printer, Eye, Download, Calendar, User, MapPin, Clipboard } from 'lucide-react';
 import { supabase, isConnectionError } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
-import { useJobDetails } from '../../lib/hooks';
 import { format } from 'date-fns';
 import { Button } from '../ui/Button';
 import { reportImportService } from '../../services/reportImport';
@@ -15,15 +14,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Alert, AlertDescription } from '../ui/Alert';
 import { Input } from '../ui/Input';
 import { toast } from 'react-hot-toast';
-import JobSurveys from './JobSurveys';
+import html2pdf from 'html2pdf.js';
 import ResourceAllocationManager from './ResourceAllocationManager';
 import JobCostTracking from './JobCostTracking';
 import JobProfitabilityAnalysis from './JobProfitabilityAnalysis';
 import { JobNotifications } from './JobNotifications';
-import { SLAManagement } from './SLAManagement';
-import { ReportApprovalWorkflow } from '../reports/ReportApprovalWorkflow';
 import { SelectRoot, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/Select';
 import { DropdownMenuItem } from '../ui/DropdownMenu';
+import { isLabDivision } from '@/lib/utils';
+import { useDivision } from '../../App';
+import { getDivisionAccentClasses } from '../../lib/utils';
+import { Textarea } from '../ui/Textarea';
 
 interface Job {
   id: string;
@@ -37,6 +38,7 @@ interface Job {
   budget: number | null;
   customer_id: string;
   division?: string | null;
+  notes?: string | null;
   customers: {
     id: string;
     name: string;
@@ -67,11 +69,18 @@ interface Asset {
   file_url: string;
   created_at: string;
   template_type?: 'MTS' | 'ATS' | null;
+  asset_id?: string;  // Add this field for calibration assets
+  pass_fail_status?: 'PASS' | 'FAIL' | null;
 }
 
 interface RelatedOpportunity {
   id: string;
   quote_number: string;
+}
+
+// Add an interface for the enhanced asset object with userAssetId
+interface EnhancedAsset extends Asset {
+  userAssetId?: string;
 }
 
 const reportRoutes = {
@@ -86,39 +95,60 @@ const reportRoutes = {
 export default function JobDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
   const { user } = useAuth();
-  const { jobDetails } = useJobDetails(id);
+  const { division } = useDivision();
+  const location = useLocation();
+  
+  // Check if edit mode is requested via query parameter
+  const searchParams = new URLSearchParams(location.search);
+  const shouldEdit = searchParams.get('edit') === 'true';
+
   const [job, setJob] = useState<Job | null>(null);
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [opportunity, setOpportunity] = useState<RelatedOpportunity | null>(null);
+  const [jobAssets, setJobAssets] = useState<EnhancedAsset[]>([]);
   const [loading, setLoading] = useState(true);
-  const [assets, setAssets] = useState<Asset[]>([]);
-  const [jobAssets, setJobAssets] = useState<Asset[]>([]);
-  const [filteredJobAssets, setFilteredJobAssets] = useState<Asset[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [reportSearchQuery, setReportSearchQuery] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  const [isEditing, setIsEditing] = useState(shouldEdit); // Initialize with shouldEdit
+  const [editFormData, setEditFormData] = useState<Job | null>(null);
+
+  // State management
+  const [filteredJobAssets, setFilteredJobAssets] = useState<EnhancedAsset[]>([]);
   const [newAssetName, setNewAssetName] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
-  const [opportunity, setOpportunity] = useState<RelatedOpportunity | null>(null);
   const [isStatusEditing, setIsStatusEditing] = useState(false);
   const [isPriorityEditing, setIsPriorityEditing] = useState(false);
   const [isDueDateEditing, setIsDueDateEditing] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editFormData, setEditFormData] = useState<Job | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [tempDueDate, setTempDueDate] = useState<string>('');
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('assets');
   const [currentTab, setCurrentTab] = useState('details');
   const [selectedAssetType, setSelectedAssetType] = useState<string>('document');
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [assetToDelete, setAssetToDelete] = useState<Asset | null>(null);
+  const [assetToDelete, setAssetToDelete] = useState<EnhancedAsset | null>(null);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const [isLabJob, setIsLabJob] = useState(false);
+
+  // New filter states
+  const [reportTypeFilter, setReportTypeFilter] = useState<string>('all');
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+
+  // Missing state variables
+  const [reportSearchQuery, setReportSearchQuery] = useState<string>('');
+  const [assets, setAssets] = useState<{id: any; assets: any;}[]>([]);
   
+  // Meter Report states
+  const [isMeterDropdownOpen, setIsMeterDropdownOpen] = useState(false);
+  const [meterReportSearchQuery, setMeterReportSearchQuery] = useState<string>('');
+  const [existingMeterReports, setExistingMeterReports] = useState<Asset[]>([]);
+
   // Default assets that are always available
   const defaultAssets: Asset[] = [
     {
@@ -312,16 +342,160 @@ export default function JobDetail() {
     }
   ];
 
+  // Add missing state for form submission
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Function to fetch pass/fail status for assets from calibration report tables
+  const fetchPassFailStatusForJobAssets = async (assets: Asset[]): Promise<Asset[]> => {
+    const assetsWithStatus = await Promise.all(
+      assets.map(async (asset) => {
+        try {
+          // Extract report type from file_url to determine which table to query
+          if (!asset.file_url.startsWith('report:')) {
+            return { ...asset, pass_fail_status: null };
+          }
+
+          const urlParts = asset.file_url.split('/');
+          const reportSlug = urlParts[3]?.split('?')[0];
+          
+          if (!reportSlug) {
+            return { ...asset, pass_fail_status: null };
+          }
+
+          // Map report slugs to table names and status paths
+          const reportTableMap: { [key: string]: { table: string; statusPath: string } } = {
+            'calibration-gloves': { table: 'calibration_gloves_reports', statusPath: 'status' },
+            'calibration-sleeve': { table: 'calibration_sleeve_reports', statusPath: 'status' },
+            'calibration-blanket': { table: 'calibration_blanket_reports', statusPath: 'status' },
+            'calibration-line-hose': { table: 'calibration_line_hose_reports', statusPath: 'status' },
+            'calibration-hotstick': { table: 'calibration_hotstick_reports', statusPath: 'status' },
+            'calibration-ground-cable': { table: 'calibration_ground_cable_reports', statusPath: 'status' },
+            'calibration-bucket-truck': { table: 'calibration_bucket_truck_reports', statusPath: 'status' },
+            'meter-template': { table: 'meter_template_reports', statusPath: 'status' }
+          };
+
+          const reportConfig = reportTableMap[reportSlug];
+          if (!reportConfig) {
+            return { ...asset, pass_fail_status: null };
+          }
+
+          // Extract reportId from the URL
+          const reportId = urlParts[4];
+          if (!reportId) {
+            return { ...asset, pass_fail_status: null };
+          }
+
+          // Query the specific calibration report table
+          const { data, error } = await supabase
+            .schema('lab_ops')
+            .from(reportConfig.table)
+            .select(reportConfig.statusPath)
+            .eq('id', reportId)
+            .single();
+
+          if (error) {
+            console.error(`Error fetching pass/fail status from ${reportConfig.table}:`, error);
+            return { ...asset, pass_fail_status: null };
+          }
+
+          const passFailStatus = data?.[reportConfig.statusPath];
+
+          // Ensure we only return valid pass/fail status values
+          const validStatus: 'PASS' | 'FAIL' | null = 
+            passFailStatus === 'PASS' ? 'PASS' : 
+            passFailStatus === 'FAIL' ? 'FAIL' : null;
+
+          return { 
+            ...asset, 
+            pass_fail_status: validStatus 
+          };
+        } catch (error) {
+          console.error('Error fetching pass/fail status for asset:', asset.id, error);
+          return { ...asset, pass_fail_status: null };
+        }
+      })
+    );
+
+    return assetsWithStatus;
+  };
+
+  // Helper function to handle form input changes
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => prev ? { ...prev, [name]: value } : null);
+  };
+
+  // Handle edit form submission
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editFormData || !id) return;
+
+    setIsSubmitting(true);
+    try {
+      // Determine which schema and table to use based on job division
+      const isLabJob = job?.division?.toLowerCase() === 'calibration' || job?.division?.toLowerCase() === 'armadillo';
+      const schema = isLabJob ? 'lab_ops' : 'neta_ops';
+      const table = isLabJob ? 'lab_jobs' : 'jobs';
+
+      const { error } = await supabase
+        .schema(schema)
+        .from(table)
+        .update({
+          title: editFormData.title,
+          description: editFormData.description,
+          status: editFormData.status,
+          priority: editFormData.priority,
+          start_date: editFormData.start_date || null,
+          due_date: editFormData.due_date || null,
+          budget: editFormData.budget ? parseFloat(editFormData.budget.toString()) : null,
+          notes: editFormData.notes || null,
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Update local job state
+      setJob(prev => prev ? { ...prev, ...editFormData } : null);
+      setIsEditing(false);
+      toast.success('Job updated successfully!');
+      
+      // Refresh job details to get latest data
+      fetchJobDetails();
+    } catch (error) {
+      console.error('Error updating job:', error);
+      toast.error('Failed to update job');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Load job details on component mount
+  useEffect(() => {
+    fetchJobDetails();
+  }, [id]);
+
+  // Load assets when job is loaded
+  useEffect(() => {
+    if (job) {
+      fetchJobAssets();
+      // Fetch meter reports if this is a calibration job
+      if (job.division?.toLowerCase() === 'calibration') {
+        fetchMeterReports();
+      }
+    }
+  }, [job]);
+
   // Handle clicking outside the dropdown
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
+        setIsMeterDropdownOpen(false);
       }
     }
     
-    // Add event listener only if dropdown is open
-    if (isDropdownOpen) {
+    // Add event listener only if any dropdown is open
+    if (isDropdownOpen || isMeterDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     
@@ -329,77 +503,16 @@ export default function JobDetail() {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isDropdownOpen]);
+  }, [isDropdownOpen, isMeterDropdownOpen]);
 
   // Check for tab query parameter and update the active tab
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tabParam = params.get('tab');
-    if (tabParam && ['overview', 'assets', 'surveys', 'sla'].includes(tabParam)) {
+    if (tabParam && ['overview,assets,surveys,sla'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, [location.search]);
-
-  useEffect(() => {
-    if (user && id) {
-      // If we have job details from the hook, use them
-      if (jobDetails) {
-        // Create a compatible job object from jobDetails
-        const jobFromDetails: Job = {
-          id: jobDetails.id,
-          customer_id: jobDetails.customer?.id || '',
-          title: jobDetails.title,
-          description: jobDetails.description || '',
-          status: jobDetails.status,
-          priority: jobDetails.priority || 'medium',
-          job_number: jobDetails.job_number,
-          start_date: jobDetails.start_date || null,
-          due_date: jobDetails.due_date || null,
-          budget: jobDetails.budget || null,
-          division: (jobDetails as any).division || null,
-          customers: jobDetails.customer ? {
-            id: jobDetails.customer.id,
-            name: jobDetails.customer.name,
-            company_name: jobDetails.customer.company_name,
-            address: (jobDetails.customer as any).address,
-          } : {
-            id: '',
-            name: '',
-            company_name: null,
-          }
-        };
-        
-        setJob(jobFromDetails);
-        
-        if (jobDetails.customer) {
-          setCustomer({
-            id: jobDetails.customer.id,
-            name: jobDetails.customer.name,
-            company_name: jobDetails.customer.company_name || '',
-          });
-        }
-        
-        // Still need to fetch contacts
-        fetchContacts(jobDetails.customer?.id);
-        setLoading(false);
-      } else {
-        // Fallback to original fetching
-        // fetchJobDetails(); 
-      }
-      
-      // These fetches might still be needed if useJobDetails doesn't cover them
-      fetchAssets(); 
-      fetchJobAssets();
-      
-      // Fetch related opportunity if exists
-      const fetchRelatedOpportunity = async () => {
-        const opportunityData = await fetchOpportunityForJob(id); 
-        setOpportunity(opportunityData);
-      };
-      
-      fetchRelatedOpportunity();
-    }
-  }, [user, id, jobDetails]); // Depend on jobDetails from the hook
 
   useEffect(() => {
     if (job && !editFormData) {
@@ -417,6 +530,36 @@ export default function JobDetail() {
     }
   }, [job]);
 
+  // Load additional data when job is loaded
+  useEffect(() => {
+    if (job && user) {
+      // Fetch contacts for the customer
+      if (job.customer_id) {
+        fetchContacts(job.customer_id);
+      }
+      
+      // Set customer data
+      if (job.customers) {
+        setCustomer({
+          id: job.customers.id,
+          name: job.customers.name,
+          company_name: job.customers.company_name || '',
+        });
+      }
+      
+      // Fetch related opportunity
+      const fetchRelatedOpportunity = async () => {
+        const opportunityData = await fetchOpportunityForJob(job.id); 
+        setOpportunity(opportunityData);
+      };
+      
+      fetchRelatedOpportunity();
+      
+      // Fetch general assets - commented out due to type conflicts, fetchJobAssets handles this
+      // fetchAssets();
+    }
+  }, [job, user]);
+
   // Helper function to normalize date format
   function normalizeDate(dateString: string | null) {
     if (!dateString) return '';
@@ -431,16 +574,107 @@ export default function JobDetail() {
   }
 
   useEffect(() => {
-    // Filter job assets when search query changes
-    if (searchQuery.trim() === '') {
-      setFilteredJobAssets(jobAssets);
-    } else {
-      const filtered = jobAssets.filter(asset => 
-        asset.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredJobAssets(filtered);
+    // Filter job assets when search query or filters change
+    let filtered = jobAssets;
+
+    // Search filter - search across multiple attributes
+    if (searchQuery.trim() !== '') {
+      filtered = filtered.filter(asset => {
+        const searchTerm = searchQuery.toLowerCase();
+        
+        // Get the simplified report type for searching
+        const getSimplifiedReportType = (asset: Asset) => {
+          if (asset.file_url.startsWith('report:')) {
+            const urlParts = asset.file_url.split('/');
+            const reportSlug = urlParts[3];
+            
+            if (reportSlug) {
+              const cleanReportSlug = reportSlug.split('?')[0];
+              
+              const reportTypeMap: { [key: string]: string } = {
+                'calibration-gloves': 'Glove',
+                'calibration-sleeve': 'Sleeve',
+                'calibration-blanket': 'Blanket',
+                'calibration-line-hose': 'Line Hose',
+                'calibration-hotstick': 'Hotstick',
+                'calibration-ground-cable': 'Ground Cable',
+                'calibration-bucket-truck': 'Bucket Truck',
+                'panelboard-report': 'Panelboard',
+                'low-voltage-switch-multi-device-test': 'LV Switch',
+                'low-voltage-circuit-breaker-electronic-trip-ats-report': 'LV Circuit Breaker',
+                'automatic-transfer-switch-ats-report': 'ATS',
+                'large-dry-type-transformer-mts-report': 'Large Transformer',
+                'large-dry-type-transformer-ats-report': 'Large Transformer'
+              };
+              
+              return reportTypeMap[cleanReportSlug] || 'Report';
+            }
+          }
+          return 'Document';
+        };
+
+        const reportType = getSimplifiedReportType(asset);
+        const assetId = asset.userAssetId || asset.asset_id || '';
+        
+        return (
+          asset.name.toLowerCase().includes(searchTerm) ||
+          reportType.toLowerCase().includes(searchTerm) ||
+          assetId.toLowerCase().includes(searchTerm)
+        );
+      });
     }
-  }, [searchQuery, jobAssets]);
+
+    // Report type filter
+    if (reportTypeFilter !== 'all') {
+      filtered = filtered.filter(asset => {
+        const getSimplifiedReportType = (asset: Asset) => {
+          if (asset.file_url.startsWith('report:')) {
+            const urlParts = asset.file_url.split('/');
+            const reportSlug = urlParts[3];
+            
+            if (reportSlug) {
+              const cleanReportSlug = reportSlug.split('?')[0];
+              
+              const reportTypeMap: { [key: string]: string } = {
+                'calibration-gloves': 'Glove',
+                'calibration-sleeve': 'Sleeve',
+                'calibration-blanket': 'Blanket',
+                'calibration-line-hose': 'Line Hose',
+                'calibration-hotstick': 'Hotstick',
+                'calibration-ground-cable': 'Ground Cable',
+                'calibration-bucket-truck': 'Bucket Truck',
+                'panelboard-report': 'Panelboard',
+                'low-voltage-switch-multi-device-test': 'LV Switch',
+                'low-voltage-circuit-breaker-electronic-trip-ats-report': 'LV Circuit Breaker',
+                'automatic-transfer-switch-ats-report': 'ATS',
+                'large-dry-type-transformer-mts-report': 'Large Transformer',
+                'large-dry-type-transformer-ats-report': 'Large Transformer'
+              };
+              
+              return reportTypeMap[cleanReportSlug] || 'Report';
+            }
+          }
+          return 'Document';
+        };
+
+        return getSimplifiedReportType(asset) === reportTypeFilter;
+      });
+    }
+
+    // Date filter
+    if (selectedDate !== '') {
+      const filterDate = new Date(selectedDate);
+      filterDate.setHours(0, 0, 0, 0); // Set to start of day for comparison
+      
+      filtered = filtered.filter(asset => {
+        const assetDate = new Date(asset.created_at);
+        assetDate.setHours(0, 0, 0, 0); // Set to start of day for comparison
+        return assetDate >= filterDate;
+      });
+    }
+
+    setFilteredJobAssets(filtered);
+  }, [searchQuery, jobAssets, reportTypeFilter, selectedDate, statusFilter]);
 
   // Filter report templates based on search
   const filteredReportTemplates = reportSearchQuery.trim() === '' 
@@ -449,58 +683,190 @@ export default function JobDetail() {
         asset.name.toLowerCase().includes(reportSearchQuery.toLowerCase())
       );
 
-  async function fetchAssets() {
-    try {
-      const { data, error } = await supabase
-        .schema('neta_ops')
-        .from('assets')
-        .select('*')
-        .order('created_at', { ascending: false });
+  // Fetch job assets
+  const fetchAssets = async () => {
+    if (!id) return;
 
-      if (error) throw error;
-      setAssets(data || []);
-    } catch (error) {
-      console.error('Error fetching assets:', error);
+    try {
+      let assetsData: {id: any; assets: any;}[] = [];
+
+      if (isLabJob) {
+        // Fetch from lab_ops schema
+        const { data, error } = await supabase
+          .schema('lab_ops')
+          .from('job_assets')
+          .select(`
+            id,
+            lab_assets:asset_id(*)
+          `)
+          .eq('job_id', id);
+
+        if (error) throw error;
+        
+        // Transform the data to match expected format
+        assetsData = data?.map(item => ({
+          id: item.id,
+          assets: Array.isArray(item.lab_assets) ? item.lab_assets[0] : item.lab_assets
+        })) || [];
+      } else {
+        // Fetch from neta_ops schema (existing logic)
+        const { data, error } = await supabase
+          .schema('neta_ops')
+          .from('job_assets')
+          .select(`
+            id,
+            assets:asset_id(*)
+          `)
+          .eq('job_id', id);
+
+        if (error) throw error;
+        
+        // Transform the data to match expected format
+        assetsData = data?.map(item => ({
+          id: item.id,
+          assets: Array.isArray(item.assets) ? item.assets[0] : item.assets
+        })) || [];
+      }
+
+      setAssets(assetsData);
+    } catch (err: any) {
+      console.error('Error fetching assets:', err);
+      // Don't set error state for assets, just log it
     }
-  }
+  };
 
   async function fetchJobAssets() {
     if (!id) return;
+    
     try {
-      // 1. Fetch asset IDs associated with the job
-      const { data: jobAssetLinks, error: linksError } = await supabase
-        .schema('neta_ops')
-        .from('job_assets')
-        .select('asset_id')
-        .eq('job_id', id);
-
-      if (linksError) {
-        console.error('Error fetching job asset links:', linksError);
-        throw linksError;
+      // Use the isLabJob state that was set in fetchJobDetails
+      const isCalibration = isLabJob;
+      
+      console.log(`Fetching assets for job ${id} (division: ${isCalibration ? 'Lab/Calibration' : 'Regular NETA'})`);
+      
+      // Select the appropriate schema and table based on job division
+      let assetsData: any[] = [];
+      
+      if (isCalibration) {
+        // For calibration jobs, fetch directly from lab_assets
+        console.log('Fetching from lab_ops.lab_assets table...');
+        const { data, error } = await supabase
+          .schema('lab_ops')
+          .from('lab_assets')
+          .select('*')
+          .eq('job_id', id)
+          .is('deleted_at', null); // Exclude soft-deleted assets
+          
+        if (error) {
+          console.error('Error fetching calibration assets:', error);
+          throw error;
+        }
+        
+        assetsData = data || [];
+        console.log(`Retrieved ${assetsData.length} calibration assets:`, assetsData);
+      } else {
+        // For other divisions, use job_assets with nested assets
+        const { data, error } = await supabase
+          .schema('neta_ops')
+          .from('job_assets')
+          .select(`
+            asset_id,
+            assets:asset_id(*)
+          `)
+          .eq('job_id', id);
+          
+        if (error) {
+          console.error('Error fetching regular job assets:', error);
+          throw error;
+        }
+        
+        assetsData = data || [];
+        console.log(`Retrieved ${assetsData.length} regular job assets`);
       }
-
-      if (!jobAssetLinks || jobAssetLinks.length === 0) {
-        setJobAssets([]);
-        setFilteredJobAssets([]);
-        return;
+      
+      // Transform the assets based on division
+      const transformedAssets: Asset[] = [];
+      
+      if (isCalibration) {
+        // Lab_ops assets are already in the right format
+        for (const asset of assetsData) {
+          transformedAssets.push({
+            id: asset.id,
+            name: asset.name,
+            file_url: asset.file_url,
+            created_at: asset.created_at,
+            asset_id: asset.asset_id // Include the asset_id for calibration assets
+          });
+        }
+      } else {
+        // Transform neta_ops nested assets
+        for (const item of assetsData) {
+          if (item.assets) {
+            transformedAssets.push({
+              id: item.assets.id,
+              name: item.assets.name,
+              file_url: item.assets.file_url,
+              created_at: item.assets.created_at,
+              template_type: item.assets.template_type
+            });
+          }
+        }
       }
-
-      const assetIds = jobAssetLinks.map(link => link.asset_id);
-
-      // 2. Fetch the details of those assets
-      const { data: assetsData, error: assetsError } = await supabase
-        .schema('neta_ops')
-        .from('assets')
-        .select('id, name, file_url, created_at')
-        .in('id', assetIds);
-
-      if (assetsError) {
-        console.error('Error fetching linked assets:', assetsError);
-        throw assetsError;
-      }
-
-      setJobAssets(assetsData || []);
-      setFilteredJobAssets(assetsData || []);
+      
+      console.log('Transformed assets:', transformedAssets);
+      
+      // Further process the assets to add userAssetId
+      const enhancedAssets: EnhancedAsset[] = await Promise.all(
+        transformedAssets.map(async (asset: Asset): Promise<EnhancedAsset> => {
+          let userAssetId = '';
+          if (isCalibration) {
+            // For calibration assets, use asset_id if available
+            if (asset.asset_id) {
+              userAssetId = asset.asset_id;
+              console.log(`Using asset_id from asset record: ${userAssetId}`);
+            }
+            
+            // For calibration gloves reports, try to extract assetId from report
+            if (asset.file_url && asset.file_url.includes('calibration-gloves') && !userAssetId) {
+              const reportIdMatch = asset.file_url.match(/calibration-gloves\/([^\/\?]+)/);
+              const reportId = reportIdMatch ? reportIdMatch[1] : null;
+              
+              if (reportId) {
+                console.log(`Extracting Asset ID from report ${reportId}`);
+                try {
+                  const { data: reportData, error: reportError } = await supabase
+                    .schema('lab_ops')
+                    .from('calibration_gloves_reports')
+                    .select('report_info')
+                    .eq('id', reportId)
+                    .single();
+                    
+                  if (!reportError && reportData?.report_info?.gloveData?.assetId) {
+                    userAssetId = reportData.report_info.gloveData.assetId;
+                    console.log(`Found Asset ID in report: ${userAssetId}`);
+                  }
+                } catch (error) {
+                  console.error('Error fetching glove report data:', error);
+                }
+              }
+            }
+          }
+          
+          return {
+            ...asset,
+            userAssetId
+          };
+        })
+      );
+      
+      console.log('Enhanced assets:', enhancedAssets);
+      
+      // Fetch pass/fail status for calibration assets
+      const assetsWithStatus = await fetchPassFailStatusForJobAssets(enhancedAssets);
+      
+      setJobAssets(assetsWithStatus);
+      setFilteredJobAssets(assetsWithStatus);
+      
     } catch (error) {
       console.error('Error fetching job assets:', error);
     }
@@ -528,23 +894,94 @@ export default function JobDetail() {
   }
 
   async function fetchOpportunityForJob(jobId: string) {
-    if (!jobId) return null;
     try {
       const { data, error } = await supabase
-        .schema('business') // Add schema
+        .schema('common')
         .from('opportunities')
         .select('id, quote_number') // Removed division
         .eq('job_id', jobId)
-        .maybeSingle(); // Use maybeSingle as there might not be a linked opportunity
+        .single();
 
       if (error) {
-        console.error('Error fetching related opportunity:', error);
-        return null;
+        if (error.code === 'PGRST116') {
+          // No opportunity found, which is fine
+          return null;
+        }
+        throw error;
       }
-      return data as RelatedOpportunity | null;
+
+      return data;
     } catch (error) {
-      console.error('Catch block: Error fetching related opportunity:', error);
+      console.error('Error fetching opportunity for job:', error);
       return null;
+    }
+  }
+
+  // Fetch existing meter template reports and templates
+  async function fetchMeterReports() {
+    if (!id) return;
+    
+    try {
+      // Fetch existing meter template reports for this job
+      const { data: jobMeterReports, error: jobError } = await supabase
+        .schema('lab_ops')
+        .from('meter_template_reports')
+        .select('id, report_info, created_at, status')
+        .eq('job_id', id)
+        .order('created_at', { ascending: false });
+
+      if (jobError) throw jobError;
+
+      // Fetch meter templates (not tied to any specific job)
+      const { data: meterTemplates, error: templateError } = await supabase
+        .schema('lab_ops')
+        .from('meter_template_reports')
+        .select('id, report_info, created_at, status')
+        .eq('status', 'TEMPLATE')
+        .order('created_at', { ascending: false });
+
+      if (templateError) throw templateError;
+
+      console.log('Job meter reports found:', jobMeterReports?.length || 0);
+      console.log('Meter templates found:', meterTemplates?.length || 0);
+
+      // Convert job reports to Asset format
+      const jobMeterAssets: Asset[] = (jobMeterReports || []).map(report => ({
+        id: `meter-report-${report.id}`,
+        name: `Meter Report - ${report.report_info?.meterName || 'Unnamed'}`,
+        file_url: `report:/jobs/${id}/meter-template/${report.id}`,
+        created_at: report.created_at,
+        pass_fail_status: report.status === 'PASS' ? 'PASS' : 'FAIL',
+        type: 'report'
+      }));
+
+      // Convert templates to Asset format
+      const templateAssets: Asset[] = (meterTemplates || []).map(template => {
+        const reportInfo = template.report_info as any;
+        const templateName = reportInfo?.templateName || reportInfo?.meterName || 'Unnamed Template';
+        return {
+          id: `meter-template-${template.id}`,
+          name: templateName,
+          file_url: `template:/meter-template/${template.id}`, // Different URL scheme for templates
+          created_at: template.created_at,
+          pass_fail_status: null, // Templates don't have pass/fail status
+          type: 'template'
+        };
+      });
+
+      // Only show templates in the dropdown (not job reports)
+      setExistingMeterReports(templateAssets);
+      
+      // Only add job reports to main assets list (not templates)
+      setJobAssets(prevAssets => {
+        // Remove any existing meter reports to avoid duplicates
+        const filteredAssets = prevAssets.filter(asset => !asset.id.startsWith('meter-report-'));
+        // Add the new job meter reports (not templates)
+        return [...filteredAssets, ...jobMeterAssets];
+      });
+    } catch (error) {
+      console.error('Error fetching meter reports:', error);
+      setExistingMeterReports([]);
     }
   }
 
@@ -586,6 +1023,36 @@ export default function JobDetail() {
     setUploadProgress(0);
 
     try {
+      // Check job division first to determine which schema to use
+      const { data: jobData, error: jobError } = await supabase
+        .schema('neta_ops')
+        .from('jobs')
+        .select('division')
+        .eq('id', id)
+        .single();
+
+      // If not found in neta_ops, check lab_ops
+      let useLabSchema = false;
+      if (jobError || !jobData) {
+        const { data: labJobData, error: labJobError } = await supabase
+          .schema('lab_ops')
+          .from('lab_jobs')
+          .select('division')
+          .eq('id', id)
+          .single();
+
+        if (!labJobError && labJobData) {
+          useLabSchema = isLabDivision(labJobData.division);
+        }
+      } else {
+        useLabSchema = isLabDivision(jobData.division);
+      }
+
+      // Use appropriate schema
+      const schema = useLabSchema ? 'lab_ops' : 'neta_ops';
+      const assetsTable = useLabSchema ? 'lab_assets' : 'assets';
+      const jobAssetsTable = useLabSchema ? null : 'job_assets';
+
       // 1. Upload file to Storage
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
@@ -614,53 +1081,68 @@ export default function JobDetail() {
       const publicUrl = publicUrlData.publicUrl;
 
       // 3. Create asset record in database
-      const { data: assetData, error: assetError } = await supabase
-        .schema('neta_ops')
-        .from('assets')
-        .insert({
-          name: newAssetName,
-          file_url: publicUrl,
-          created_at: new Date().toISOString(),
-        })
-        .select('id')
-        .single();
+      let assetId;
+      if (useLabSchema) {
+        // For lab_ops, directly link the asset to the job
+        const { data: assetData, error: assetError } = await supabase
+          .schema(schema)
+          .from(assetsTable)
+          .insert({
+            name: newAssetName,
+            file_url: publicUrl,
+            job_id: id, // Direct link to job
+            user_id: user?.id,
+            created_at: new Date().toISOString(),
+          })
+          .select('id')
+          .single();
+        
+        if (assetError) throw assetError;
+        assetId = assetData.id;
+      } else {
+        // For neta_ops, use the junction table pattern
+        const { data: assetData, error: assetError } = await supabase
+          .schema(schema)
+          .from(assetsTable)
+          .insert({
+            name: newAssetName,
+            file_url: publicUrl,
+            created_at: new Date().toISOString(),
+          })
+          .select('id')
+          .single();
+        
+        if (assetError) throw assetError;
+        assetId = assetData.id;
 
-      if (assetError) throw assetError;
-      
-      // Update progress
-      setUploadProgress(90);
+        // 4. Link asset to job
+        const { error: linkError } = await supabase
+          .schema(schema)
+          .from('job_assets')
+          .insert({
+            job_id: id,
+            asset_id: assetId,
+            user_id: user?.id,
+          });
 
-      // 4. Create job-asset link
-      const { error: linkError } = await supabase
-        .schema('neta_ops')
-        .from('job_assets')
-        .insert({
-          job_id: id,
-          asset_id: assetData.id,
-        });
+        if (linkError) throw linkError;
+      }
 
-      if (linkError) throw linkError;
-      
-      // Complete progress
       setUploadProgress(100);
-
-      // 5. Update the UI
-      fetchAssets();
-      fetchJobAssets();
+      toast.success('Asset added successfully!');
       
-      // 6. Reset form
-      setSelectedFile(null);
+      // Reset form
       setNewAssetName('');
-      setSelectedAssetType('document');
-      setIsDropdownOpen(false);
+      setSelectedFile(null);
       setShowUploadDialog(false);
-      toast.success('Asset added successfully');
+      
+      // Refresh job assets
+      fetchJobAssets();
     } catch (error) {
       console.error('Error uploading asset:', error);
-      toast.error('Failed to upload asset. Please try again.');
+      toast.error('Failed to upload asset');
     } finally {
       setIsUploading(false);
-      setTimeout(() => setUploadProgress(0), 500); // Reset after a delay to show completion
     }
   };
 
@@ -672,53 +1154,92 @@ export default function JobDetail() {
     }
 
     try {
-      // 1. Remove the job-asset link
-      const { error: linkError } = await supabase
-        .schema('neta_ops')
-        .from('job_assets')
-        .delete()
-        .eq('job_id', id)
-        .eq('asset_id', assetToDelete.id);
-
-      if (linkError) throw linkError;
-
-      // 2. If this is a document (not a report), delete the asset record and file
-      if (!assetToDelete.file_url.startsWith('report:')) {
-        // Get the storage file path from the URL
-        const url = new URL(assetToDelete.file_url);
-        const filePath = url.pathname.substring(url.pathname.indexOf('assets/') + 7);
+      console.log('Deleting asset:', assetToDelete);
+      
+      // Check if this is a calibration division job by directly checking the job table
+      const { data: jobData, error: jobError } = await supabase
+        .schema('lab_ops')
+        .from('lab_jobs')
+        .select('id, division')
+        .eq('id', id)
+        .single();
         
-        if (filePath) {
-          // Delete from storage
-          const { error: storageError } = await supabase.storage
-            .from('assets')
-            .remove([filePath]);
-            
-          if (storageError) {
-            console.error('Error deleting file from storage:', storageError);
-          }
-        }
-
-        // Delete asset record
-        const { error: assetError } = await supabase
-          .schema('neta_ops')
-          .from('assets')
-          .delete()
+      const isCalibration = jobData?.division?.toLowerCase() === 'calibration';
+      
+      if (isCalibration) {
+        // For calibration division, soft delete by setting deleted_at timestamp
+        console.log('Soft deleting calibration asset with ID:', assetToDelete.id);
+        
+        const { error: deleteError } = await supabase
+          .schema('lab_ops')
+          .from('lab_assets')
+          .update({ 
+            deleted_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
           .eq('id', assetToDelete.id);
 
-        if (assetError) throw assetError;
+        if (deleteError) {
+          console.error('Error soft deleting lab asset:', deleteError);
+          throw deleteError;
+        }
+        
+        console.log('Successfully soft deleted calibration asset');
+      } else {
+        // For other divisions, delete from the junction table
+        const { error: linkError } = await supabase
+          .schema('neta_ops')
+          .from('job_assets')
+          .delete()
+          .eq('job_id', id)
+          .eq('asset_id', assetToDelete.id);
+
+        if (linkError) {
+          console.error('Error deleting job-asset link:', linkError);
+          throw linkError;
+        }
+
+        // If this is a document (not a report), delete the asset record and file
+        if (!assetToDelete.file_url.startsWith('report:')) {
+          // Get the storage file path from the URL
+          const url = new URL(assetToDelete.file_url);
+          const filePath = url.pathname.substring(url.pathname.indexOf('assets/') + 7);
+          
+          if (filePath) {
+            // Delete from storage
+            const { error: storageError } = await supabase.storage
+              .from('assets')
+              .remove([filePath]);
+            
+            if (storageError) {
+              console.error('Error deleting file from storage:', storageError);
+            }
+          }
+
+          // Delete asset record
+          const { error: assetError } = await supabase
+            .schema('neta_ops')
+            .from('assets')
+            .delete()
+            .eq('id', assetToDelete.id);
+
+          if (assetError) {
+            console.error('Error deleting asset record:', assetError);
+            throw assetError;
+          }
+        }
       }
 
-      // 3. Refresh the UI
+      // Refresh the UI
       fetchJobAssets();
       
-      // 4. Reset state and notify user
-      setAssetToDelete(null);
+      // Reset state and notify user
       setShowDeleteConfirm(false);
-      toast.success('Asset removed successfully');
+      setAssetToDelete(null);
+      toast.success('Asset deleted successfully');
     } catch (error) {
       console.error('Error deleting asset:', error);
-      toast.error('Failed to delete asset. Please try again.');
+      toast.error('Failed to delete asset');
     }
   };
 
@@ -774,7 +1295,16 @@ export default function JobDetail() {
       'oil-analysis-report': 'oil-analysis-report', // Added based on App.tsx routes
       'cable-hipot-test-report': 'cable-hipot-test-report', // Added based on App.tsx routes
       'relay-test-report': 'relay-test-report', // Added based on App.tsx routes
-      'two-small-dry-typer-xfmr-ats-report': 'two-small-dry-typer-xfmr-ats-report'
+      'two-small-dry-typer-xfmr-ats-report': 'two-small-dry-typer-xfmr-ats-report',
+      // All calibration reports
+      'calibration-gloves': 'calibration-gloves',
+      'calibration-sleeve': 'calibration-sleeve',
+      'calibration-blanket': 'calibration-blanket',
+      'calibration-line-hose': 'calibration-line-hose',
+      'calibration-hotstick': 'calibration-hotstick',
+      'calibration-ground-cable': 'calibration-ground-cable',
+      'calibration-bucket-truck': 'calibration-bucket-truck',
+      'meter-template': 'meter-template'
       // ensure all slugs from defaultAssets and App.tsx routes are here
     };
 
@@ -807,6 +1337,1306 @@ export default function JobDetail() {
     }
   };
 
+  // Fetch job details
+  const fetchJobDetails = async () => {
+    if (!id) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log(`Attempting to fetch job details for ID: ${id}`);
+
+      // First, try to fetch from lab_ops.lab_jobs (for calibration/armadillo jobs)
+      console.log('Trying lab_ops.lab_jobs first...');
+      const { data: labJob, error: labError } = await supabase
+        .schema('lab_ops')
+        .from('lab_jobs')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      console.log('Lab job query result:', { labJob, labError });
+
+      // If we found a lab job and there's no error, use it
+      if (labJob && !labError) {
+        console.log('Found lab job:', labJob);
+        
+        // Fetch customer data separately
+        let customerData = null;
+        if (labJob.customer_id) {
+          const { data: customer, error: customerError } = await supabase
+            .schema('lab_ops')
+            .from('lab_customers')
+            .select('*')
+            .eq('id', labJob.customer_id)
+            .single();
+          
+          if (!customerError && customer) {
+            customerData = customer;
+          }
+        }
+        
+        // Transform the data to match the expected format
+        const transformedJob = {
+          ...labJob,
+          customers: customerData
+        };
+        
+        setJob(transformedJob);
+        setIsLabJob(true);
+        console.log('Set isLabJob to true');
+        return;
+      }
+
+      // If not found in lab_ops (error code PGRST116 means "not found"), try neta_ops.jobs
+      if (labError && labError.code === 'PGRST116') {
+        console.log('Job not found in lab_ops, trying neta_ops...');
+        
+        const { data: netaJob, error: netaError } = await supabase
+          .schema('neta_ops')
+          .from('jobs')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        console.log('NETA job query result:', { netaJob, netaError });
+
+        if (netaError) {
+          if (netaError.code === 'PGRST116') {
+            console.log('Job not found in either schema');
+            throw new Error('Job not found in either lab_ops or neta_ops');
+          }
+          console.log('NETA job query error:', netaError);
+          throw netaError;
+        }
+
+        console.log('Found NETA job:', netaJob);
+        
+        // Fetch customer data separately
+        let customerData = null;
+        if (netaJob.customer_id) {
+          const { data: customer, error: customerError } = await supabase
+            .schema('common')
+            .from('customers')
+            .select('*')
+            .eq('id', netaJob.customer_id)
+            .single();
+          
+          if (!customerError && customer) {
+            customerData = customer;
+          }
+        }
+        
+        // Transform the data to match the expected format
+        const transformedJob = {
+          ...netaJob,
+          customers: customerData
+        };
+        
+        console.log('Transformed NETA job:', transformedJob);
+        setJob(transformedJob);
+        setIsLabJob(false);
+        console.log('Set isLabJob to false');
+        return;
+      }
+
+      // If there was a different error from lab_ops (not "not found"), throw it
+      if (labError) {
+        console.log('Lab job query had non-404 error:', labError);
+        throw labError;
+      }
+
+    } catch (err: any) {
+      console.error('Error fetching job details:', err);
+      setError(err.message || 'Failed to load job details');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+    // Function to print all calibration reports in the job
+  const handlePrintAll = async () => {
+    console.log('Print All button clicked!');
+    
+    if (!job) {
+      toast.error('Job information not available');
+      return;
+    }
+    
+    // Check division
+    const divisionCheck = job.division?.toLowerCase() || '';
+    if (!job.division || !['calibration', 'lab'].includes(divisionCheck)) {
+      toast.error('Print All is only available for calibration division jobs');
+      return;
+    }
+
+    // Filter for calibration reports
+    const calibrationReports = jobAssets.filter(asset => {
+      return asset.file_url.includes('calibration-');
+    });
+
+    if (calibrationReports.length === 0) {
+      toast.error('No calibration reports found in this job');
+      return;
+    }
+
+    console.log(`Found ${calibrationReports.length} calibration reports`);
+    toast.loading('Generating combined PDF...');
+
+    try {
+      // Create a single PDF content container
+      const pdfContent = document.createElement('div');
+      let combinedHTML = '';
+
+      // Map report types to table names
+      const tableMap: { [key: string]: string } = {
+        'calibration-gloves': 'calibration_gloves_reports',
+        'calibration-sleeve': 'calibration_sleeve_reports', 
+        'calibration-blanket': 'calibration_blanket_reports',
+        'calibration-line-hose': 'calibration_line_hose_reports',
+        'calibration-hotstick': 'calibration_hotstick_reports',
+        'calibration-ground-cable': 'calibration_ground_cable_reports',
+        'calibration-bucket-truck': 'calibration_bucket_truck_reports'
+      };
+
+      // Process each calibration report
+      for (let i = 0; i < calibrationReports.length; i++) {
+        const asset = calibrationReports[i];
+        
+        try {
+          console.log(`Processing report ${i + 1}/${calibrationReports.length}: ${asset.name}`);
+          
+          // Extract report type and ID from file_url
+          const urlParts = asset.file_url.split('/');
+          const reportType = urlParts[urlParts.length - 2]; // e.g., 'calibration-gloves'
+          const reportId = urlParts[urlParts.length - 1];
+          
+          const tableName = tableMap[reportType];
+          if (!tableName) {
+            console.log(`No table mapping found for report type: ${reportType}`);
+            continue;
+          }
+          
+          // Fetch report data
+          const { data: reportData, error } = await supabase
+            .schema('lab_ops')
+            .from(tableName)
+            .select('*')
+            .eq('id', reportId)
+            .single();
+
+          if (error || !reportData) {
+            console.error(`Error fetching report data for ${reportType}:`, error);
+            continue;
+          }
+
+          console.log(`Successfully fetched report data for ${reportType}`);
+          
+          // Generate HTML for this report using the same method as individual reports
+          const reportHTML = generateReportHTML(reportType, reportData.report_info, reportData.status);
+          
+          if (reportHTML && reportHTML.length > 100) {
+            // Add page break before each report except the first
+            if (i > 0) {
+              combinedHTML += '<div style="page-break-before: always;"></div>';
+            }
+            combinedHTML += reportHTML;
+          }
+          
+        } catch (error) {
+          console.error(`Error processing report ${asset.name}:`, error);
+        }
+      }
+
+      if (!combinedHTML) {
+        toast.dismiss();
+        toast.error('No reports could be processed');
+        return;
+      }
+
+      // Set the combined HTML content
+      pdfContent.innerHTML = combinedHTML;
+      
+      console.log(`Combined HTML length: ${combinedHTML.length}`);
+      console.log('Starting PDF generation with combined content...');
+
+      // Use exact same options as individual reports
+      const options = {
+        margin: 0.5,
+        filename: `All_Calibration_Reports_Job_${job.job_number || id}_${new Date().toISOString().split('T')[0]}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff'
+        },
+        jsPDF: { 
+          unit: 'in', 
+          format: 'letter', 
+          orientation: 'portrait'
+        }
+      };
+
+      // Generate PDF using exact same method as individual reports
+      console.log('Calling html2pdf with combined content...');
+      await html2pdf().from(pdfContent).set(options).save();
+      console.log('PDF generated successfully');
+      
+      toast.dismiss();
+      toast.success(`PDF generated successfully with ${calibrationReports.length} reports!`);
+
+    } catch (error) {
+      console.error('Error generating combined PDF:', error);
+      toast.dismiss();
+      toast.error('Failed to generate combined PDF');
+    }
+  };
+
+  // Generate the exact same HTML as individual reports do in their handlePrint functions
+  const generateReportHTML = (reportType: string, formData: any, status: string): string => {
+    switch (reportType) {
+      case 'calibration-gloves':
+        return generateGlovesHTML(formData, status);
+      case 'calibration-hotstick':
+        return generateHotstickHTML(formData, status);
+      case 'calibration-ground-cable':
+        return generateGroundCableHTML(formData, status);
+      case 'calibration-sleeve':
+        return generateSleeveHTML(formData, status);
+      case 'calibration-blanket':
+        return generateBlanketHTML(formData, status);
+      case 'calibration-line-hose':
+        return generateLineHoseHTML(formData, status);
+      case 'calibration-bucket-truck':
+        return generateBucketTruckHTML(formData, status);
+      case 'meter-template':
+        return generateMeterHTML(formData, status);
+      default:
+        return `<div>Unknown report type: ${reportType}</div>`;
+    }
+  };
+
+  // Exact same HTML generation as CalibrationGlovesReport.tsx
+  const generateGlovesHTML = (formData: any, status: string): string => {
+    console.log('generateGlovesHTML called with:', { formData, status });
+    console.log('formData structure:', JSON.stringify(formData, null, 2));
+    
+    // Handle both direct database structure and formData structure
+    const customer = formData.customer || '';
+    const jobNumber = formData.jobNumber || '';
+    const date = formData.date || '';
+    const comments = formData.comments || '';
+    
+    // Handle glove data - it might be nested differently
+    const gloveData = formData.gloveData || formData;
+    const assetId = gloveData.assetId || '';
+    const manufacturer = gloveData.manufacturer || '';
+    const gloveClass = gloveData.class || '';
+    const size = gloveData.size || '';
+    const cuffType = gloveData.cuffType || '';
+    const colorOutside = gloveData.colorOutside || '';
+    const colorInside = gloveData.colorInside || '';
+    
+    // Handle test equipment
+    const testEquipment = formData.testEquipment || {};
+    const equipmentName = testEquipment.name || 'Hipotronics 880PL-A';
+    const serialNumber = testEquipment.serialNumber || 'M010164';
+    
+    console.log('Extracted data:', { customer, jobNumber, assetId, manufacturer, gloveClass });
+    
+    return `
+      <div style="padding: 20px; font-family: Arial, sans-serif; color: black; background: white; font-size: 12px;">
+        <!-- Header -->
+        <div style="margin-bottom: 15px;">
+          <!-- AMP CALIBRATION Logo Area -->
+          <div style="margin-bottom: 10px; display: flex; align-items: center;">
+            <img src="/img/amp-cal-logo.png" 
+                 alt="AMP Calibration Logo" 
+                 style="height: 60px; margin-right: 8px;" />
+          </div>
+          
+          <h2 style="font-size: 16px; font-weight: bold; margin: 10px 0 5px 0; color: black;">Rubber Insulating Gloves Test Certificate</h2>
+        </div>
+
+        <!-- Main Content - Two Column Layout -->
+        <div style="display: flex; margin-bottom: 15px;">
+          <!-- Left Column - Overview -->
+          <div style="flex: 1; margin-right: 20px;">
+            <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black;">Overview</h3>
+            
+            <div style="margin-bottom: 6px;"><strong>Customer Name:</strong></div>
+            <div style="margin-bottom: 8px;">${customer}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Project #:</strong></div>
+            <div style="margin-bottom: 8px;">${jobNumber}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>AMP ID:</strong></div>
+            <div style="margin-bottom: 8px;">${assetId}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Manufacturer:</strong></div>
+            <div style="margin-bottom: 8px;">${manufacturer}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Class:</strong></div>
+            <div style="margin-bottom: 8px;">${gloveClass}</div>
+          </div>
+
+          <!-- Right Column - Result -->
+          <div style="flex: 1;">
+            <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black;">Result <span style="color: ${status === 'PASS' ? 'green' : 'red'};">${status}</span></h3>
+            
+            <div style="margin-bottom: 6px;"><strong>Test Date:</strong></div>
+            <div style="margin-bottom: 8px;">${date}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Size:</strong></div>
+            <div style="margin-bottom: 8px;">${size}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Cuff Type:</strong></div>
+            <div style="margin-bottom: 8px;">${cuffType}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Color Outside:</strong></div>
+            <div style="margin-bottom: 8px;">${colorOutside}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Color Inside:</strong></div>
+            <div style="margin-bottom: 8px;">${colorInside}</div>
+          </div>
+        </div>
+
+        <!-- Equipment Used Section -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Equipment Used</h3>
+          
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <thead>
+              <tr style="background: #f0f0f0;">
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Calibration Standard</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Serial #</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Cal Date</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Cal Due</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 4px; border: 1px solid #ccc;">${equipmentName}</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">${serialNumber}</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">6/1/2025</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">6/1/2026</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Quality Assurance Section -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Quality Assurance</h3>
+          
+          <div style="margin-bottom: 15px;">
+            <div style="margin-bottom: 6px;"><strong>Reviewed By:</strong> Kirk Crupi</div>
+          </div>
+        </div>
+
+        <!-- Comments Section -->
+        ${comments ? `
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Comments</h3>
+          <div style="padding: 6px; border: 1px solid #ccc; background: #f9f9f9; min-height: 30px; font-size: 11px;">
+            ${comments}
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- Footer -->
+        <div style="position: relative; margin-top: 40px;">
+          <!-- Signature Image -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <img src="/img/signature.png" 
+                 alt="Signature" 
+                 style="height: 150px; width: auto; display: block; margin: 0 auto;" />
+          </div>
+          
+          <!-- Limited Liability -->
+          <div style="margin-top: 30px;">
+            <h4 style="font-size: 12px; font-weight: bold; margin: 0 0 5px 0; color: black; text-decoration: underline;">Limited Liability</h4>
+            <p style="font-size: 10px; line-height: 1.3; margin: 0; color: #333;">
+              The tests guarantee the equipment is functioning within product specifications when it leaves the AMP Calibration Services Lab. AMP and/or any of our partners will not assume any liability incurred during the use of this unit should it not perform properly for any reason.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
+  // Placeholder functions for other report types - will need to be filled in with exact HTML from each report
+  const generateHotstickHTML = (formData: any, status: string): string => {
+    console.log('generateHotstickHTML called with:', { formData, status });
+    
+    // Handle both direct database structure and formData structure
+    const customer = formData.customer || '';
+    const jobNumber = formData.jobNumber || '';
+    const date = formData.date || '';
+    const comments = formData.comments || '';
+    
+    // Handle hotstick data - it might be nested differently
+    const hotstickData = formData.hotstickData || formData;
+    const assetId = hotstickData.assetId || '';
+    const manufacturer = hotstickData.manufacturer || '';
+    const length = hotstickData.length || '';
+    const type = hotstickData.type || '';
+    const testVoltage = hotstickData.testVoltage || '';
+    
+    // Handle test equipment
+    const testEquipment = formData.testEquipment || {};
+    const equipmentName = testEquipment.name || 'Hipotronics 880PL-A';
+    const serialNumber = testEquipment.serialNumber || 'M010164';
+    
+    return `
+      <div style="padding: 20px; font-family: Arial, sans-serif; color: black; background: white; font-size: 12px;">
+        <!-- Header -->
+        <div style="margin-bottom: 15px;">
+          <!-- AMP CALIBRATION Logo Area -->
+          <div style="margin-bottom: 10px; display: flex; align-items: center;">
+            <img src="/img/amp-cal-logo.png" 
+                 alt="AMP Calibration Logo" 
+                 style="height: 60px; margin-right: 8px;" />
+          </div>
+          
+          <h2 style="font-size: 16px; font-weight: bold; margin: 10px 0 5px 0; color: black;">Hotstick Test Certificate</h2>
+        </div>
+
+        <!-- Main Content - Two Column Layout -->
+        <div style="display: flex; margin-bottom: 15px;">
+          <!-- Left Column - Overview -->
+          <div style="flex: 1; margin-right: 20px;">
+            <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black;">Overview</h3>
+            
+            <div style="margin-bottom: 6px;"><strong>Customer Name:</strong></div>
+            <div style="margin-bottom: 8px;">${customer}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Project #:</strong></div>
+            <div style="margin-bottom: 8px;">${jobNumber}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>AMP ID:</strong></div>
+            <div style="margin-bottom: 8px;">${assetId}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Manufacturer:</strong></div>
+            <div style="margin-bottom: 8px;">${manufacturer}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Length:</strong></div>
+            <div style="margin-bottom: 8px;">${length}</div>
+          </div>
+
+          <!-- Right Column - Result -->
+          <div style="flex: 1;">
+            <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black;">Result <span style="color: ${status === 'PASS' ? 'green' : 'red'};">${status}</span></h3>
+            
+            <div style="margin-bottom: 6px;"><strong>Test Date:</strong></div>
+            <div style="margin-bottom: 8px;">${date}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Type:</strong></div>
+            <div style="margin-bottom: 8px;">${type}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Test Voltage:</strong></div>
+            <div style="margin-bottom: 8px;">${testVoltage}</div>
+          </div>
+        </div>
+
+        <!-- Equipment Used Section -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Equipment Used</h3>
+          
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <thead>
+              <tr style="background: #f0f0f0;">
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Calibration Standard</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Serial #</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Cal Date</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Cal Due</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 4px; border: 1px solid #ccc;">${equipmentName}</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">${serialNumber}</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">6/1/2025</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">6/1/2026</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Quality Assurance Section -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Quality Assurance</h3>
+          
+          <div style="margin-bottom: 15px;">
+            <div style="margin-bottom: 6px;"><strong>Reviewed By:</strong> Kirk Crupi</div>
+          </div>
+        </div>
+
+        <!-- Comments Section -->
+        ${comments ? `
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Comments</h3>
+          <div style="padding: 6px; border: 1px solid #ccc; background: #f9f9f9; min-height: 30px; font-size: 11px;">
+            ${comments}
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- Footer -->
+        <div style="position: relative; margin-top: 40px;">
+          <!-- Signature Image -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <img src="/img/signature.png" 
+                 alt="Signature" 
+                 style="height: 150px; width: auto; display: block; margin: 0 auto;" />
+          </div>
+          
+          <!-- Limited Liability -->
+          <div style="margin-top: 30px;">
+            <h4 style="font-size: 12px; font-weight: bold; margin: 0 0 5px 0; color: black; text-decoration: underline;">Limited Liability</h4>
+            <p style="font-size: 10px; line-height: 1.3; margin: 0; color: #333;">
+              The tests guarantee the equipment is functioning within product specifications when it leaves the AMP Calibration Services Lab. AMP and/or any of our partners will not assume any liability incurred during the use of this unit should it not perform properly for any reason.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
+  const generateGroundCableHTML = (formData: any, status: string): string => {
+    return `
+      <div style="padding: 20px; font-family: Arial, sans-serif; color: black; background: white; font-size: 12px;">
+        <!-- Header -->
+        <div style="margin-bottom: 15px;">
+          <!-- AMP CALIBRATION Logo Area -->
+          <div style="margin-bottom: 10px; display: flex; align-items: center;">
+            <img src="/img/amp-cal-logo.png" 
+                 alt="AMP Calibration Logo" 
+                 style="height: 60px; margin-right: 8px;" />
+          </div>
+          
+          <h2 style="font-size: 16px; font-weight: bold; margin: 10px 0 5px 0; color: black;">Ground Cable Test Certificate</h2>
+        </div>
+
+        <!-- Main Content - Two Column Layout -->
+        <div style="display: flex; margin-bottom: 15px;">
+          <!-- Left Column - Overview -->
+          <div style="flex: 1; margin-right: 20px;">
+            <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black;">Overview</h3>
+            
+            <div style="margin-bottom: 6px;"><strong>Customer Name:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.customer || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Project #:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.jobNumber || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>AMP ID:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.groundCableData?.assetId || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Length:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.groundCableData?.length || ''}</div>
+          </div>
+
+          <!-- Right Column - Result -->
+          <div style="flex: 1;">
+            <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black;">Result <span style="color: ${status === 'PASS' ? 'green' : 'red'};">${status}</span></h3>
+            
+            <div style="margin-bottom: 6px;"><strong>Test Date:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.date || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Size:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.groundCableData?.size || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Resistance:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.groundCableData?.resistance || ''}</div>
+          </div>
+        </div>
+
+        <!-- Equipment Used Section -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Equipment Used</h3>
+          
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <thead>
+              <tr style="background: #f0f0f0;">
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Calibration Standard</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Serial #</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Cal Date</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Cal Due</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 4px; border: 1px solid #ccc;">Megger DLRO-H200</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">2300974</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">4/25/2025</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">4/25/2026</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Quality Assurance Section -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Quality Assurance</h3>
+          
+          <div style="margin-bottom: 15px;">
+            <div style="margin-bottom: 6px;"><strong>Reviewed By:</strong> Kirk Crupi</div>
+          </div>
+        </div>
+
+        <!-- Comments Section -->
+        ${formData.comments ? `
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Comments</h3>
+          <div style="padding: 6px; border: 1px solid #ccc; background: #f9f9f9; min-height: 30px; font-size: 11px;">
+            ${formData.comments}
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- Footer -->
+        <div style="position: relative; margin-top: 40px;">
+          <!-- Signature Image -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <img src="/img/signature.png" 
+                 alt="Signature" 
+                 style="height: 150px; width: auto; display: block; margin: 0 auto;" />
+          </div>
+          
+          <!-- Limited Liability -->
+          <div style="margin-top: 30px;">
+            <h4 style="font-size: 12px; font-weight: bold; margin: 0 0 5px 0; color: black; text-decoration: underline;">Limited Liability</h4>
+            <p style="font-size: 10px; line-height: 1.3; margin: 0; color: #333;">
+              The tests guarantee the equipment is functioning within product specifications when it leaves the AMP Calibration Services Lab. AMP and/or any of our partners will not assume any liability incurred during the use of this unit should it not perform properly for any reason.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
+  const generateSleeveHTML = (formData: any, status: string): string => {
+    return `
+      <div style="padding: 20px; font-family: Arial, sans-serif; color: black; background: white; font-size: 12px;">
+        <!-- Header -->
+        <div style="margin-bottom: 15px;">
+          <!-- AMP CALIBRATION Logo Area -->
+          <div style="margin-bottom: 10px; display: flex; align-items: center;">
+            <img src="/img/amp-cal-logo.png" 
+                 alt="AMP Calibration Logo" 
+                 style="height: 60px; margin-right: 8px;" />
+          </div>
+          
+          <h2 style="font-size: 16px; font-weight: bold; margin: 10px 0 5px 0; color: black;">Rubber Insulating Sleeves Test Certificate</h2>
+        </div>
+
+        <!-- Main Content - Two Column Layout -->
+        <div style="display: flex; margin-bottom: 15px;">
+          <!-- Left Column - Overview -->
+          <div style="flex: 1; margin-right: 20px;">
+            <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black;">Overview</h3>
+            
+            <div style="margin-bottom: 6px;"><strong>Customer Name:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.customer || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Project #:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.jobNumber || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>AMP ID:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.sleeveData?.assetId || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Manufacturer:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.sleeveData?.manufacturer || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Class:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.sleeveData?.class || ''}</div>
+          </div>
+
+          <!-- Right Column - Result -->
+          <div style="flex: 1;">
+            <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black;">Result <span style="color: ${status === 'PASS' ? 'green' : 'red'};">${status}</span></h3>
+            
+            <div style="margin-bottom: 6px;"><strong>Test Date:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.date || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Size:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.sleeveData?.size || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Color Inside:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.sleeveData?.colorInside || ''}</div>
+          </div>
+        </div>
+
+        <!-- Equipment Used Section -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Equipment Used</h3>
+          
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <thead>
+              <tr style="background: #f0f0f0;">
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Calibration Standard</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Serial #</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Cal Date</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Cal Due</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 4px; border: 1px solid #ccc;">${formData.testEquipment?.name || 'Hipotronics 880PL-A'}</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">${formData.testEquipment?.serialNumber || 'M010164'}</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">6/1/2025</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">6/1/2026</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Quality Assurance Section -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Quality Assurance</h3>
+          
+          <div style="margin-bottom: 15px;">
+            <div style="margin-bottom: 6px;"><strong>Reviewed By:</strong> Kirk Crupi</div>
+          </div>
+        </div>
+
+        <!-- Comments Section -->
+        ${formData.comments ? `
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Comments</h3>
+          <div style="padding: 6px; border: 1px solid #ccc; background: #f9f9f9; min-height: 30px; font-size: 11px;">
+            ${formData.comments}
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- Footer -->
+        <div style="position: relative; margin-top: 40px;">
+          <!-- Signature Image -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <img src="/img/signature.png" 
+                 alt="Signature" 
+                 style="height: 150px; width: auto; display: block; margin: 0 auto;" />
+          </div>
+          
+          <!-- Limited Liability -->
+          <div style="margin-top: 30px;">
+            <h4 style="font-size: 12px; font-weight: bold; margin: 0 0 5px 0; color: black; text-decoration: underline;">Limited Liability</h4>
+            <p style="font-size: 10px; line-height: 1.3; margin: 0; color: #333;">
+              The tests guarantee the equipment is functioning within product specifications when it leaves the AMP Calibration Services Lab. AMP and/or any of our partners will not assume any liability incurred during the use of this unit should it not perform properly for any reason.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
+  const generateBlanketHTML = (formData: any, status: string): string => {
+    return `
+      <div style="padding: 20px; font-family: Arial, sans-serif; color: black; background: white; font-size: 12px;">
+        <!-- Header -->
+        <div style="margin-bottom: 15px;">
+          <!-- AMP CALIBRATION Logo Area -->
+          <div style="margin-bottom: 10px; display: flex; align-items: center;">
+            <img src="/img/amp-cal-logo.png" 
+                 alt="AMP Calibration Logo" 
+                 style="height: 60px; margin-right: 8px;" />
+          </div>
+          
+          <h2 style="font-size: 16px; font-weight: bold; margin: 10px 0 5px 0; color: black;">Rubber Insulating Blankets Test Certificate</h2>
+        </div>
+
+        <!-- Main Content - Two Column Layout -->
+        <div style="display: flex; margin-bottom: 15px;">
+          <!-- Left Column - Overview -->
+          <div style="flex: 1; margin-right: 20px;">
+            <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black;">Overview</h3>
+            
+            <div style="margin-bottom: 6px;"><strong>Customer Name:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.customer || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Project #:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.jobNumber || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>AMP ID:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.blanketData?.assetId || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Manufacturer:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.blanketData?.manufacturer || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Class:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.blanketData?.class || ''}</div>
+          </div>
+
+          <!-- Right Column - Result -->
+          <div style="flex: 1;">
+            <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black;">Result <span style="color: ${status === 'PASS' ? 'green' : 'red'};">${status}</span></h3>
+            
+            <div style="margin-bottom: 6px;"><strong>Test Date:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.date || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Type:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.blanketData?.type || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Split/Solid:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.blanketData?.splitSolid || ''}</div>
+          </div>
+        </div>
+
+        <!-- Equipment Used Section -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Equipment Used</h3>
+          
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <thead>
+              <tr style="background: #f0f0f0;">
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Calibration Standard</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Serial #</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Cal Date</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Cal Due</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 4px; border: 1px solid #ccc;">${formData.testEquipment?.name || 'Hipotronics 880PL-A'}</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">${formData.testEquipment?.serialNumber || 'M010164'}</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">6/1/2025</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">6/1/2026</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Quality Assurance Section -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Quality Assurance</h3>
+          
+          <div style="margin-bottom: 15px;">
+            <div style="margin-bottom: 6px;"><strong>Reviewed By:</strong> Kirk Crupi</div>
+          </div>
+        </div>
+
+        <!-- Comments Section -->
+        ${formData.comments ? `
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Comments</h3>
+          <div style="padding: 6px; border: 1px solid #ccc; background: #f9f9f9; min-height: 30px; font-size: 11px;">
+            ${formData.comments}
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- Footer -->
+        <div style="position: relative; margin-top: 40px;">
+          <!-- Signature Image -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <img src="/img/signature.png" 
+                 alt="Signature" 
+                 style="height: 150px; width: auto; display: block; margin: 0 auto;" />
+          </div>
+          
+          <!-- Limited Liability -->
+          <div style="margin-top: 30px;">
+            <h4 style="font-size: 12px; font-weight: bold; margin: 0 0 5px 0; color: black; text-decoration: underline;">Limited Liability</h4>
+            <p style="font-size: 10px; line-height: 1.3; margin: 0; color: #333;">
+              The tests guarantee the equipment is functioning within product specifications when it leaves the AMP Calibration Services Lab. AMP and/or any of our partners will not assume any liability incurred during the use of this unit should it not perform properly for any reason.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
+  const generateLineHoseHTML = (formData: any, status: string): string => {
+    return `
+      <div style="padding: 20px; font-family: Arial, sans-serif; color: black; background: white; font-size: 12px;">
+        <!-- Header -->
+        <div style="margin-bottom: 15px;">
+          <!-- AMP CALIBRATION Logo Area -->
+          <div style="margin-bottom: 10px; display: flex; align-items: center;">
+            <img src="/img/amp-cal-logo.png" 
+                 alt="AMP Calibration Logo" 
+                 style="height: 60px; margin-right: 8px;" />
+          </div>
+          
+          <h2 style="font-size: 16px; font-weight: bold; margin: 10px 0 5px 0; color: black;">Line Hose Test Certificate</h2>
+        </div>
+
+        <!-- Main Content - Two Column Layout -->
+        <div style="display: flex; margin-bottom: 15px;">
+          <!-- Left Column - Overview -->
+          <div style="flex: 1; margin-right: 20px;">
+            <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black;">Overview</h3>
+            
+            <div style="margin-bottom: 6px;"><strong>Customer Name:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.customer || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Project #:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.jobNumber || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>AMP ID:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.lineHoseData?.assetId || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Manufacturer:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.lineHoseData?.manufacturer || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Class:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.lineHoseData?.class || ''}</div>
+          </div>
+
+          <!-- Right Column - Result -->
+          <div style="flex: 1;">
+            <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black;">Result <span style="color: ${status === 'PASS' ? 'green' : 'red'};">${status}</span></h3>
+            
+            <div style="margin-bottom: 6px;"><strong>Test Date:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.date || ''}</div>
+          </div>
+        </div>
+
+        <!-- Equipment Used Section -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Equipment Used</h3>
+          
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <thead>
+              <tr style="background: #f0f0f0;">
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Calibration Standard</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Serial #</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Cal Date</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Cal Due</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 4px; border: 1px solid #ccc;">${formData.testEquipment?.name || 'Hipotronics 880PL-A'}</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">${formData.testEquipment?.serialNumber || 'M010164'}</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">6/1/2025</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">6/1/2026</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Quality Assurance Section -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Quality Assurance</h3>
+          
+          <div style="margin-bottom: 15px;">
+            <div style="margin-bottom: 6px;"><strong>Reviewed By:</strong> Kirk Crupi</div>
+          </div>
+        </div>
+
+        <!-- Comments Section -->
+        ${formData.comments ? `
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Comments</h3>
+          <div style="padding: 6px; border: 1px solid #ccc; background: #f9f9f9; min-height: 30px; font-size: 11px;">
+            ${formData.comments}
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- Footer -->
+        <div style="position: relative; margin-top: 40px;">
+          <!-- Signature Image -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <img src="/img/signature.png" 
+                 alt="Signature" 
+                 style="height: 150px; width: auto; display: block; margin: 0 auto;" />
+          </div>
+          
+          <!-- Limited Liability -->
+          <div style="margin-top: 30px;">
+            <h4 style="font-size: 12px; font-weight: bold; margin: 0 0 5px 0; color: black; text-decoration: underline;">Limited Liability</h4>
+            <p style="font-size: 10px; line-height: 1.3; margin: 0; color: #333;">
+              The tests guarantee the equipment is functioning within product specifications when it leaves the AMP Calibration Services Lab. AMP and/or any of our partners will not assume any liability incurred during the use of this unit should it not perform properly for any reason.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
+  const generateBucketTruckHTML = (formData: any, status: string): string => {
+    return `
+      <div style="padding: 20px; font-family: Arial, sans-serif; color: black; background: white; font-size: 12px;">
+        <!-- Header -->
+        <div style="margin-bottom: 15px;">
+          <!-- AMP CALIBRATION Logo Area -->
+          <div style="margin-bottom: 10px; display: flex; align-items: center;">
+            <img src="/img/amp-cal-logo.png" 
+                 alt="AMP Calibration Logo" 
+                 style="height: 60px; margin-right: 8px;" />
+          </div>
+          
+          <h2 style="font-size: 16px; font-weight: bold; margin: 10px 0 5px 0; color: black;">Bucket Truck Test Certificate</h2>
+        </div>
+
+        <!-- Main Content - Two Column Layout -->
+        <div style="display: flex; margin-bottom: 15px;">
+          <!-- Left Column - Overview -->
+          <div style="flex: 1; margin-right: 20px;">
+            <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black;">Overview</h3>
+            
+            <div style="margin-bottom: 6px;"><strong>Customer Name:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.customer || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Project #:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.jobNumber || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>AMP ID:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.bucketTruckData?.assetId || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Manufacturer:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.bucketTruckData?.manufacturer || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Model:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.bucketTruckData?.model || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Serial #:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.bucketTruckData?.serialNumber || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Year:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.bucketTruckData?.year || ''}</div>
+          </div>
+
+          <!-- Right Column - Result -->
+          <div style="flex: 1;">
+            <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black;">Result <span style="color: ${status === 'PASS' ? 'green' : 'red'};">${status}</span></h3>
+            
+            <div style="margin-bottom: 6px;"><strong>Liner Status:</strong></div>
+            <div style="margin-bottom: 8px; color: ${formData.bucketTruckData?.linerPassFailStatus === 'PASS' ? 'green' : 'red'};">${formData.bucketTruckData?.linerPassFailStatus || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Test Date:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.date || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Test Voltage:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.bucketTruckData?.qualificationVoltage || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Upper Boom Reading:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.bucketTruckData?.upperBoomReading || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Lower Boom Reading:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.bucketTruckData?.lowerBoomReading || ''}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Liner Type:</strong></div>
+            <div style="margin-bottom: 8px;">${formData.bucketTruckData?.linerType || ''}</div>
+          </div>
+        </div>
+
+        <!-- Equipment Used Section -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Equipment Used</h3>
+          
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <thead>
+              <tr style="background: #f0f0f0;">
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Calibration Standard</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Serial #</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Cal Date</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Cal Due</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 4px; border: 1px solid #ccc;">${formData.testEquipment?.name || 'Hipotronics 880PL-A'}</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">${formData.testEquipment?.serialNumber || 'M010164'}</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">6/1/2025</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">6/1/2026</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Quality Assurance Section -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Quality Assurance</h3>
+          
+          <div style="margin-bottom: 15px;">
+            <div style="margin-bottom: 6px;"><strong>Reviewed By:</strong> Kirk Crupi</div>
+          </div>
+        </div>
+
+        <!-- Comments Section -->
+        ${formData.comments ? `
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Comments</h3>
+          <div style="padding: 6px; border: 1px solid #ccc; background: #f9f9f9; min-height: 30px; font-size: 11px;">
+            ${formData.comments}
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- Footer -->
+        <div style="position: relative; margin-top: 40px;">
+          <!-- Signature Image -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <img src="/img/signature.png" 
+                 alt="Signature" 
+                 style="height: 150px; width: auto; display: block; margin: 0 auto;" />
+          </div>
+          
+          <!-- Limited Liability -->
+          <div style="margin-top: 30px;">
+            <h4 style="font-size: 12px; font-weight: bold; margin: 0 0 5px 0; color: black; text-decoration: underline;">Limited Liability</h4>
+            <p style="font-size: 10px; line-height: 1.3; margin: 0; color: #333;">
+              The tests guarantee the equipment is functioning within product specifications when it leaves the AMP Calibration Services Lab. AMP and/or any of our partners will not assume any liability incurred during the use of this unit should it not perform properly for any reason.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
+  // Generate HTML for Meter Template Report
+  const generateMeterHTML = (formData: any, status: string): string => {
+    console.log('generateMeterHTML called with:', { formData, status });
+    console.log('formData structure:', JSON.stringify(formData, null, 2));
+    
+    // Handle both direct database structure and formData structure
+    const customer = formData.customer || '';
+    const jobNumber = formData.jobNumber || '';
+    const date = formData.date || '';
+    const comments = formData.comments || '';
+    
+    // Handle meter data - it might be nested differently
+    const meterData = formData.meterData || formData;
+    const assetId = meterData.assetId || formData.assetId || '';
+    const manufacturer = meterData.manufacturer || formData.manufacturer || '';
+    const meterName = meterData.meterName || formData.meterName || '';
+    const serialNumber = meterData.serialNumber || formData.serialNumber || '';
+    const meterType = meterData.meterType || formData.meterType || '';
+    
+    console.log('Extracted data:', { customer, jobNumber, assetId, manufacturer, meterName });
+    
+    return `
+      <div style="padding: 20px; font-family: Arial, sans-serif; color: black; background: white; font-size: 12px;">
+        <!-- Header -->
+        <div style="margin-bottom: 15px;">
+          <!-- AMP CALIBRATION Logo Area -->
+          <div style="margin-bottom: 10px; display: flex; align-items: center;">
+            <img src="/img/amp-cal-logo.png" 
+                 alt="AMP Calibration Logo" 
+                 style="height: 60px; margin-right: 8px;" />
+          </div>
+          
+          <h2 style="font-size: 16px; font-weight: bold; margin: 10px 0 5px 0; color: black;">Meter Test Certificate</h2>
+        </div>
+
+        <!-- Main Content - Two Column Layout -->
+        <div style="display: flex; margin-bottom: 15px;">
+          <!-- Left Column - Overview -->
+          <div style="flex: 1; margin-right: 20px;">
+            <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black;">Overview</h3>
+            
+            <div style="margin-bottom: 6px;"><strong>Customer Name:</strong></div>
+            <div style="margin-bottom: 8px;">${customer || '[Customer Name]'}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Project #:</strong></div>
+            <div style="margin-bottom: 8px;">${jobNumber || '[Project Number]'}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>AMP ID:</strong></div>
+            <div style="margin-bottom: 8px;">${assetId}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Manufacturer:</strong></div>
+            <div style="margin-bottom: 8px;">${manufacturer}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Meter Name:</strong></div>
+            <div style="margin-bottom: 8px;">${meterName}</div>
+          </div>
+
+          <!-- Right Column - Result -->
+          <div style="flex: 1;">
+            <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black;">Result <span style="color: ${status === 'PASS' ? 'green' : 'red'};">${status}</span></h3>
+            
+            <div style="margin-bottom: 6px;"><strong>Test Date:</strong></div>
+            <div style="margin-bottom: 8px;">${date}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Serial Number:</strong></div>
+            <div style="margin-bottom: 8px;">${serialNumber}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Meter Type:</strong></div>
+            <div style="margin-bottom: 8px;">${meterType}</div>
+          </div>
+        </div>
+
+        <!-- Equipment Used Section -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Equipment Used</h3>
+          
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <thead>
+              <tr style="background: #f0f0f0;">
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Calibration Standard</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Serial #</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Cal Date</th>
+                <th style="padding: 4px; border: 1px solid #ccc; text-align: left; font-weight: bold;">Cal Due</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 4px; border: 1px solid #ccc;">Fluke 5520A</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">9480018</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">8/14/2024</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">8/14/2025</td>
+              </tr>
+              <tr>
+                <td style="padding: 4px; border: 1px solid #ccc;">Fluke 8845A</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">5774006</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">12/6/2024</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">12/6/2025</td>
+              </tr>
+              <tr>
+                <td style="padding: 4px; border: 1px solid #ccc;">RIE</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">1001138</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">12/15/2024</td>
+                <td style="padding: 4px; border: 1px solid #ccc;">12/15/2025</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Quality Assurance Section -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Quality Assurance</h3>
+          
+          <div style="margin-bottom: 15px;">
+            <div style="margin-bottom: 6px;"><strong>Reviewed By:</strong> Kirk Crupi</div>
+          </div>
+        </div>
+
+        ${comments ? `
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Comments</h3>
+          <div style="padding: 6px; border: 1px solid #ccc; background: #f9f9f9; min-height: 30px; font-size: 11px;">
+            ${comments}
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- Footer -->
+        <div style="position: relative; margin-top: 40px;">
+          <!-- Signature Image -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <img src="/img/signature.png" 
+                 alt="Signature" 
+                 style="height: 150px; width: auto; display: block; margin: 0 auto;" />
+          </div>
+          
+          <!-- Limited Liability -->
+          <div style="margin-top: 30px;">
+            <h4 style="font-size: 12px; font-weight: bold; margin: 0 0 5px 0; color: black; text-decoration: underline;">Limited Liability</h4>
+            <p style="font-size: 10px; line-height: 1.3; margin: 0; color: #333;">
+              The tests guarantee the equipment is functioning within product specifications when it leaves the AMP Calibration Services Lab. AMP and/or any of our partners will not assume any liability incurred during the use of this unit should it not perform properly for any reason.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
   if (loading) {
     return (
       <div className="p-8">
@@ -830,22 +2660,59 @@ export default function JobDetail() {
   return (
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
-        <Button 
-          variant="ghost"
-          onClick={() => navigate('/jobs')}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-5 w-5 min-w-[20px] flex-shrink-0" />
-          Back to Jobs
-        </Button>
+        {job?.division?.toLowerCase() === 'calibration' ? (
+          <button
+            onClick={() => {
+              // Navigate to the appropriate jobs page based on division
+              if (job?.division?.toLowerCase() === 'calibration') {
+                navigate('/calibration/jobs');
+              } else {
+                navigate('/jobs');
+              }
+            }}
+            className="flex items-center px-3 py-1.5 text-sm font-medium bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg transition-all duration-200 hover:bg-[#339C5E]/10 hover:text-[#339C5E] dark:hover:bg-[#339C5E]/20 focus:outline-none focus:!ring-2 focus:!ring-[#339C5E] focus:!ring-offset-2 active:!ring-2 active:!ring-[#339C5E] active:!ring-offset-2"
+          >
+            <ArrowLeft className="h-5 w-5 min-w-[20px] flex-shrink-0 mr-1" />
+            Back
+          </button>
+        ) : (
+          <Button 
+            variant="ghost"
+            onClick={() => {
+              // Navigate to the appropriate jobs page based on division
+              if (job?.division?.toLowerCase() === 'calibration') {
+                navigate('/calibration/jobs');
+              } else {
+                navigate('/jobs');
+              }
+            }}
+            className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none"
+          >
+            <ArrowLeft className="h-5 w-5 min-w-[20px] flex-shrink-0" />
+            Back
+          </Button>
+        )}
         <div className="flex gap-2 items-center">
           {/* Add JobNotifications component */}
-          {id && <JobNotifications jobId={id} />}
+          {id && <JobNotifications 
+            jobId={id} 
+            buttonClassName={
+              job?.division?.toLowerCase() === 'calibration' 
+                ? 'hover:bg-[#339C5E] hover:text-white' 
+                : ''
+            }
+          />}
           
           <Button 
-            variant="outline"
-            onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2"
+            onClick={() => {
+              setEditFormData(job);
+              setIsEditing(true);
+            }}
+            className={`flex items-center gap-2 ${
+              job?.division?.toLowerCase() === 'calibration' 
+                ? 'bg-[#339C5E] text-white hover:bg-[#2d8a54] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#339C5E]' 
+                : 'focus:outline-none'
+            }`}
           >
             <Pencil className="h-5 w-5 min-w-[20px] flex-shrink-0" />
             Edit Job
@@ -870,199 +2737,410 @@ export default function JobDetail() {
                     Job #{job.job_number || 'Pending'}
                   </p>
                 </div>
-                {/* Additional job header details would go here */}
+                <div className="flex items-center space-x-4">
+                  <Badge className={`${
+                    job.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    job.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
+                    job.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {job.status}
+                  </Badge>
+                  <Badge className={`${
+                    job.priority === 'high' ? 'bg-red-100 text-red-800' :
+                    job.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-green-100 text-green-800'
+                  }`}>
+                    {job.priority} priority
+                  </Badge>
                     </div>
-              {/* Additional job overview content would go here */}
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Customer</h3>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                    {job.customers?.company_name || job.customers?.name || 'Unknown Customer'}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Start Date</h3>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                    {job.start_date ? format(new Date(job.start_date), 'MMM d, yyyy') : 'Not set'}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Due Date</h3>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                    {job.due_date ? format(new Date(job.due_date), 'MMM d, yyyy') : 'Not set'}
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Division</h3>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                    {job.division ? job.division.charAt(0).toUpperCase() + job.division.slice(1) : 'Not set'}
+                  </p>
+                </div>
+              </div>
+              
+              {job.description && (
+                <div className="mt-6">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Description</h3>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-white">{job.description}</p>
+                </div>
+              )}
             </div>
             
             <div className="border-t border-gray-200 dark:border-gray-700">
               <div className="px-6">
                 <div className="flex border-b border-gray-200 dark:border-gray-700">
-                    <button 
-                    onClick={() => handleTabChange('overview')}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === 'overview'
-                        ? 'border-b-2 border-[#f26722] text-[#f26722]'
-                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                    }`}
-                  >
-                    Overview
-                    </button>
                   <button
                     onClick={() => handleTabChange('assets')}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === 'assets'
-                        ? 'border-b-2 border-[#f26722] text-[#f26722]'
+                        ? 'border-b-2 border-accent-color text-accent-color'
                         : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                     }`}
                   >
                     Assets
                   </button>
-                  <button
-                    onClick={() => handleTabChange('reports')}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === 'reports'
-                        ? 'border-b-2 border-[#f26722] text-[#f26722]'
-                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                    }`}
-                  >
-                    <ClipboardCheck className="h-5 w-5 min-w-[20px] flex-shrink-0 inline-block mr-1" />
-                    Reports
-                  </button>
-                  <button
-                    onClick={() => handleTabChange('surveys')}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === 'surveys'
-                        ? 'border-b-2 border-[#f26722] text-[#f26722]'
-                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                    }`}
-                  >
-                    Surveys
-                  </button>
-                  <button
-                    onClick={() => handleTabChange('sla')}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === 'sla'
-                        ? 'border-b-2 border-[#f26722] text-[#f26722]'
-                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                    }`}
-                  >
-                    SLA Tracking
-                  </button>
                 </div>
               </div>
               
               <div className="p-6">
-                {activeTab === 'overview' && (
-                  <div>
-                    {/* Overview content */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Job details and other overview information */}
-                    </div>
-                  </div>
-                )}
-                
                 {activeTab === 'assets' && (
                   <div className="space-y-6">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-medium">Job Assets & Reports</h3>
                       <div className="flex space-x-2 relative" ref={dropdownRef}>
-                        <Button 
-                          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                          className="flex items-center gap-2"
-                        >
-                          <Plus className="h-5 w-5 min-w-[20px] flex-shrink-0" />
-                          Add Asset
-                        </Button>
+                        {/* Original Add Asset button - hide for Calibration Division */}
+                        {(!job?.division || job.division.toLowerCase() !== 'calibration') && (
+                          <Button 
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            className="flex items-center gap-2"
+                          >
+                            <Plus className="h-5 w-5 min-w-[20px] flex-shrink-0" />
+                            Add Asset
+                          </Button>
+                        )}
                         
+                        {/* New Calibration Add Asset button */}
+                        {job?.division?.toLowerCase() === 'calibration' && (
+                          <>
+                            <Button 
+                              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                              className={`flex items-center gap-2 ${job?.division?.toLowerCase() === 'calibration' ? 'bg-[#339C5E] hover:bg-[#2d8a54]' : 'bg-accent-color hover:bg-[#d94e00]'} text-white`}
+                            >
+                              <Plus className="h-5 w-5 min-w-[20px] flex-shrink-0" />
+                              Add Asset
+                            </Button>
+                            
+                            <Button 
+                              onClick={() => setIsMeterDropdownOpen(!isMeterDropdownOpen)}
+                              className="flex items-center gap-2 bg-[#339C5E] hover:bg-[#2d8a54] text-white"
+                            >
+                              <Plus className="h-5 w-5 min-w-[20px] flex-shrink-0" />
+                              Add Meter
+                            </Button>
+                            
+                            <Button 
+                              onClick={handlePrintAll}
+                              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+                              title="Generate a combined PDF of all calibration reports in this job"
+                            >
+                              <Printer className="h-5 w-5 min-w-[20px] flex-shrink-0" />
+                              Print All
+                            </Button>
+                          </>
+                        )}
+                        
+                        {/* Dropdown menu */}
                         {isDropdownOpen && (
-                          <div className="absolute right-0 top-10 w-[32rem] rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-10">
-                            <div className="py-1" role="menu" aria-orientation="vertical">
-                              <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                          <div className="absolute right-0 mt-12 w-96 bg-white dark:bg-dark-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 z-50">
+                            <div className="p-2">
+                              <input
+                                type="text"
+                                placeholder="Search reports..."
+                                value={reportSearchQuery}
+                                onChange={(e) => setReportSearchQuery(e.target.value)}
+                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md mb-2 bg-white dark:bg-dark-100 text-gray-900 dark:text-white"
+                              />
+                              
+                              {/* Show different report templates based on division */}
+                              {job?.division?.toLowerCase() === 'calibration' ? (
+                                // Calibration Division Reports
+                                <div className="py-1">
+                                  <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700">
+                                    Calibration Reports
+                                  </div>
+                                  <Link 
+                                    to={`/jobs/${id}/calibration-gloves`}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    onClick={() => setIsDropdownOpen(false)}
+                                  >
+                                    <div className="flex items-center">
+                                      <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                      <span className="truncate">Glove Report</span>
+                                    </div>
+                                  </Link>
+                                  <Link 
+                                    to={`/jobs/${id}/calibration-sleeve`}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    onClick={() => setIsDropdownOpen(false)}
+                                  >
+                                    <div className="flex items-center">
+                                      <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                      <span className="truncate">Sleeve Report</span>
+                                    </div>
+                                  </Link>
+                                  <Link 
+                                    to={`/jobs/${id}/calibration-blanket`}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    onClick={() => setIsDropdownOpen(false)}
+                                  >
+                                    <div className="flex items-center">
+                                      <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                      <span className="truncate">Blanket Report</span>
+                                    </div>
+                                  </Link>
+                                  <Link 
+                                    to={`/jobs/${id}/calibration-line-hose`}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    onClick={() => setIsDropdownOpen(false)}
+                                  >
+                                    <div className="flex items-center">
+                                      <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                      <span className="truncate">Line Hose Report</span>
+                                    </div>
+                                  </Link>
+                                  <Link 
+                                    to={`/jobs/${id}/calibration-hotstick`}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    onClick={() => setIsDropdownOpen(false)}
+                                  >
+                                    <div className="flex items-center">
+                                      <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                      <span className="truncate">Hotstick Report</span>
+                                    </div>
+                                  </Link>
+                                  <Link 
+                                    to={`/jobs/${id}/calibration-ground-cable`}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    onClick={() => setIsDropdownOpen(false)}
+                                  >
+                                    <div className="flex items-center">
+                                      <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                      <span className="truncate">Ground Cable Report</span>
+                                    </div>
+                                  </Link>
+                                  <Link 
+                                    to={`/jobs/${id}/calibration-bucket-truck`}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    onClick={() => setIsDropdownOpen(false)}
+                                  >
+                                    <div className="flex items-center">
+                                      <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                      <span className="truncate">Bucket Truck Report</span>
+                                    </div>
+                                  </Link>
+                                </div>
+                              ) : (
+                                // Original reports for other divisions
+                                <>
+                                  {/* MTS Reports Section */}
+                                  {filteredReportTemplates.some(asset => asset.template_type === 'MTS') && (
+                                    <>
+                                      <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700">
+                                        MTS Reports
+                                      </div>
+                                      {filteredReportTemplates
+                                        .filter(asset => asset.template_type === 'MTS')
+                                        .map((asset) => (
+                                          <Link 
+                                            key={asset.id}
+                                            to={getReportEditPath(asset)}
+                                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                            onClick={() => setIsDropdownOpen(false)}
+                                          >
+                                            <div className="flex items-center">
+                                              <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                              <span className="truncate">{asset.name}</span>
+                                            </div>
+                                          </Link>
+                                        ))}
+                                    </>
+                                  )}
+
+                                  {/* ATS Reports Section */}
+                                  {filteredReportTemplates.some(asset => asset.template_type === 'ATS') && (
+                                    <>
+                                      <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700">
+                                        ATS Reports
+                                      </div>
+                                      {filteredReportTemplates
+                                        .filter(asset => asset.template_type === 'ATS')
+                                        .map((asset) => (
+                                          <Link 
+                                            key={asset.id}
+                                            to={getReportEditPath(asset)}
+                                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                            onClick={() => setIsDropdownOpen(false)}
+                                          >
+                                            <div className="flex items-center">
+                                              <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                              <span className="truncate">{asset.name}</span>
+                                            </div>
+                                          </Link>
+                                        ))}
+                                    </>
+                                  )}
+
+                                  {/* Other Reports Section */}
+                                  {filteredReportTemplates.some(asset => !asset.template_type) && (
+                                    <>
+                                      <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700">
+                                        Other Reports
+                                      </div>
+                                      {filteredReportTemplates
+                                        .filter(asset => !asset.template_type)
+                                        .map((asset) => (
+                                          <Link 
+                                            key={asset.id}
+                                            to={getReportEditPath(asset)}
+                                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                            onClick={() => setIsDropdownOpen(false)}
+                                          >
+                                            <div className="flex items-center">
+                                              <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                              <span className="truncate">{asset.name}</span>
+                                            </div>
+                                          </Link>
+                                        ))}
+                                    </>
+                                  )}
+                                </>
+                              )}
+
+                              {/* Document Upload Option - available for all divisions */}
+                              <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 mt-2">
                                 Upload Document
                               </div>
                               <button
-                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                                 onClick={() => {
-                                  setShowUploadDialog(true);
                                   setIsDropdownOpen(false);
+                                  setShowUploadDialog(true);
                                 }}
+                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                               >
                                 <div className="flex items-center">
                                   <Upload className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                  Upload File
+                                  <span>Upload New Document</span>
                                 </div>
                               </button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Meter Reports dropdown menu */}
+                        {isMeterDropdownOpen && (
+                          <div className="absolute right-0 mt-12 w-96 bg-white dark:bg-dark-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 z-50" style={{ top: '100%', marginLeft: '150px' }}>
+                            <div className="p-2">
+                              <input
+                                type="text"
+                                placeholder="Search meter reports..."
+                                value={meterReportSearchQuery}
+                                onChange={(e) => setMeterReportSearchQuery(e.target.value)}
+                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md mb-2 bg-white dark:bg-dark-100 text-gray-900 dark:text-white"
+                              />
                               
-                              <div className="border-t border-gray-100 dark:border-gray-700 my-1"></div>
-                              
-                              <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">
-                                Create Report
-                              </div>
-                              
-                              <div className="px-4 py-2">
-                                <Input
-                                  placeholder="Search reports..."
-                                  value={reportSearchQuery}
-                                  onChange={(e) => setReportSearchQuery(e.target.value)}
-                                  className="w-full mb-2"
-                                  onClick={(e) => e.stopPropagation()}
-                                />
-                              </div>
-                              
-                              <div className="max-h-60 overflow-y-auto">
-                                {filteredReportTemplates.length === 0 ? (
-                                  <div className="px-4 py-2 text-sm text-gray-500">
-                                    No matching reports found
+                              {/* Meter Template */}
+                              <div className="py-1">
+                                <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700">
+                                  New Meter Report
+                                </div>
+                                <Link 
+                                  to={`/jobs/${id}/meter-template`}
+                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                  onClick={() => setIsMeterDropdownOpen(false)}
+                                >
+                                  <div className="flex items-center">
+                                    <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                    <span className="truncate">Meter Template</span>
                                   </div>
-                                ) : (
-                                  <>
-                                    {/* ATS Reports Section */}
-                                    <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700">
-                                      ATS Reports
-                                    </div>
-                                    {filteredReportTemplates
-                                      .filter(asset => asset.template_type === 'ATS')
-                                      .map((asset) => (
-                                        <Link 
-                                          key={asset.id}
-                                          to={getReportEditPath(asset)}
-                                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                          onClick={() => setIsDropdownOpen(false)}
-                                        >
-                                          <div className="flex items-center">
-                                            <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                            <span className="truncate">{asset.name}</span>
-                                          </div>
-                                        </Link>
-                                      ))}
-                                    
-                                    {/* MTS Reports Section */}
-                                    <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700">
-                                      MTS Reports
-                                    </div>
-                                    {filteredReportTemplates
-                                      .filter(asset => asset.template_type === 'MTS')
-                                      .map((asset) => (
-                                        <Link 
-                                          key={asset.id}
-                                          to={getReportEditPath(asset)}
-                                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                          onClick={() => setIsDropdownOpen(false)}
-                                        >
-                                          <div className="flex items-center">
-                                            <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                            <span className="truncate">{asset.name}</span>
-                                          </div>
-                                        </Link>
-                                      ))}
-                                    
-                                    {/* Other Reports (if any without specific template_type) */}
-                                    {filteredReportTemplates.some(asset => !asset.template_type) && (
-                                      <>
-                                        <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700">
-                                          Other Reports
-                                        </div>
-                                        {filteredReportTemplates
-                                          .filter(asset => !asset.template_type)
-                                          .map((asset) => (
+                                </Link>
+                              </div>
+                              
+                              {/* Existing Meter Reports */}
+                              {existingMeterReports.length > 0 && (
+                                <div className="py-1">
+                                  <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700">
+                                    Existing Meter Reports ({existingMeterReports.length})
+                                  </div>
+                                  {existingMeterReports
+                                    .filter(report => 
+                                      meterReportSearchQuery === '' || 
+                                      report.name.toLowerCase().includes(meterReportSearchQuery.toLowerCase())
+                                    )
+                                    .map((report) => {
+                                      // Handle templates differently from regular reports
+                                      const isTemplate = report.file_url.startsWith('template:');
+                                      const templateId = isTemplate ? report.id.replace('meter-template-', '') : null;
+                                      
+                                      if (isTemplate) {
+                                        // For templates, make name clickable to use template, with edit icon
+                                        return (
+                                          <div key={report.id} className="flex items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                             <Link 
-                                              key={asset.id}
-                                              to={getReportEditPath(asset)}
-                                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                              onClick={() => setIsDropdownOpen(false)}
+                                              to={`/jobs/${id}/meter-template?templateId=${templateId}`}
+                                              className="flex-1 flex items-center"
+                                              onClick={() => setIsMeterDropdownOpen(false)}
                                             >
+                                              <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                              <span className="truncate">{report.name}</span>
+                                            </Link>
+                                            <div className="flex items-center ml-2">
+                                              <Link 
+                                                to={`/meter-template/${templateId}?returnPath=/jobs/${id}%3Ftab%3Dassets`}
+                                                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+                                                onClick={() => setIsMeterDropdownOpen(false)}
+                                                title="Edit Template"
+                                              >
+                                                <Pencil className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                                              </Link>
+                                            </div>
+                                          </div>
+                                        );
+                                      } else {
+                                        // For regular reports, navigate to edit the existing report
+                                        return (
+                                          <Link 
+                                            key={report.id}
+                                            to={report.file_url.replace('report:', '')}
+                                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                            onClick={() => setIsMeterDropdownOpen(false)}
+                                          >
+                                            <div className="flex items-center justify-between">
                                               <div className="flex items-center">
                                                 <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                                <span className="truncate">{asset.name}</span>
+                                                <span className="truncate">{report.name}</span>
                                               </div>
-                                            </Link>
-                                          ))}
-                                      </>
-                                    )}
-                                  </>
-                                )}
-                              </div>
+                                              <div className="flex items-center ml-2">
+                                                <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                                  report.pass_fail_status === 'PASS' 
+                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
+                                                    : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
+                                                }`}>
+                                                  {report.pass_fail_status}
+                                                </span>
+                                              </div>
+                                            </div>
+                                          </Link>
+                                        );
+                                      }
+                                    })}
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}
@@ -1080,12 +3158,73 @@ export default function JobDetail() {
                             </CardDescription>
                           </div>
                           <div className="w-1/3">
-                            <Input
-                              placeholder="Search assets..."
+                            <input
+                              type="text"
+                              placeholder="Search by Asset ID, report type, or name..."
                               value={searchQuery}
                               onChange={(e) => setSearchQuery(e.target.value)}
-                              className="w-full"
+                              className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-2 border-[#339C5E]/30 focus:border-[#339C5E] rounded-lg placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none transition-colors duration-200"
                             />
+                          </div>
+                        </div>
+                        
+                        {/* Filter Controls */}
+                        <div className="flex flex-wrap gap-4 mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Report Type:
+                            </label>
+                            <select
+                              value={reportTypeFilter}
+                              onChange={(e) => setReportTypeFilter(e.target.value)}
+                              className={`px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 ${
+                                job?.division?.toLowerCase() === 'calibration'
+                                  ? 'focus:ring-[#339C5E]'
+                                  : 'focus:ring-[#f26722]'
+                              }`}
+                            >
+                              <option value="all">All Types</option>
+                              <option value="Glove">Glove</option>
+                              <option value="Sleeve">Sleeve</option>
+                              <option value="Blanket">Blanket</option>
+                              <option value="Line Hose">Line Hose</option>
+                              <option value="Hotstick">Hotstick</option>
+                              <option value="Ground Cable">Ground Cable</option>
+                              <option value="Bucket Truck">Bucket Truck</option>
+                              <option value="Meter Report">Meter Report</option>
+                            </select>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Date:
+                            </label>
+                            <input
+                              type="date"
+                              value={selectedDate}
+                              onChange={(e) => setSelectedDate(e.target.value)}
+                              className={`px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 ${
+                                job?.division?.toLowerCase() === 'calibration'
+                                  ? 'focus:ring-[#339C5E]'
+                                  : 'focus:ring-[#f26722]'
+                              }`}
+                            />
+                          </div>
+                          
+                          <button
+                            onClick={() => {
+                              setReportTypeFilter('all');
+                              setSelectedDate('');
+                              setStatusFilter('all');
+                              setSearchQuery('');
+                            }}
+                            className="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-md transition-colors"
+                          >
+                            Reset Filters
+                          </button>
+                          
+                          <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                            Showing {filteredJobAssets.length} of {jobAssets.length} assets
                           </div>
                         </div>
                       </CardHeader>
@@ -1095,108 +3234,149 @@ export default function JobDetail() {
                             <p>No assets have been linked to this job yet.</p>
                           </div>
                         ) : filteredJobAssets.length === 0 ? (
-                          <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                            <p>No matching assets found</p>
+                          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                            <div className="mb-2">
+                              <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                              <p className="text-lg font-medium">No matching assets found</p>
+                            </div>
+                            <div className="text-sm space-y-1">
+                              {searchQuery && (
+                                <p>No assets match search term: <span className="font-medium">"{searchQuery}"</span></p>
+                              )}
+                              {(reportTypeFilter !== 'all' || selectedDate !== '') && (
+                                <p>Try adjusting your filters or search terms</p>
+                              )}
+                              <p className="text-gray-400 dark:text-gray-500">
+                                Search by Asset ID, report type, or document name
+                              </p>
+                            </div>
                           </div>
                         ) : (
                           <Table>
                             <TableHeader>
                               <TableRow>
-                                <TableHead>Asset Name</TableHead>
-                                <TableHead>Type</TableHead>
-                                <TableHead>Date Added</TableHead>
+                                <TableHead>Asset ID</TableHead>
+                                <TableHead>Report Type</TableHead>
+                                <TableHead>Pass/Fail</TableHead>
+                                <TableHead>Date Tested</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                               </TableRow>
                             </TableHeader>
-                            <TableBody>
-                              {filteredJobAssets.map((asset) => (
-                                <TableRow key={asset.id}>
-                                  <TableCell className="font-medium">{asset.name}</TableCell>
-                                  <TableCell>
-                                    {asset.template_type ? (
-                                      <Badge>{asset.template_type}</Badge>
-                                    ) : (
-                                      'Document'
-                                    )}
-                                  </TableCell>
-                                  <TableCell>
-                                    {format(new Date(asset.created_at), 'MMM d, yyyy')}
-                                  </TableCell>
-                                  <TableCell className="text-right">
-                                    <div className="flex items-center justify-end space-x-2">
-                                      {asset.file_url.startsWith('report:') ? (
-                                        <Link 
-                                          to={getReportEditPath(asset)}
-                                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                            <TableBody className="divide-y divide-gray-200 dark:divide-gray-700">
+                              {filteredJobAssets.map((asset) => {
+                                // Use the user-entered Asset ID if available (from glove reports)
+                                let displayAssetId = (asset as any).userAssetId || asset.id;
+                                
+                                // Function to determine the simplified report type from the file_url
+                                const getSimplifiedReportType = (asset: Asset) => {
+                                  if (asset.file_url.startsWith('report:')) {
+                                    // Extract report type from URL
+                                    // URL format: report:/jobs/jobId/reportSlug/reportId
+                                    const urlParts = asset.file_url.split('/');
+                                    const reportSlug = urlParts[3]; // reportSlug is at index 3, not 2
+                                    
+                                    if (reportSlug) {
+                                      // Clean query parameters from reportSlug if present
+                                      const cleanReportSlug = reportSlug.split('?')[0];
+                                      
+                                      const reportTypeMap: { [key: string]: string } = {
+                                        'calibration-gloves': 'Glove',
+                                        'calibration-sleeve': 'Sleeve',
+                                        'calibration-blanket': 'Blanket',
+                                        'calibration-line-hose': 'Line Hose',
+                                        'calibration-hotstick': 'Hotstick',
+                                        'calibration-ground-cable': 'Ground Cable',
+                                        'calibration-bucket-truck': 'Bucket Truck',
+                                        'meter-template': 'Meter',
+                                        'panelboard-report': 'Panelboard',
+                                        'low-voltage-switch-multi-device-test': 'LV Switch',
+                                        'low-voltage-circuit-breaker-electronic-trip-ats-report': 'LV Circuit Breaker',
+                                        'automatic-transfer-switch-ats-report': 'ATS',
+                                        'large-dry-type-transformer-mts-report': 'Large Transformer',
+                                        'large-dry-type-transformer-ats-report': 'Large Transformer'
+                                      };
+                                      
+                                      return reportTypeMap[cleanReportSlug] || 'Report';
+                                    }
+                                  }
+                                  
+                                  // For non-report documents, extract a simplified name from the asset name
+                                  return 'Document';
+                                };
+                                
+                                return (
+                                  <TableRow key={asset.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                                    <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                      {/* Show userAssetId if available (highest priority) */}
+                                      {asset.userAssetId || asset.asset_id || '-'}
+                                    </TableCell>
+                                    <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                      {getSimplifiedReportType(asset)}
+                                    </TableCell>
+                                    <TableCell className="px-6 py-4 whitespace-nowrap text-sm">
+                                      {asset.pass_fail_status ? (
+                                        <span
+                                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                            asset.pass_fail_status === 'PASS'
+                                              ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
+                                              : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
+                                          }`}
                                         >
-                                          Open Report
-                                        </Link>
+                                          {asset.pass_fail_status}
+                                        </span>
                                       ) : (
-                                        <a 
-                                          href={asset.file_url} 
-                                          target="_blank" 
-                                          rel="noopener noreferrer"
-                                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                                        >
-                                          View
-                                        </a>
+                                        <span className="text-gray-400 dark:text-gray-500">-</span>
                                       )}
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-0 h-auto"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setAssetToDelete(asset);
-                                          setShowDeleteConfirm(true);
-                                        }}
-                                      >
-                                        <Trash2 className="h-5 w-5 min-w-[20px] flex-shrink-0" />
-                                      </Button>
-                                    </div>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
+                                    </TableCell>
+                                    <TableCell>
+                                      {format(new Date(asset.created_at), 'MMM d, yyyy')}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <div className="flex items-center justify-end space-x-2">
+                                        {asset.file_url.startsWith('report:') ? (
+                                          <Link 
+                                            to={getReportEditPath(asset)}
+                                            className={
+                                              job?.division?.toLowerCase() === 'calibration'
+                                                ? "text-[#339C5E] hover:text-[#2d8a54] dark:text-[#339C5E] dark:hover:text-[#2d8a54]"
+                                                : "text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                            }
+                                          >
+                                            Open Report
+                                          </Link>
+                                        ) : (
+                                          <a 
+                                            href={asset.file_url} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                          >
+                                            View
+                                          </a>
+                                        )}
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-0 h-auto focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setAssetToDelete(asset);
+                                            setShowDeleteConfirm(true);
+                                          }}
+                                        >
+                                          <Trash2 className="h-5 w-5 min-w-[20px] flex-shrink-0" />
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
                             </TableBody>
                           </Table>
                         )}
                       </CardContent>
                     </Card>
                   </div>
-                )}
-                
-                {activeTab === 'reports' && job && (
-                  <div className="space-y-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Technical Reports</CardTitle>
-                        <CardDescription>
-                          Review and approve technical reports for this job
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <ReportApprovalWorkflow 
-                          division={job.division || undefined} 
-                          jobId={job.id}
-                        />
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
-                
-                {activeTab === 'surveys' && job && (
-                  <JobSurveys 
-                    jobId={job.id} 
-                    customerId={job.customer_id} 
-                    contacts={contacts}
-                  />
-                )}
-                
-                {activeTab === 'sla' && job && (
-                  <SLAManagement 
-                    jobId={job.id} 
-                    jobDetails={job}
-                  />
                 )}
               </div>
             </div>
@@ -1301,15 +3481,15 @@ export default function JobDetail() {
           )}
           
           <DialogFooter>
-            <Button
-              variant="outline"
+            <button
               onClick={() => {
                 setShowDeleteConfirm(false);
                 setAssetToDelete(null);
               }}
+              className="flex items-center px-3 py-1.5 text-sm font-medium bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg transition-all duration-200 hover:bg-[#339C5E]/10 hover:text-[#339C5E] dark:hover:bg-[#339C5E]/20 focus:outline-none focus:!ring-2 focus:!ring-[#339C5E] focus:!ring-offset-2 active:!ring-2 active:!ring-[#339C5E] active:!ring-offset-2"
             >
               Cancel
-            </Button>
+            </button>
             <Button
               variant="destructive"
               onClick={handleDeleteAsset}
@@ -1318,6 +3498,203 @@ export default function JobDetail() {
               Delete
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit Job Dialog */}
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Edit Job</DialogTitle>
+          </DialogHeader>
+          
+          {editFormData && (
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Job Title</label>
+                  <Input
+                    name="title"
+                    value={editFormData.title}
+                    onChange={handleEditInputChange}
+                    placeholder="Enter job title"
+                    required
+                    className={`!border-gray-300 dark:!border-gray-600 ${
+                      job?.division?.toLowerCase() === 'calibration' 
+                        ? 'focus:!ring-[#339C5E] focus:!border-[#339C5E] hover:!border-[#339C5E]'
+                        : 'focus:!ring-[#f26722] focus:!border-[#f26722] hover:!border-[#f26722]'
+                    }`}
+                  />
+                </div>
+
+                {/* Job Number field - read-only */}
+                {job?.job_number && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Job Number</label>
+                    <Input
+                      value={job.job_number}
+                      readOnly
+                      className="bg-gray-100 dark:bg-gray-700 cursor-not-allowed !border-gray-300 dark:!border-gray-600"
+                    />
+                  </div>
+                )}
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Description</label>
+                  <Textarea
+                    name="description"
+                    value={editFormData.description || ''}
+                    onChange={handleEditInputChange}
+                    placeholder="Enter job description"
+                    rows={3}
+                    className={`!border-gray-300 dark:!border-gray-600 ${
+                      job?.division?.toLowerCase() === 'calibration' 
+                        ? 'focus:!ring-[#339C5E] focus:!border-[#339C5E] hover:!border-[#339C5E]'
+                        : 'focus:!ring-[#f26722] focus:!border-[#f26722] hover:!border-[#f26722]'
+                    }`}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Start Date</label>
+                  <Input
+                    name="start_date"
+                    type="date"
+                    value={editFormData.start_date || ''}
+                    onChange={handleEditInputChange}
+                    className={`!border-gray-300 dark:!border-gray-600 ${
+                      job?.division?.toLowerCase() === 'calibration' 
+                        ? 'focus:!ring-[#339C5E] focus:!border-[#339C5E] hover:!border-[#339C5E]'
+                        : 'focus:!ring-[#f26722] focus:!border-[#f26722] hover:!border-[#f26722]'
+                    }`}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Due Date</label>
+                  <Input
+                    name="due_date"
+                    type="date"
+                    value={editFormData.due_date || ''}
+                    onChange={handleEditInputChange}
+                    className={`!border-gray-300 dark:!border-gray-600 ${
+                      job?.division?.toLowerCase() === 'calibration' 
+                        ? 'focus:!ring-[#339C5E] focus:!border-[#339C5E] hover:!border-[#339C5E]'
+                        : 'focus:!ring-[#f26722] focus:!border-[#f26722] hover:!border-[#f26722]'
+                    }`}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Status</label>
+                  <select
+                    name="status"
+                    value={editFormData.status}
+                    onChange={handleEditInputChange}
+                    className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 dark:bg-dark-100 dark:text-white ${
+                      job?.division?.toLowerCase() === 'calibration' 
+                        ? 'focus:ring-[#339C5E] focus:border-[#339C5E]'
+                        : 'focus:ring-[#f26722] focus:border-[#f26722]'
+                    }`}
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="on-hold">On Hold</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Priority</label>
+                  <select
+                    name="priority"
+                    value={editFormData.priority}
+                    onChange={handleEditInputChange}
+                    className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 dark:bg-dark-100 dark:text-white ${
+                      job?.division?.toLowerCase() === 'calibration' 
+                        ? 'focus:ring-[#339C5E] focus:border-[#339C5E]'
+                        : 'focus:ring-[#f26722] focus:border-[#f26722]'
+                    }`}
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+
+                {/* Only show budget field for non-calibration/armadillo jobs */}
+                {!(job?.division?.toLowerCase() === 'calibration' || job?.division?.toLowerCase() === 'armadillo') && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium mb-1">Budget</label>
+                    <Input
+                      name="budget"
+                      type="number"
+                      step="0.01"
+                      value={editFormData.budget || ''}
+                      onChange={handleEditInputChange}
+                      placeholder="0.00"
+                      className={`!border-gray-300 dark:!border-gray-600 ${
+                        job?.division?.toLowerCase() === 'calibration' 
+                          ? 'focus:!ring-[#339C5E] focus:!border-[#339C5E] hover:!border-[#339C5E]'
+                          : 'focus:!ring-[#f26722] focus:!border-[#f26722] hover:!border-[#f26722]'
+                      }`}
+                    />
+                  </div>
+                )}
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Notes</label>
+                  <Textarea
+                    name="notes"
+                    value={editFormData.notes || ''}
+                    onChange={handleEditInputChange}
+                    placeholder="Additional notes or special requirements..."
+                    rows={3}
+                    className={`!border-gray-300 dark:!border-gray-600 ${
+                      job?.division?.toLowerCase() === 'calibration' 
+                        ? 'focus:!ring-[#339C5E] focus:!border-[#339C5E] hover:!border-[#339C5E]'
+                        : 'focus:!ring-[#f26722] focus:!border-[#f26722] hover:!border-[#f26722]'
+                    }`}
+                  />
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                {job?.division?.toLowerCase() === 'calibration' ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(false)}
+                    disabled={isSubmitting}
+                    className="flex items-center px-3 py-1.5 text-sm font-medium bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg transition-all duration-200 hover:bg-[#339C5E]/10 hover:text-[#339C5E] dark:hover:bg-[#339C5E]/20 focus:outline-none focus:!ring-2 focus:!ring-[#339C5E] focus:!ring-offset-2 active:!ring-2 active:!ring-[#339C5E] active:!ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Cancel
+                  </button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsEditing(false)}
+                    disabled={isSubmitting}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none"
+                  >
+                    Cancel
+                  </Button>
+                )}
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className={`${
+                    job?.division?.toLowerCase() === 'calibration' 
+                      ? 'bg-[#339C5E] hover:bg-[#2d8a54]' 
+                      : 'bg-[#f26722] hover:bg-[#e55611]'
+                  } text-white`}
+                >
+                  {isSubmitting ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
     </div>

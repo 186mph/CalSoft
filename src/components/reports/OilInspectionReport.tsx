@@ -1686,8 +1686,8 @@ const OilInspectionReport: React.FC = () => {
             <button
               onClick={handleSave}
               disabled={!isEditing || loading}
-              className={`px-4 py-2 text-sm text-white bg-[#f26722] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] ${
-                !isEditing ? 'hidden' : 'hover:bg-[#f26722]/90'
+              className={`px-4 py-2 text-sm text-white bg-accent-color rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-color ${
+                !isEditing ? 'hidden' : 'hover:bg-accent-color/90'
               } ${loading ? 'opacity-50 cursor-wait' : ''}`}
             >
               {loading ? 'Saving...' : (reportId ? 'Update Report' : 'Save New Report')}
@@ -1727,7 +1727,7 @@ const OilInspectionReport: React.FC = () => {
                 value={formData.userName}
                 onChange={(e) => handleChange(null, 'userName', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 placeholder="Enter User Name"
               />
             </div>
@@ -1738,7 +1738,7 @@ const OilInspectionReport: React.FC = () => {
                 value={formData.identifier}
                 onChange={(e) => handleChange(null, 'identifier', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 placeholder="Transformer ID / Name"
               />
             </div>
@@ -1750,7 +1750,7 @@ const OilInspectionReport: React.FC = () => {
                   value={formData.temperature.ambient}
                   onChange={(e) => handleTemperatureChange(Number(e.target.value))}
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                  className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 />
               </div>
               <div>
@@ -1791,7 +1791,7 @@ const OilInspectionReport: React.FC = () => {
                 value={formData.technicians}
                 onChange={(e) => handleChange(null, 'technicians', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1801,7 +1801,7 @@ const OilInspectionReport: React.FC = () => {
                 value={formData.date}
                 onChange={(e) => handleChange(null, 'date', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1811,7 +1811,7 @@ const OilInspectionReport: React.FC = () => {
                 value={formData.substation}
                 onChange={(e) => handleChange(null, 'substation', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1821,7 +1821,7 @@ const OilInspectionReport: React.FC = () => {
                 value={formData.eqptLocation}
                 onChange={(e) => handleChange(null, 'eqptLocation', e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div>
@@ -1829,7 +1829,7 @@ const OilInspectionReport: React.FC = () => {
               <input
                 type="number"
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                 placeholder="Optional"
               />
             </div>
@@ -1849,7 +1849,7 @@ const OilInspectionReport: React.FC = () => {
               value={formData.nameplateData.manufacturer}
               onChange={(e) => handleNestedChange('nameplateData', 'manufacturer', e.target.value)}
               readOnly={!isEditing}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             />
           </div>
           <div>
@@ -1859,7 +1859,7 @@ const OilInspectionReport: React.FC = () => {
               value={formData.nameplateData.catalogNumber}
               onChange={(e) => handleNestedChange('nameplateData', 'catalogNumber', e.target.value)}
               readOnly={!isEditing}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             />
           </div>
           <div>
@@ -1869,7 +1869,7 @@ const OilInspectionReport: React.FC = () => {
               value={formData.nameplateData.serialNumber}
               onChange={(e) => handleNestedChange('nameplateData', 'serialNumber', e.target.value)}
               readOnly={!isEditing}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             />
           </div>
         </div>
@@ -1883,7 +1883,7 @@ const OilInspectionReport: React.FC = () => {
               value={formData.nameplateData.kva}
               onChange={(e) => handleNestedChange('nameplateData', 'kva', e.target.value)}
               readOnly={!isEditing}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             />
           </div>
           <div>
@@ -1893,7 +1893,7 @@ const OilInspectionReport: React.FC = () => {
               value={formData.nameplateData.tempRise}
               onChange={(e) => handleNestedChange('nameplateData', 'tempRise', e.target.value)}
               readOnly={!isEditing}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             />
           </div>
           <div>
@@ -1903,7 +1903,7 @@ const OilInspectionReport: React.FC = () => {
               value={formData.nameplateData.impedance}
               onChange={(e) => handleNestedChange('nameplateData', 'impedance', e.target.value)}
               readOnly={!isEditing}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             />
           </div>
         </div>
@@ -1923,7 +1923,7 @@ const OilInspectionReport: React.FC = () => {
                 value={formData.nameplateData.primary.volts}
                 onChange={(e) => handleNestedChange('nameplateData', 'primary', { ...formData.nameplateData.primary, volts: e.target.value })}
                 readOnly={!isEditing}
-                className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
               <span className="text-gray-500 dark:text-gray-400">/</span>
               <input
@@ -1931,7 +1931,7 @@ const OilInspectionReport: React.FC = () => {
                 value={formData.nameplateData.primary.voltsSecondary || ''}
                 onChange={(e) => handleNestedChange('nameplateData', 'primary', { ...formData.nameplateData.primary, voltsSecondary: e.target.value })}
                 readOnly={!isEditing}
-                className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div className="flex justify-center space-x-4">
@@ -1944,7 +1944,7 @@ const OilInspectionReport: React.FC = () => {
                     checked={formData.nameplateData.primary.connection === conn}
                     onChange={() => handleNestedChange('nameplateData', 'primary', { ...formData.nameplateData.primary, connection: conn })}
                     disabled={!isEditing}
-                    className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]"
+                    className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color"
                   />
                   <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{conn}</span>
                 </label>
@@ -1960,7 +1960,7 @@ const OilInspectionReport: React.FC = () => {
                     checked={formData.nameplateData.primary.material === mat}
                     onChange={() => handleNestedChange('nameplateData', 'primary', { ...formData.nameplateData.primary, material: mat })}
                     disabled={!isEditing}
-                    className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]"
+                    className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color"
                   />
                   <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{mat}</span>
                 </label>
@@ -1975,7 +1975,7 @@ const OilInspectionReport: React.FC = () => {
                 value={formData.nameplateData.secondary.volts}
                 onChange={(e) => handleNestedChange('nameplateData', 'secondary', { ...formData.nameplateData.secondary, volts: e.target.value })}
                 readOnly={!isEditing}
-                className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
               <span className="text-gray-500 dark:text-gray-400">/</span>
               <input
@@ -1983,7 +1983,7 @@ const OilInspectionReport: React.FC = () => {
                 value={formData.nameplateData.secondary.voltsSecondary || ''}
                 onChange={(e) => handleNestedChange('nameplateData', 'secondary', { ...formData.nameplateData.secondary, voltsSecondary: e.target.value })}
                 readOnly={!isEditing}
-                className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
               />
             </div>
             <div className="flex justify-center space-x-4">
@@ -2042,7 +2042,7 @@ const OilInspectionReport: React.FC = () => {
                       });
                     }}
                     readOnly={!isEditing}
-                    className={`w-full text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    className={`w-full text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     placeholder={index === 5 || index === 6 ? '-' : ''}
                   />
                 ))}
@@ -2069,7 +2069,7 @@ const OilInspectionReport: React.FC = () => {
                     value={formData.nameplateData.tapConfiguration.currentPosition}
                     onChange={(e) => handleNestedChange('nameplateData', 'tapConfiguration', { ...formData.nameplateData.tapConfiguration, currentPosition: parseInt(e.target.value) || 0 })}
                     readOnly={!isEditing}
-                    className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                   />
                   <span className="text-gray-500 dark:text-gray-400">/</span>
                   <input
@@ -2077,7 +2077,7 @@ const OilInspectionReport: React.FC = () => {
                     value={formData.nameplateData.tapConfiguration.currentPositionSecondary}
                     onChange={(e) => handleNestedChange('nameplateData', 'tapConfiguration', { ...formData.nameplateData.tapConfiguration, currentPositionSecondary: e.target.value })}
                     readOnly={!isEditing}
-                    className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    className={`w-16 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                   />
                 </div>
                 <div className="flex items-center space-x-2">
@@ -2087,7 +2087,7 @@ const OilInspectionReport: React.FC = () => {
                     value={formData.nameplateData.tapConfiguration.tapVoltsSpecific}
                     onChange={(e) => handleNestedChange('nameplateData', 'tapConfiguration', { ...formData.nameplateData.tapConfiguration, tapVoltsSpecific: e.target.value })}
                     readOnly={!isEditing}
-                    className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                   />
                 </div>
                 <div className="flex items-center space-x-2">
@@ -2097,7 +2097,7 @@ const OilInspectionReport: React.FC = () => {
                     value={formData.nameplateData.tapConfiguration.tapPercentSpecific}
                     onChange={(e) => handleNestedChange('nameplateData', 'tapConfiguration', { ...formData.nameplateData.tapConfiguration, tapPercentSpecific: e.target.value })}
                     readOnly={!isEditing}
-                    className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                    className={`w-24 text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                   />
                 </div>
               </div>
@@ -2138,7 +2138,7 @@ const OilInspectionReport: React.FC = () => {
                       value={formData.visualInspection[id]}
                       onChange={(e) => handleVisualInspectionChange(id, 'result', e.target.value)}
                       disabled={!isEditing}
-                      className={`w-full text-sm rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`w-full text-sm rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     >
                       {visualInspectionOptions.map(option => (
                         <option key={option} value={option} className="dark:bg-dark-100 dark:text-white">{option}</option>
@@ -2151,7 +2151,7 @@ const OilInspectionReport: React.FC = () => {
                       value={formData.visualInspection[`${id}_comments`] || ''}
                       onChange={(e) => handleVisualInspectionChange(id, 'comment', e.target.value)}
                       readOnly={!isEditing}
-                      className={`w-full text-sm rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`w-full text-sm rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       placeholder="Optional comments"
                     />
                   </td>
@@ -2197,7 +2197,7 @@ const OilInspectionReport: React.FC = () => {
                           value={formData.insulationResistance[test.id]?.testVoltage || ''}
                           onChange={(e) => handleNestedChange('insulationResistance', test.id, { ...formData.insulationResistance[test.id], testVoltage: e.target.value })}
                           disabled={!isEditing}
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                         >
                           {testVoltageOptions.map(voltage => (
                             <option key={voltage} value={voltage} className="dark:bg-dark-100 dark:text-white">{voltage}</option>
@@ -2210,7 +2210,7 @@ const OilInspectionReport: React.FC = () => {
                           value={formData.insulationResistance[test.id]?.readings?.halfMinute || ''} 
                           onChange={(e) => handleDeepNestedChange('insulationResistance', test.id, 'readings', 'halfMinute', e.target.value)} 
                           readOnly={!isEditing} 
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
                         />
                       </td>
                       <td className="px-1 py-1 border-r dark:border-gray-700">
@@ -2219,7 +2219,7 @@ const OilInspectionReport: React.FC = () => {
                           value={formData.insulationResistance[test.id]?.readings?.oneMinute || ''} 
                           onChange={(e) => handleDeepNestedChange('insulationResistance', test.id, 'readings', 'oneMinute', e.target.value)} 
                           readOnly={!isEditing} 
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
                         />
                       </td>
                       <td className="px-1 py-1 border-r dark:border-gray-700">
@@ -2228,7 +2228,7 @@ const OilInspectionReport: React.FC = () => {
                           value={formData.insulationResistance[test.id]?.readings?.tenMinute || ''} 
                           onChange={(e) => handleDeepNestedChange('insulationResistance', test.id, 'readings', 'tenMinute', e.target.value)} 
                           readOnly={!isEditing} 
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`} 
                         />
                       </td>
                       <td className="px-1 py-1">
@@ -2236,7 +2236,7 @@ const OilInspectionReport: React.FC = () => {
                           value={formData.insulationResistance[test.id]?.unit || 'MΩ'}
                           onChange={(e) => handleNestedChange('insulationResistance', test.id, { ...formData.insulationResistance[test.id], unit: e.target.value })}
                           disabled={!isEditing}
-                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                          className={`w-full text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                         >
                           {insulationResistanceUnits.map(unit => (
                             <option key={unit.symbol} value={unit.symbol} className="dark:bg-dark-100 dark:text-white">{unit.symbol}</option>
@@ -2467,7 +2467,7 @@ const OilInspectionReport: React.FC = () => {
                           handleNestedChange('turnsRatioTests', 'tests', newTests);
                         }}
                         readOnly={!isEditing}
-                        className={`w-24 text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        className={`w-24 text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                     <td className="px-3 py-2">
@@ -2480,7 +2480,7 @@ const OilInspectionReport: React.FC = () => {
                           handleNestedChange('turnsRatioTests', 'tests', newTests);
                         }}
                         readOnly={!isEditing}
-                        className={`w-24 text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        className={`w-24 text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                     <td className="px-3 py-2">
@@ -2489,7 +2489,7 @@ const OilInspectionReport: React.FC = () => {
                         value={test.phaseA.ttr}
                         onChange={(e) => handleTTRChange(index, 'phaseA', e.target.value)}
                         readOnly={!isEditing}
-                        className={`w-24 text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        className={`w-24 text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                     <td className="px-3 py-2">
@@ -2506,7 +2506,7 @@ const OilInspectionReport: React.FC = () => {
                         value={test.phaseB.ttr}
                         onChange={(e) => handleTTRChange(index, 'phaseB', e.target.value)}
                         readOnly={!isEditing}
-                        className={`w-24 text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        className={`w-24 text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                     <td className="px-3 py-2">
@@ -2523,7 +2523,7 @@ const OilInspectionReport: React.FC = () => {
                         value={test.phaseC.ttr}
                         onChange={(e) => handleTTRChange(index, 'phaseC', e.target.value)}
                         readOnly={!isEditing}
-                        className={`w-24 text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        className={`w-24 text-sm text-center rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                     <td className="px-3 py-2">
@@ -2837,7 +2837,7 @@ const OilInspectionReport: React.FC = () => {
               value={formData.excitation.testVoltage} 
               onChange={(e) => handleNestedChange('excitation', 'testVoltage', e.target.value)} 
               readOnly={!isEditing}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
             />
           </div>
           <div>
@@ -2847,7 +2847,7 @@ const OilInspectionReport: React.FC = () => {
               value={formData.excitation.referenceVoltage} 
               onChange={(e) => handleNestedChange('excitation', 'referenceVoltage', e.target.value)} 
               readOnly={!isEditing}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
             />
           </div>
         </div>
@@ -2889,7 +2889,7 @@ const OilInspectionReport: React.FC = () => {
                         handleNestedChange('excitation', 'tests', newTests);
                       }} 
                       readOnly={!isEditing} 
-                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
+                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
                     />
                   </td>
                   <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border-r dark:border-gray-700">
@@ -2902,7 +2902,7 @@ const OilInspectionReport: React.FC = () => {
                         handleNestedChange('excitation', 'tests', newTests);
                       }} 
                       readOnly={!isEditing} 
-                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
+                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
                     />
                   </td>
                   <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border-r dark:border-gray-700">
@@ -2919,7 +2919,7 @@ const OilInspectionReport: React.FC = () => {
                         handleNestedChange('excitation', 'tests', newTests);
                       }} 
                       readOnly={!isEditing} 
-                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
+                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
                     />
                   </td>
                   <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border-r dark:border-gray-700">
@@ -2932,7 +2932,7 @@ const OilInspectionReport: React.FC = () => {
                         handleNestedChange('excitation', 'tests', newTests);
                       }} 
                       readOnly={!isEditing} 
-                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
+                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
                     />
                   </td>
                   <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border-r dark:border-gray-700">
@@ -2949,7 +2949,7 @@ const OilInspectionReport: React.FC = () => {
                         handleNestedChange('excitation', 'tests', newTests);
                       }} 
                       readOnly={!isEditing} 
-                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
+                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
                     />
                   </td>
                   <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border-r dark:border-gray-700">
@@ -2962,7 +2962,7 @@ const OilInspectionReport: React.FC = () => {
                         handleNestedChange('excitation', 'tests', newTests);
                       }} 
                       readOnly={!isEditing} 
-                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
+                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
                     />
                   </td>
                   <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border-r dark:border-gray-700">
@@ -2995,7 +2995,7 @@ const OilInspectionReport: React.FC = () => {
               value={formData.powerFactor.referenceVoltage} 
               onChange={(e) => handleNestedChange('powerFactor', 'referenceVoltage', e.target.value)} 
               readOnly={!isEditing}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
             />
           </div>
           <div>
@@ -3005,7 +3005,7 @@ const OilInspectionReport: React.FC = () => {
               value={formData.powerFactor.windingTemperature} 
               onChange={(e) => handleNestedChange('powerFactor', 'windingTemperature', e.target.value)} 
               readOnly={!isEditing}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`}
             />
           </div>
         </div>
@@ -3047,7 +3047,7 @@ const OilInspectionReport: React.FC = () => {
                         handleNestedChange('powerFactor', 'primary', { ...formData.powerFactor.primary, tests: newTests });
                       }} 
                       readOnly={!isEditing} 
-                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
+                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
                     />
                   </td>
                   <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border-r dark:border-gray-700">
@@ -3060,7 +3060,7 @@ const OilInspectionReport: React.FC = () => {
                         handleNestedChange('powerFactor', 'primary', { ...formData.powerFactor.primary, tests: newTests });
                       }} 
                       readOnly={!isEditing} 
-                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
+                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
                     />
                   </td>
                   <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border-r dark:border-gray-700">
@@ -3130,7 +3130,7 @@ const OilInspectionReport: React.FC = () => {
                         handleNestedChange('powerFactor', 'secondary', { ...formData.powerFactor.secondary, tests: newTests });
                       }} 
                       readOnly={!isEditing} 
-                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
+                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
                     />
                   </td>
                   <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border-r dark:border-gray-700">
@@ -3143,7 +3143,7 @@ const OilInspectionReport: React.FC = () => {
                         handleNestedChange('powerFactor', 'secondary', { ...formData.powerFactor.secondary, tests: newTests });
                       }} 
                       readOnly={!isEditing} 
-                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
+                      className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white text-center ${!isEditing ? 'bg-gray-100 dark:bg-dark-200 cursor-not-allowed' : ''}`} 
                     />
                   </td>
                   <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border-r dark:border-gray-700">
@@ -3193,7 +3193,7 @@ const OilInspectionReport: React.FC = () => {
                  value={formData.testEquipment.megohmmeter.name} 
                  onChange={(e) => handleNestedChange('testEquipment', 'megohmmeter', { ...formData.testEquipment.megohmmeter, name: e.target.value })} 
                  readOnly={!isEditing}
-                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                />
              </div>
              <div>
@@ -3203,7 +3203,7 @@ const OilInspectionReport: React.FC = () => {
                  value={formData.testEquipment.megohmmeter.serialNumber} 
                  onChange={(e) => handleNestedChange('testEquipment', 'megohmmeter', { ...formData.testEquipment.megohmmeter, serialNumber: e.target.value })} 
                  readOnly={!isEditing}
-                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                />
              </div>
              <div>
@@ -3213,7 +3213,7 @@ const OilInspectionReport: React.FC = () => {
                  value={formData.testEquipment.megohmmeter.ampId} 
                  onChange={(e) => handleNestedChange('testEquipment', 'megohmmeter', { ...formData.testEquipment.megohmmeter, ampId: e.target.value })} 
                  readOnly={!isEditing}
-                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                />
              </div>
            </div>
@@ -3226,7 +3226,7 @@ const OilInspectionReport: React.FC = () => {
                  value={formData.testEquipment.ttrTestSet.name} 
                  onChange={(e) => handleNestedChange('testEquipment', 'ttrTestSet', { ...formData.testEquipment.ttrTestSet, name: e.target.value })} 
                  readOnly={!isEditing}
-                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                />
          </div>
              <div>
@@ -3236,7 +3236,7 @@ const OilInspectionReport: React.FC = () => {
                  value={formData.testEquipment.ttrTestSet.serialNumber} 
                  onChange={(e) => handleNestedChange('testEquipment', 'ttrTestSet', { ...formData.testEquipment.ttrTestSet, serialNumber: e.target.value })} 
                  readOnly={!isEditing}
-                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                />
       </div>
              <div>
@@ -3246,7 +3246,7 @@ const OilInspectionReport: React.FC = () => {
                  value={formData.testEquipment.ttrTestSet.ampId} 
                  onChange={(e) => handleNestedChange('testEquipment', 'ttrTestSet', { ...formData.testEquipment.ttrTestSet, ampId: e.target.value })} 
                  readOnly={!isEditing}
-                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                />
              </div>
            </div>
@@ -3259,7 +3259,7 @@ const OilInspectionReport: React.FC = () => {
                  value={formData.testEquipment.windingResistanceTestSet.name} 
                  onChange={(e) => handleNestedChange('testEquipment', 'windingResistanceTestSet', { ...formData.testEquipment.windingResistanceTestSet, name: e.target.value })} 
                  readOnly={!isEditing}
-                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                />
              </div>
              <div>
@@ -3269,7 +3269,7 @@ const OilInspectionReport: React.FC = () => {
                  value={formData.testEquipment.windingResistanceTestSet.serialNumber} 
                  onChange={(e) => handleNestedChange('testEquipment', 'windingResistanceTestSet', { ...formData.testEquipment.windingResistanceTestSet, serialNumber: e.target.value })} 
                  readOnly={!isEditing}
-                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                />
              </div>
              <div>
@@ -3279,7 +3279,7 @@ const OilInspectionReport: React.FC = () => {
                  value={formData.testEquipment.windingResistanceTestSet.ampId} 
                  onChange={(e) => handleNestedChange('testEquipment', 'windingResistanceTestSet', { ...formData.testEquipment.windingResistanceTestSet, ampId: e.target.value })} 
                  readOnly={!isEditing}
-                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                />
              </div>
            </div>
@@ -3292,7 +3292,7 @@ const OilInspectionReport: React.FC = () => {
                  value={formData.testEquipment.excitationTestSet.name} 
                  onChange={(e) => handleNestedChange('testEquipment', 'excitationTestSet', { ...formData.testEquipment.excitationTestSet, name: e.target.value })} 
                  readOnly={!isEditing}
-                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                />
              </div>
              <div>
@@ -3302,7 +3302,7 @@ const OilInspectionReport: React.FC = () => {
                  value={formData.testEquipment.excitationTestSet.serialNumber} 
                  onChange={(e) => handleNestedChange('testEquipment', 'excitationTestSet', { ...formData.testEquipment.excitationTestSet, serialNumber: e.target.value })} 
                  readOnly={!isEditing}
-                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                />
              </div>
              <div>
@@ -3312,7 +3312,7 @@ const OilInspectionReport: React.FC = () => {
                  value={formData.testEquipment.excitationTestSet.ampId} 
                  onChange={(e) => handleNestedChange('testEquipment', 'excitationTestSet', { ...formData.testEquipment.excitationTestSet, ampId: e.target.value })} 
                  readOnly={!isEditing}
-                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                />
              </div>
            </div>
@@ -3325,7 +3325,7 @@ const OilInspectionReport: React.FC = () => {
                  value={formData.testEquipment.powerFactorTestSet.name} 
                  onChange={(e) => handleNestedChange('testEquipment', 'powerFactorTestSet', { ...formData.testEquipment.powerFactorTestSet, name: e.target.value })} 
                  readOnly={!isEditing}
-                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                />
              </div>
              <div>
@@ -3335,7 +3335,7 @@ const OilInspectionReport: React.FC = () => {
                  value={formData.testEquipment.powerFactorTestSet.serialNumber} 
                  onChange={(e) => handleNestedChange('testEquipment', 'powerFactorTestSet', { ...formData.testEquipment.powerFactorTestSet, serialNumber: e.target.value })} 
                  readOnly={!isEditing}
-                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                />
              </div>
              <div>
@@ -3345,7 +3345,7 @@ const OilInspectionReport: React.FC = () => {
                  value={formData.testEquipment.powerFactorTestSet.ampId} 
                  onChange={(e) => handleNestedChange('testEquipment', 'powerFactorTestSet', { ...formData.testEquipment.powerFactorTestSet, ampId: e.target.value })} 
                  readOnly={!isEditing}
-                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                 className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                />
              </div>
            </div>
@@ -3359,7 +3359,7 @@ const OilInspectionReport: React.FC = () => {
             onChange={(e) => handleChange(null, 'comments', e.target.value)}
             rows={4}
             readOnly={!isEditing}
-            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+            className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
           />
       </div>
     </div>

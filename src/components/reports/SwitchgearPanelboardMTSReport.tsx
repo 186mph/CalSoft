@@ -564,7 +564,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
               value={formData.insulationResistanceTestVoltage}
               onChange={(e) => handleInputChange('insulationResistanceTestVoltage', e.target.value)}
               disabled={!isEditing}
-              className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             >
               <option value="">Select...</option>
               {INSULATION_RESISTANCE_TEST_VOLTAGES.map(opt => (
@@ -617,7 +617,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                           setFormData(prev => ({ ...prev, measuredInsulationResistance: newTests }));
                         }}
                         readOnly={!isEditing}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                   ))}
@@ -626,7 +626,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                       value={formData.insulationResistanceUnit}
                       onChange={(e) => handleInputChange('insulationResistanceUnit', e.target.value)}
                       disabled={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     >
                       {INSULATION_RESISTANCE_UNITS.map(unit => (
                         <option key={unit} value={unit} className="dark:bg-dark-100 dark:text-white">{unit}</option>
@@ -711,7 +711,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
               value={formData.insulationResistanceTestVoltage}
               onChange={(e) => handleInputChange('insulationResistanceTestVoltage', e.target.value)}
               disabled={!isEditing}
-              className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             >
               <option value="">Select...</option>
               {INSULATION_RESISTANCE_TEST_VOLTAGES.map(opt => (
@@ -760,7 +760,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                           setFormData(prev => ({ ...prev, contactResistanceTests: newTests }));
                         }}
                         readOnly={!isEditing}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                   ))}
@@ -769,7 +769,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                       value={formData.contactResistanceUnit}
                       onChange={(e) => handleInputChange('contactResistanceUnit', e.target.value)}
                       disabled={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     >
                       {CONTACT_RESISTANCE_UNITS.map(unit => (
                         <option key={unit} value={unit} className="dark:bg-dark-100 dark:text-white">{unit}</option>
@@ -793,7 +793,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
               value={formData.dielectricWithstandTestVoltage}
               onChange={(e) => handleInputChange('dielectricWithstandTestVoltage', e.target.value)}
               disabled={!isEditing}
-              className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              className={`rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             >
               {DIELECTRIC_WITHSTAND_TEST_VOLTAGES.map(opt => (
                 <option key={opt} value={opt}>{opt}</option>
@@ -839,7 +839,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                           setFormData(prev => ({ ...prev, dielectricWithstandTests: newTests }));
                         }}
                         readOnly={!isEditing}
-                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                        className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                       />
                     </td>
                   ))}
@@ -848,7 +848,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                       value={formData.dielectricWithstandUnit}
                       onChange={(e) => handleInputChange('dielectricWithstandUnit', e.target.value)}
                       disabled={!isEditing}
-                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+                      className={`block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-accent-color focus:ring-accent-color dark:bg-dark-100 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
                     >
                       {DIELECTRIC_WITHSTAND_UNITS.map(unit => (
                         <option key={unit} value={unit} className="dark:bg-dark-100 dark:text-white">{unit}</option>

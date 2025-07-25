@@ -109,7 +109,7 @@ export const AdminDashboard: React.FC = () => {
                 <CardTitle className="text-lg mb-2">Permission Management</CardTitle>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Fine-grained access control for users</p>
               </div>
-              <Shield className="h-8 w-8 text-orange-500" />
+              <Shield className="h-8 w-8 text-accent-color" />
             </div>
           </CardContent>
         </Card>

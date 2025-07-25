@@ -61,27 +61,27 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({ cus
         <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-4">
           <div className="h-64 flex items-end justify-between px-2">
             <div className="w-1/12 flex flex-col items-center">
-              <div className="h-32 w-4 bg-[#f26722] rounded-t-sm"></div>
+              <div className="h-32 w-4 bg-accent-color rounded-t-sm"></div>
               <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">Jan</div>
             </div>
             <div className="w-1/12 flex flex-col items-center">
-              <div className="h-24 w-4 bg-[#f26722] rounded-t-sm"></div>
+              <div className="h-24 w-4 bg-accent-color rounded-t-sm"></div>
               <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">Feb</div>
             </div>
             <div className="w-1/12 flex flex-col items-center">
-              <div className="h-40 w-4 bg-[#f26722] rounded-t-sm"></div>
+              <div className="h-40 w-4 bg-accent-color rounded-t-sm"></div>
               <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">Mar</div>
             </div>
             <div className="w-1/12 flex flex-col items-center">
-              <div className="h-36 w-4 bg-[#f26722] rounded-t-sm"></div>
+              <div className="h-36 w-4 bg-accent-color rounded-t-sm"></div>
               <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">Apr</div>
             </div>
             <div className="w-1/12 flex flex-col items-center">
-              <div className="h-44 w-4 bg-[#f26722] rounded-t-sm"></div>
+              <div className="h-44 w-4 bg-accent-color rounded-t-sm"></div>
               <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">May</div>
             </div>
             <div className="w-1/12 flex flex-col items-center">
-              <div className="h-48 w-4 bg-[#f26722] rounded-t-sm"></div>
+              <div className="h-48 w-4 bg-accent-color rounded-t-sm"></div>
               <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">Jun</div>
             </div>
           </div>
@@ -123,7 +123,7 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({ cus
           </div>
           
           <div className="mt-4 text-center">
-            <a href="#" className="text-sm text-[#f26722] hover:underline">View all surveys</a>
+            <a href="#" className="text-sm text-accent-color hover:underline">View all surveys</a>
           </div>
         </div>
       </div>
@@ -253,7 +253,7 @@ const CustomerHealthMonitoring: React.FC<CustomerHealthMonitoringProps> = ({ cus
       
       {/* Generate Report Button */}
       <div className="mt-8 flex justify-end">
-        <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2">
+        <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-accent-color px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-accent-color/90 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2">
           Generate Health Report
         </button>
       </div>

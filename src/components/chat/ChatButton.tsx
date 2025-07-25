@@ -44,7 +44,7 @@ export const ChatButton: React.FC = () => {
         
         {/* Unread badge */}
         {totalUnreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#f26722] text-[10px] font-medium text-white ring-2 ring-white dark:ring-dark-150">
+          <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent-color text-[10px] font-medium text-white ring-2 ring-white dark:ring-dark-150">
             {totalUnreadCount > 9 ? '9+' : totalUnreadCount}
           </span>
         )}

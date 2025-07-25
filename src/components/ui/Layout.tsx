@@ -19,7 +19,9 @@ import {
   Award,
   LineChart,
   Heart,
-  ClipboardList
+  ClipboardList,
+  HelpCircle,
+  Trash2
 } from "lucide-react"
 import { Button } from './Button';
 import { ThemeToggle } from '../theme/theme-toggle';
@@ -27,6 +29,7 @@ import { SettingsPopup } from './SettingsPopup';
 import { ProfileView } from '../profile/ProfileView';
 import { AboutPopup } from './AboutPopup';
 import { ChatButton } from '../chat/ChatButton';
+import { getDivisionHoverClasses, getDivisionActiveClasses } from '../../lib/utils';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -148,15 +151,34 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   // Render the appropriate menu items based on whether we're in the HR portal
   const renderMenuItems = () => {
+    // Get division-aware classes for hover and active states
+    const hoverClasses = getDivisionHoverClasses(division);
+    
+    // Custom active classes with proper border and text colors for calibration division
+    const getActiveClasses = (isActive: boolean) => {
+      if (!isActive) return '';
+      
+      if (division === 'calibration') {
+        return 'bg-[#339C5E]/10 dark:bg-[#339C5E]/20 text-[#339C5E]';
+      }
+      return 'bg-black/5 dark:bg-dark-50 border-r-2 border-[#f26722] text-[#f26722]';
+    };
+    
+    // Custom focus and interaction classes for calibration division to override any orange colors
+    const getCalibrationOverrides = () => {
+      if (division === 'calibration') {
+        return 'focus:ring-[#339C5E] focus:border-[#339C5E] focus-visible:ring-[#339C5E] active:ring-[#339C5E] [&:focus]:ring-[#339C5E] [&:active]:ring-[#339C5E] [&:focus-visible]:ring-[#339C5E]';
+      }
+      return '';
+    };
+    
     if (isHRPortal) {
       return (
         <>
           <Link to="/hr">
             <Button
               variant="ghost"
-              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                location.pathname === '/hr' && !location.hash ? 'bg-black/5 dark:bg-dark-50' : ''
-              }`}
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname === '/hr' && !location.hash)} ${getCalibrationOverrides()}`}
             >
               <FileText className="mr-2 h-4 w-4" />
               HR Dashboard
@@ -165,9 +187,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Link to="/hr#employees">
             <Button 
               variant="ghost" 
-              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                location.hash === '#employees' ? 'bg-black/5 dark:bg-dark-50' : ''
-              }`}
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.hash === '#employees')} ${getCalibrationOverrides()}`}
             >
               <Users className="mr-2 h-4 w-4" />
               Employee Records
@@ -176,9 +196,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Link to="/hr#training">
             <Button 
               variant="ghost" 
-              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                location.hash === '#training' ? 'bg-black/5 dark:bg-dark-50' : ''
-              }`}
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.hash === '#training')} ${getCalibrationOverrides()}`}
             >
               <GraduationCap className="mr-2 h-4 w-4" />
               Training
@@ -187,9 +205,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Link to="/hr#certifications">
             <Button 
               variant="ghost" 
-              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                location.hash === '#certifications' ? 'bg-black/5 dark:bg-dark-50' : ''
-              }`}
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.hash === '#certifications')} ${getCalibrationOverrides()}`}
             >
               <Award className="mr-2 h-4 w-4" />
               Certifications
@@ -198,9 +214,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Link to="/hr#performance">
             <Button 
               variant="ghost" 
-              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                location.hash === '#performance' ? 'bg-black/5 dark:bg-dark-50' : ''
-              }`}
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.hash === '#performance')} ${getCalibrationOverrides()}`}
             >
               <LineChart className="mr-2 h-4 w-4" />
               Performance Reviews
@@ -209,9 +223,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Link to="/hr#benefits">
             <Button 
               variant="ghost" 
-              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                location.hash === '#benefits' ? 'bg-black/5 dark:bg-dark-50' : ''
-              }`}
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.hash === '#benefits')} ${getCalibrationOverrides()}`}
             >
               <Heart className="mr-2 h-4 w-4" />
               Benefits
@@ -220,9 +232,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Link to="/hr#policies">
             <Button 
               variant="ghost" 
-              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                location.hash === '#policies' ? 'bg-black/5 dark:bg-dark-50' : ''
-              }`}
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.hash === '#policies')} ${getCalibrationOverrides()}`}
             >
               <ClipboardList className="mr-2 h-4 w-4" />
               Policies
@@ -246,11 +256,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Link to={currentDashboardPath}>
             <Button
               variant="ghost"
-              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(
                 (isOfficeAdmin || isOfficePortal) ? 
-                  location.pathname.startsWith('/office') ? 'bg-black/5 dark:bg-dark-50' : '' :
-                  location.pathname === dashboardPath ? 'bg-black/5 dark:bg-dark-50' : ''
-              }`}
+                  location.pathname.startsWith('/office') :
+                  location.pathname === dashboardPath
+              )} ${getCalibrationOverrides()}`}
             >
               <FileText className="mr-2 h-4 w-4" />
               {isOfficeAdmin || isOfficePortal ? 'Office Dashboard' : dashboardDisplayName}
@@ -259,9 +269,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Link to={`${basePath}/customers`}>
             <Button 
               variant="ghost" 
-              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                location.pathname.endsWith('/customers') ? 'bg-black/5 dark:bg-dark-50' : ''
-              }`}
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.endsWith('/customers'))} ${getCalibrationOverrides()}`}
             >
               <Building className="mr-2 h-4 w-4" />
               Customers
@@ -270,9 +278,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Link to={`${basePath}/contacts`}>
             <Button 
               variant="ghost" 
-              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                location.pathname.endsWith('/contacts') ? 'bg-black/5 dark:bg-dark-50' : ''
-              }`}
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.endsWith('/contacts'))} ${getCalibrationOverrides()}`}
             >
               <Users className="mr-2 h-4 w-4" />
               Contacts
@@ -282,29 +288,54 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           {/* Only show Jobs and Scheduling tabs if NOT Office Admin and NOT in Office Portal */}
           {!hideJobsAndScheduling && (
             <>
-              <Link to={`${basePath}/jobs`}>
+              <Link to={division === 'calibration' ? '/calibration/jobs' : `${basePath}/jobs`}>
                 <Button 
                   variant="ghost" 
-                  className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                    location.pathname.endsWith('/jobs') ? 'bg-black/5 dark:bg-dark-50' : ''
-                  }`}
+                  className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.endsWith('/jobs'))} ${getCalibrationOverrides()}`}
                 >
                   <BriefcaseIcon className="mr-2 h-4 w-4" />
                   Jobs
                 </Button>
               </Link>
-              <Link to={`${basePath}/scheduling`}>
-                <Button 
-                  variant="ghost" 
-                  className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
-                    location.pathname.endsWith('/scheduling') ? 'bg-black/5 dark:bg-dark-50' : ''
-                  }`}
-                >
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Scheduling
-                </Button>
-              </Link>
+              {/* Hide Scheduling tab for Calibration Division */}
+              {division !== 'calibration' && (
+                <Link to={`${basePath}/scheduling`}>
+                  <Button 
+                    variant="ghost" 
+                    className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.endsWith('/scheduling'))} ${getCalibrationOverrides()}`}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Scheduling
+                  </Button>
+                </Link>
+              )}
             </>
+          )}
+          
+          {/* All Assets tab - only for Calibration Division */}
+          {division === 'calibration' && (
+            <Link to="/calibration/all-assets">
+              <Button 
+                variant="ghost" 
+                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.endsWith('/all-assets'))} ${getCalibrationOverrides()}`}
+              >
+                <ClipboardList className="mr-2 h-4 w-4" />
+                All Assets
+              </Button>
+            </Link>
+          )}
+          
+          {/* Archived Assets tab - only for Calibration Division and Admin users */}
+          {division === 'calibration' && user?.user_metadata?.role === 'Admin' && (
+            <Link to="/calibration/deleted-assets">
+              <Button 
+                variant="ghost" 
+                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.endsWith('/deleted-assets'))} ${getCalibrationOverrides()}`}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Archived
+              </Button>
+            </Link>
           )}
         </>
       );
@@ -318,9 +349,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="flex h-20 items-center border-b border-black/10 dark:border-dark-200 px-6">
           <Link to="/portal">
             <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
-              alt="AMP Logo"
-              className="h-12 cursor-pointer hover:opacity-80 transition-opacity"
+              src={division === 'calibration' 
+                ? "/img/amp-calibration-logo.png" 
+                : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
+              }
+              alt={division === 'calibration' ? "AMP Calibration Logo" : "AMP Logo"}
+              className={division === 'calibration' ? "h-16 cursor-pointer hover:opacity-80 transition-opacity" : "h-12 cursor-pointer hover:opacity-80 transition-opacity"}
             />
           </Link>
         </div>
@@ -378,38 +412,38 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                         </div>
                         <button
                           onClick={() => navigate('/portal')}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-accent-color hover:bg-gray-100 dark:hover:bg-dark-50"
                         >
-                          <MapPin className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                          <MapPin className="mr-3 h-5 w-5 text-gray-400 dark:text-accent-color" />
                           Back to Portal
                         </button>
                         <button
                           onClick={handleViewProfile}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-accent-color hover:bg-gray-100 dark:hover:bg-dark-50"
                         >
-                          <Eye className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                          <Eye className="mr-3 h-5 w-5 text-gray-400 dark:text-accent-color" />
                           View Profile
                         </button>
                         <button
                           onClick={handleSettings}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-accent-color hover:bg-gray-100 dark:hover:bg-dark-50"
                         >
-                          <Settings className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                          <Settings className="mr-3 h-5 w-5 text-gray-400 dark:text-accent-color" />
                           Settings
                         </button>
                         <button
                           onClick={handleAbout}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-accent-color hover:bg-gray-100 dark:hover:bg-dark-50"
                         >
-                          <FileText className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                          <FileText className="mr-3 h-5 w-5 text-gray-400 dark:text-accent-color" />
                           About
                         </button>
                         <button
                           onClick={handleSignOut}
                           disabled={isSigningOut}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-[#f26722] hover:bg-gray-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-accent-color hover:bg-gray-100 dark:hover:bg-dark-50"
                         >
-                          <LogOut className="mr-3 h-5 w-5 text-gray-400 dark:text-[#f26722]" />
+                          <LogOut className="mr-3 h-5 w-5 text-gray-400 dark:text-accent-color" />
                           {isSigningOut ? 'Signing out...' : 'Sign Out'}
                         </button>
                       </div>

@@ -3,6 +3,8 @@ import { Plus, Pencil, Trash2, X, Filter, Tag } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../lib/AuthContext';
+import { useDivision } from '../../App';
+import { getDivisionAccentClasses } from '../../lib/utils';
 import { 
   Customer, 
   CustomerCategory, 
@@ -12,25 +14,26 @@ import {
   deleteCustomer,
   getCategories
 } from '../../services/customerService';
+import { supabase } from '../../lib/supabase';
 
 interface CustomerFormData {
   company_name: string;
-  email: string;
-  phone: string;
+  company_id: string;
   address: string;
   category_id: string | null;
 }
 
 const initialFormData: CustomerFormData = {
   company_name: '',
-  email: '',
-  phone: '',
+  company_id: '',
   address: '',
   category_id: null,
 };
 
 export default function CustomerList() {
   const { user } = useAuth();
+  const { division } = useDivision();
+  const accentClasses = getDivisionAccentClasses(division);
   const navigate = useNavigate();
   const location = useLocation();
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -84,21 +87,70 @@ export default function CustomerList() {
       
       setFormLoading(true);
 
-      const dataToSave = {
+      // For calibration division, we need to handle the category_id differently
+      // due to schema limitations
+      const isCalibDiv = isCalibrationDivision();
+      
+      // Create a new object with the form data to avoid typescript errors
+      let dataToSave: any = {
         ...formData,
-        name: formData.company_name // Set name to be the same as company_name
+        name: formData.company_name
       };
+      
+      // For the calibration division, add the company ID if provided
+      if (isCalibDiv) {
+        dataToSave.id = formData.company_id || undefined;
+        
+        // Remove category_id for lab_customers to avoid schema errors
+        if ('category_id' in dataToSave) {
+          delete dataToSave.category_id;
+        }
+        
+        // Ensure status is explicitly set
+        dataToSave.status = 'active';
+      }
+      
+      console.log("Saving customer data:", dataToSave, "in division:", isCalibDiv ? "Calibration" : "Standard");
       
       if (isEditing && customerToEdit) {
         // Update existing customer
-        await updateCustomer(customerToEdit, dataToSave);
+        if (isCalibDiv) {
+          // For Calibration division, create a clean minimal object with only the necessary fields
+          await updateCustomer(customerToEdit, {
+            name: formData.company_name,
+            company_name: formData.company_name,
+            email: '',
+            phone: '',
+            address: formData.address || '',
+            status: 'active'
+            // Explicitly NOT including company_id or user_id to avoid issues
+          });
+        } else {
+          // For non-Calibration, use the regular data object
+          await updateCustomer(customerToEdit, dataToSave);
+        }
       } else {
         // Create new customer
-        await createCustomer({ 
-          ...dataToSave, 
-          status: 'active',
-          user_id: user.id 
-        });
+        if (isCalibDiv) {
+          // For Calibration division, create a clean minimal object with only the necessary fields
+          // to avoid any potential data type issues with fields like user_id
+          await createCustomer({ 
+            name: formData.company_name,
+            company_name: formData.company_name,
+            company_id: formData.company_id,
+            email: '',
+            phone: '',
+            address: formData.address || '',
+            status: 'active'
+          });
+        } else {
+          // For non-Calibration, include user_id as before
+          await createCustomer({ 
+            ...dataToSave, 
+            status: 'active',
+            user_id: user.id 
+          });
+        }
       }
       
       setIsOpen(false);
@@ -108,7 +160,19 @@ export default function CustomerList() {
       fetchData();
     } catch (error) {
       console.error('Error saving customer:', error);
-      alert('Failed to save customer. Please try again.');
+      // Check if this is a specific column error
+      if (error && typeof error === 'object' && 'message' in error && 
+          typeof error.message === 'string') {
+        const errorMsg = error.message;
+        
+        if (errorMsg.includes("category_id") || errorMsg.includes("company_id") || errorMsg.includes("status")) {
+          alert('There appears to be a schema issue with the customer table. Please use the "Fix Schema Error" button at the bottom right of the screen, then try again.');
+        } else {
+          alert('Failed to save customer. Please try again.');
+        }
+      } else {
+        alert('Failed to save customer. Please try again.');
+      }
     } finally {
       setFormLoading(false);
     }
@@ -125,13 +189,74 @@ export default function CustomerList() {
     }
   }
 
-  function handleInputChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+  // Function to generate automatic Customer ID for Calibration Division
+  const generateCustomerId = async (companyName: string): Promise<string> => {
+    if (!isCalibrationDivision()) {
+      return '';
+    }
+    
+    try {
+      // Get ALL existing Customer IDs to find the highest number
+      const { data: existingCustomers, error } = await supabase
+        .schema('lab_ops')
+        .from('lab_customers')
+        .select('company_id')
+        .not('company_id', 'is', null)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching existing customer IDs:', error);
+        return '1'; // Fallback to 1 for first customer
+      }
+      
+      let highestNumber = 0;
+      
+      // Parse all Customer IDs to find the highest number
+      if (existingCustomers && existingCustomers.length > 0) {
+        existingCustomers.forEach(customer => {
+          if (customer.company_id) {
+            // Convert to number and check if it's a valid integer
+            const currentNumber = parseInt(customer.company_id);
+            if (!isNaN(currentNumber) && currentNumber > highestNumber) {
+              highestNumber = currentNumber;
+            }
+          }
+        });
+      }
+      
+      // Next Customer ID is one higher than the current highest
+      const nextNumber = highestNumber + 1;
+      
+      console.log('Generated Customer ID based on highest existing number:', nextNumber, 'Previous highest:', highestNumber);
+      return nextNumber.toString();
+      
+    } catch (error) {
+      console.error('Error generating Customer ID:', error);
+      // Fallback to simple sequential number
+      return '1';
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ 
-      ...prev, 
-      [name]: name === 'category_id' ? (value || null) : value 
-    }));
-  }
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Auto-generate Customer ID when Company Name is entered (Calibration Division only)
+    if (name === 'company_name' && value && isCalibrationDivision() && !isEditing) {
+      generateCustomerId(value).then(generatedId => {
+        setFormData(prev => ({ ...prev, company_id: generatedId }));
+      });
+    }
+  };
+
+  // Auto-generate Customer ID when form opens for new customers in Calibration Division
+  React.useEffect(() => {
+    if (isOpen && !isEditing && isCalibrationDivision() && !formData.company_id) {
+      generateCustomerId('').then(generatedId => {
+        setFormData(prev => ({ ...prev, company_id: generatedId }));
+      });
+    }
+  }, [isOpen, isEditing]);
 
   function confirmDelete(customerId: string) {
     setCustomerToDelete(customerId);
@@ -144,8 +269,7 @@ export default function CustomerList() {
     setCustomerToEdit(customer.id);
     setFormData({
       company_name: customer.company_name,
-      email: customer.email,
-      phone: customer.phone,
+      company_id: customer.company_id || '',
       address: customer.address,
       category_id: customer.category_id || null
     });
@@ -217,6 +341,10 @@ export default function CustomerList() {
     }
   }
 
+  const isCalibrationDivision = () => {
+    return location.pathname.startsWith('/calibration');
+  };
+
   if (loading) {
     return <div className="text-gray-900 dark:text-gray-100">Loading...</div>;
   }
@@ -254,7 +382,7 @@ export default function CustomerList() {
             <Filter className="h-4 w-4 mr-2" />
             Filter
             {Object.keys(activeFilters).length > 0 && (
-              <span className="ml-1 rounded-full bg-[#f26722] w-5 h-5 flex items-center justify-center text-xs text-white">
+              <span className={`ml-1 rounded-full ${accentClasses.bg} w-5 h-5 flex items-center justify-center text-xs text-white`}>
                 {Object.keys(activeFilters).length}
               </span>
             )}
@@ -267,7 +395,7 @@ export default function CustomerList() {
               setFormData(initialFormData);
               setIsOpen(true);
             }}
-            className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:w-auto"
+            className={`inline-flex items-center justify-center rounded-md border border-transparent ${accentClasses.bg} ${accentClasses.bgHover} px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 ${accentClasses.ring} focus:ring-offset-2 sm:w-auto`}
           >
             <Plus className="h-4 w-4 mr-2" />
             Add customer
@@ -311,7 +439,7 @@ export default function CustomerList() {
             
             <button 
               onClick={clearFilters}
-              className="text-sm text-[#f26722] hover:text-[#f26722]/80"
+              className={`text-sm ${accentClasses.text} ${accentClasses.textHover}`}
             >
               Clear all
             </button>
@@ -342,7 +470,7 @@ export default function CustomerList() {
                       setFormData(initialFormData);
                       setIsOpen(true);
                     }}
-                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:w-auto"
+                    className={`inline-flex items-center justify-center rounded-md border border-transparent ${accentClasses.bg} ${accentClasses.bgHover} px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 ${accentClasses.ring} focus:ring-offset-2 sm:w-auto`}
                   >
                     Add your first customer
                   </button>
@@ -368,6 +496,11 @@ export default function CustomerList() {
                     <div className="ml-4">
                       <div className="text-sm font-medium text-gray-900 dark:text-white">
                         {customer.company_name}
+                        {isCalibrationDivision() && customer.company_id && (
+                          <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                            ID: {customer.company_id}
+                          </span>
+                        )}
                         {customer.category_id && categories.length > 0 && (
                           <span 
                             className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
@@ -458,7 +591,7 @@ export default function CustomerList() {
                     id="category_filter"
                     value={activeFilters.category_id || ''}
                     onChange={(e) => handleFilterChange('category_id', e.target.value || null)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-accent-color focus:ring-accent-color sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   >
                     <option value="">All Categories</option>
                     {categories.map(category => (
@@ -478,7 +611,7 @@ export default function CustomerList() {
                   id="status_filter"
                   value={activeFilters.status || ''}
                   onChange={(e) => handleFilterChange('status', e.target.value || null)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-accent-color focus:ring-accent-color sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 >
                   <option value="">All Statuses</option>
                   {statusOptions.map(status => (
@@ -494,14 +627,14 @@ export default function CustomerList() {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="inline-flex justify-center rounded-md border border-gray-300 bg-white dark:bg-gray-700 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className="inline-flex justify-center rounded-md border border-gray-300 bg-white dark:bg-gray-700 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2"
               >
                 Clear All
               </button>
               <button
                 type="button"
                 onClick={() => setFilterOpen(false)}
-                className="inline-flex justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className={`inline-flex justify-center rounded-md border border-transparent ${accentClasses.bg} ${accentClasses.bgHover} px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 ${accentClasses.ring} focus:ring-offset-2`}
               >
                 Apply Filters
               </button>
@@ -541,37 +674,32 @@ export default function CustomerList() {
                     value={formData.company_name}
                     onChange={handleInputChange}
                     required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-accent-color focus:ring-accent-color sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   />
                 </div>
 
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  />
-                </div>
+                {isCalibrationDivision() && (
+                  <div>
+                    <label htmlFor="company_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Customer ID
+                    </label>
+                    <input
+                      type="text"
+                      name="company_id"
+                      id="company_id"
+                      value={formData.company_id}
+                      readOnly
+                      placeholder={!isEditing ? "Auto-generating..." : ""}
+                      className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-accent-color focus:ring-accent-color sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+                        !isEditing && formData.company_id 
+                          ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-600' 
+                          : 'bg-gray-50 dark:bg-gray-800'
+                      } cursor-not-allowed`}
+                    />
+                  </div>
+                )}
 
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Phone Number
-                  </label>
-                  <input
-                    type="text"
-                    name="phone"
-                    id="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  />
-                </div>
+
 
                 <div>
                   <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -583,11 +711,11 @@ export default function CustomerList() {
                     id="address"
                     value={formData.address}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-accent-color focus:ring-accent-color sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   />
                 </div>
 
-                {categories.length > 0 && (
+                {categories && categories.length > 0 ? (
                   <div>
                     <label htmlFor="category_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Category
@@ -597,7 +725,7 @@ export default function CustomerList() {
                       name="category_id"
                       value={formData.category_id || ''}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-accent-color focus:ring-accent-color sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     >
                       <option value="">No Category</option>
                       {categories.map(category => (
@@ -607,6 +735,15 @@ export default function CustomerList() {
                       ))}
                     </select>
                   </div>
+                ) : isCalibrationDivision() ? null : (
+                  <div>
+                    <label htmlFor="category_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Category
+                    </label>
+                    <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      Categories are not available. Please check schema configuration.
+                    </div>
+                  </div>
                 )}
               </div>
 
@@ -614,13 +751,13 @@ export default function CustomerList() {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="inline-flex justify-center rounded-md border border-gray-300 bg-white dark:bg-gray-700 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                  className="inline-flex justify-center rounded-md border border-gray-300 bg-white dark:bg-gray-700 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                  className={`inline-flex justify-center rounded-md border border-transparent ${accentClasses.bg} ${accentClasses.bgHover} px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 ${accentClasses.ring} focus:ring-offset-2`}
                   disabled={formLoading}
                 >
                   {formLoading ? (

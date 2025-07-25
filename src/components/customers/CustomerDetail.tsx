@@ -234,7 +234,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
               Back
             </button>
             <div className="flex items-center">
-              <Building2 className="h-8 w-8 text-[#f26722]" />
+              <Building2 className="h-8 w-8 text-accent-color" />
               <h1 className="ml-3 text-2xl font-semibold text-gray-900 dark:text-white">
                 {customer.company_name || 'No Company Name'}
               </h1>
@@ -263,7 +263,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                   </h3>
                   <button
                     onClick={() => setIsCategorySelectOpen(true)}
-                    className="text-sm text-[#f26722] hover:text-[#f26722]/80"
+                    className="text-sm text-accent-color hover:text-accent-color/80"
                   >
                     Change
                   </button>
@@ -287,28 +287,28 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                 </div>
               </div>
               <div className="flex items-start">
-                <Mail className="h-5 w-5 text-[#f26722] mt-0.5" />
+                <Mail className="h-5 w-5 text-accent-color mt-0.5" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</p>
                   <p className="text-sm text-gray-900 dark:text-white">{customer.email || '-'}</p>
                 </div>
               </div>
               <div className="flex items-start">
-                <Phone className="h-5 w-5 text-[#f26722] mt-0.5" />
+                <Phone className="h-5 w-5 text-accent-color mt-0.5" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</p>
                   <p className="text-sm text-gray-900 dark:text-white">{customer.phone || '-'}</p>
                 </div>
               </div>
               <div className="flex items-start">
-                <MapPin className="h-5 w-5 text-[#f26722] mt-0.5" />
+                <MapPin className="h-5 w-5 text-accent-color mt-0.5" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Address</p>
                   <p className="text-sm text-gray-900 dark:text-white">{customer.address || '-'}</p>
                 </div>
               </div>
               <div className="flex items-start">
-                <Calendar className="h-5 w-5 text-[#f26722] mt-0.5" />
+                <Calendar className="h-5 w-5 text-accent-color mt-0.5" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Created</p>
                   <p className="text-sm text-gray-900 dark:text-white">
@@ -325,7 +325,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
               <h2 className="text-lg font-medium text-gray-900 dark:text-white">Contacts</h2>
                 <button
                   onClick={handleAddContact}
-                className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className="inline-flex items-center justify-center rounded-md border border-transparent bg-accent-color px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-accent-color/90 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                 Add
@@ -363,7 +363,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                 </p>
               )}
               <div className="mt-2 text-right">
-                <Link to="#" className="text-sm font-medium text-[#f26722] hover:text-[#f26722]/90">
+                <Link to="#" className="text-sm font-medium text-accent-color hover:text-accent-color/90">
                   View All Contacts
               </Link>
             </div>
@@ -378,7 +378,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
               href="#overview"
               className={`${
                 activeTab === 'overview'
-                  ? 'border-[#f26722] text-[#f26722]'
+                  ? 'border-accent-color text-accent-color'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               onClick={(e) => {
@@ -392,7 +392,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
               href="#jobs"
               className={`${
                 activeTab === 'jobs'
-                  ? 'border-[#f26722] text-[#f26722]'
+                  ? 'border-accent-color text-accent-color'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               onClick={(e) => {
@@ -406,7 +406,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
               href="#documents"
               className={`${
                 activeTab === 'documents'
-                  ? 'border-[#f26722] text-[#f26722]'
+                  ? 'border-accent-color text-accent-color'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               onClick={(e) => {
@@ -420,7 +420,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
               href="#interactions"
               className={`${
                 activeTab === 'interactions'
-                  ? 'border-[#f26722] text-[#f26722]'
+                  ? 'border-accent-color text-accent-color'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               onClick={(e) => {
@@ -434,7 +434,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
               href="#health"
               className={`${
                 activeTab === 'health'
-                  ? 'border-[#f26722] text-[#f26722]'
+                  ? 'border-accent-color text-accent-color'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               onClick={(e) => {
@@ -462,7 +462,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                         e.preventDefault();
                         setActiveTab('jobs');
                       }}
-                      className="text-sm font-medium text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                      className="text-sm font-medium text-accent-color hover:text-accent-color/90 dark:text-accent-color dark:hover:text-accent-color/90"
                     >
                       View all jobs
                     </Link>
@@ -477,7 +477,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
-                          <Briefcase className="h-5 w-5 text-[#f26722]" />
+                          <Briefcase className="h-5 w-5 text-accent-color" />
                           <div className="ml-3">
                             <p className="text-sm font-medium text-gray-900 dark:text-white">{job.title}</p>
                             <div className="flex items-center mt-1 space-x-2">
@@ -524,7 +524,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                       <h2 className="text-lg font-medium text-gray-900 dark:text-white">Key Contacts</h2>
                       <button
                         onClick={handleAddContact}
-                        className="inline-flex items-center text-sm font-medium text-[#f26722] hover:text-[#f26722]/90"
+                        className="inline-flex items-center text-sm font-medium text-accent-color hover:text-accent-color/90"
                       >
                         <Plus className="h-4 w-4 mr-1" />
                         Add contact
@@ -566,7 +566,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                       <div className="pt-2 text-center">
                         <button
                           onClick={() => setContactsExpanded(prevState => !prevState)}
-                          className="inline-flex items-center text-sm font-medium text-[#f26722] hover:text-[#f26722]/90"
+                          className="inline-flex items-center text-sm font-medium text-accent-color hover:text-accent-color/90"
                         >
                           {contactsExpanded ? 'View fewer contacts' : `View all ${contacts.length} contacts`}
                         </button>
@@ -615,7 +615,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                           e.preventDefault();
                           setActiveTab('documents');
                         }}
-                        className="text-sm font-medium text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                        className="text-sm font-medium text-accent-color hover:text-accent-color/90 dark:text-accent-color dark:hover:text-accent-color/90"
                       >
                         View all documents
                       </Link>
@@ -653,7 +653,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                             e.preventDefault();
                             setActiveTab('documents');
                           }}
-                          className="inline-flex items-center text-sm font-medium text-[#f26722] hover:text-[#f26722]/90"
+                          className="inline-flex items-center text-sm font-medium text-accent-color hover:text-accent-color/90"
                         >
                           <Plus className="h-4 w-4 mr-1" />
                           Upload document
@@ -677,7 +677,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                           e.preventDefault();
                           setActiveTab('interactions');
                         }}
-                        className="text-sm font-medium text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                        className="text-sm font-medium text-accent-color hover:text-accent-color/90 dark:text-accent-color dark:hover:text-accent-color/90"
                       >
                         View all interactions
                       </Link>
@@ -688,8 +688,8 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                     <div className="space-y-4">
                       <div className="flex items-start">
                         <div className="relative">
-                          <div className="h-8 w-8 rounded-full bg-[#f26722]/10 flex items-center justify-center">
-                            <Phone className="h-4 w-4 text-[#f26722]" />
+                          <div className="h-8 w-8 rounded-full bg-accent-color/10 flex items-center justify-center">
+                            <Phone className="h-4 w-4 text-accent-color" />
                           </div>
                           <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-green-400 border-2 border-white dark:border-gray-800"></span>
                         </div>
@@ -719,7 +719,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                             e.preventDefault();
                             setActiveTab('interactions');
                           }}
-                          className="inline-flex items-center text-sm font-medium text-[#f26722] hover:text-[#f26722]/90"
+                          className="inline-flex items-center text-sm font-medium text-accent-color hover:text-accent-color/90"
                         >
                           <Plus className="h-4 w-4 mr-1" />
                           Add interaction
@@ -777,7 +777,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                   </div>
                   
                   <div className="mt-8 flex justify-end">
-                    <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2">
+                    <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-accent-color px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-accent-color/90 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2">
                       Generate Health Report
                     </button>
                   </div>
@@ -793,7 +793,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                   <h2 className="text-lg font-medium text-gray-900 dark:text-white">All Jobs</h2>
                   <Link
                     to="/jobs/new"
-                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-accent-color px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-accent-color/90 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2"
                   >
                     <Plus className="h-4 w-4 mr-1" />
                     Add
@@ -809,7 +809,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <Briefcase className="h-5 w-5 text-[#f26722]" />
+                        <Briefcase className="h-5 w-5 text-accent-color" />
                         <div className="ml-3">
                           <p className="text-sm font-medium text-gray-900 dark:text-white">{job.title}</p>
                           <div className="flex items-center mt-1 space-x-2">
@@ -864,7 +864,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Customer Interactions</h2>
                 <button
-                  className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                  className="inline-flex items-center justify-center rounded-md border border-transparent bg-accent-color px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-accent-color/90 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Log Interaction
@@ -923,7 +923,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
               </div>
               
               <div className="flex space-x-4 mb-6 border-b border-gray-200 dark:border-gray-700">
-                <button className="px-4 py-2 text-sm font-medium text-[#f26722] border-b-2 border-[#f26722]">
+                <button className="px-4 py-2 text-sm font-medium text-accent-color border-b-2 border-accent-color">
                   All Interactions
                 </button>
                 <button className="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
@@ -945,8 +945,8 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                   <div className="absolute top-0 left-6 h-full w-0.5 bg-gray-200 dark:bg-gray-700"></div>
                   <div className="flex items-start relative">
                     <div className="absolute top-0 left-0 h-12 w-12 flex items-center justify-center z-10">
-                      <div className="h-8 w-8 rounded-full bg-[#f26722]/10 flex items-center justify-center border-4 border-white dark:border-gray-800">
-                        <Phone className="h-4 w-4 text-[#f26722]" />
+                      <div className="h-8 w-8 rounded-full bg-accent-color/10 flex items-center justify-center border-4 border-white dark:border-gray-800">
+                        <Phone className="h-4 w-4 text-accent-color" />
                       </div>
                     </div>
                     <div className="ml-16 bg-white dark:bg-gray-700 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 w-full">
@@ -965,7 +965,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                       <div className="mt-3 flex justify-between items-center">
                         <p className="text-xs text-gray-500 dark:text-gray-400">Logged by: Sarah Johnson</p>
                         <div className="flex space-x-2">
-                          <button className="text-sm text-[#f26722] hover:text-[#f26722]/80">Edit</button>
+                          <button className="text-sm text-accent-color hover:text-accent-color/80">Edit</button>
                           <button className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">Delete</button>
                         </div>
                       </div>
@@ -997,7 +997,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                       <div className="mt-3 flex justify-between items-center">
                         <p className="text-xs text-gray-500 dark:text-gray-400">Logged by: Michael Chen</p>
                         <div className="flex space-x-2">
-                          <button className="text-sm text-[#f26722] hover:text-[#f26722]/80">Edit</button>
+                          <button className="text-sm text-accent-color hover:text-accent-color/80">Edit</button>
                           <button className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">Delete</button>
                         </div>
                       </div>
@@ -1031,7 +1031,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                       <div className="mt-3 flex justify-between items-center">
                         <p className="text-xs text-gray-500 dark:text-gray-400">Logged by: David Wilson</p>
                         <div className="flex space-x-2">
-                          <button className="text-sm text-[#f26722] hover:text-[#f26722]/80">Edit</button>
+                          <button className="text-sm text-accent-color hover:text-accent-color/80">Edit</button>
                           <button className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">Delete</button>
                         </div>
                       </div>
@@ -1064,7 +1064,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                       <div className="mt-3 flex justify-between items-center">
                         <p className="text-xs text-gray-500 dark:text-gray-400">Logged by: Jennifer Lee</p>
                         <div className="flex space-x-2">
-                          <button className="text-sm text-[#f26722] hover:text-[#f26722]/80">Edit</button>
+                          <button className="text-sm text-accent-color hover:text-accent-color/80">Edit</button>
                           <button className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">Delete</button>
                         </div>
                       </div>
@@ -1081,7 +1081,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                   <button className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed">
                     Previous
                   </button>
-                  <button className="px-3 py-1 text-sm border border-[#f26722] bg-[#f26722] text-white rounded">
+                  <button className="px-3 py-1 text-sm border border-accent-color bg-accent-color text-white rounded">
                     1
                   </button>
                   <button className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -1145,7 +1145,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
               </div>
               
               <div className="mt-8 flex justify-end">
-                <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2">
+                <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-accent-color px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-accent-color/90 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2">
                   Generate Health Report
                 </button>
               </div>
@@ -1179,7 +1179,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                   required
                   value={contactFormData.first_name}
                   onChange={(e) => setContactFormData(prev => ({ ...prev, first_name: e.target.value }))}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                 />
               </div>
               <div>
@@ -1193,7 +1193,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                   required
                   value={contactFormData.last_name}
                   onChange={(e) => setContactFormData(prev => ({ ...prev, last_name: e.target.value }))}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                 />
               </div>
               <div>
@@ -1207,7 +1207,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                   required
                   value={contactFormData.email}
                   onChange={(e) => setContactFormData(prev => ({ ...prev, email: e.target.value }))}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                 />
               </div>
               <div>
@@ -1220,7 +1220,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                   id="phone"
                   value={contactFormData.phone}
                   onChange={(e) => setContactFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                 />
               </div>
               <div>
@@ -1233,7 +1233,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                   id="position"
                   value={contactFormData.position}
                   onChange={(e) => setContactFormData(prev => ({ ...prev, position: e.target.value }))}
-                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-accent-color focus:border-accent-color dark:bg-dark-100 dark:text-white"
                 />
               </div>
               <div className="flex items-center">
@@ -1243,7 +1243,7 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
                   id="is_primary"
                   checked={contactFormData.is_primary}
                   onChange={(e) => setContactFormData(prev => ({ ...prev, is_primary: e.target.checked }))}
-                  className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-gray-300 dark:border-gray-600 rounded"
+                  className="h-4 w-4 text-accent-color focus:ring-accent-color border-gray-300 dark:border-gray-600 rounded"
                 />
                 <label htmlFor="is_primary" className="ml-2 block text-sm text-gray-700 dark:text-white">
                   Primary Contact
@@ -1252,14 +1252,14 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
               <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                 <button
                   type="submit"
-                  className="inline-flex w-full justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-2 sm:text-sm"
+                  className="inline-flex w-full justify-center rounded-md border border-transparent bg-accent-color px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-accent-color/90 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2 sm:col-start-2 sm:text-sm"
                 >
                   Add Contact
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsContactFormOpen(false)}
-                  className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-100 px-4 py-2 text-base font-medium text-gray-700 dark:text-white shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
+                  className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-100 px-4 py-2 text-base font-medium text-gray-700 dark:text-white shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
                 >
                   Cancel
                 </button>
@@ -1330,14 +1330,14 @@ ${contact.is_primary ? '(Primary Contact)' : ''}
             <div className="mt-6 flex justify-between">
               <Link
                 to="/sales-dashboard/customer-categories"
-                className="text-sm text-[#f26722] hover:text-[#f26722]/80"
+                className="text-sm text-accent-color hover:text-accent-color/80"
               >
                 Manage Categories
               </Link>
               <button
                 type="button"
                 onClick={() => setIsCategorySelectOpen(false)}
-                className="inline-flex justify-center rounded-md border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className="inline-flex justify-center rounded-md border border-transparent bg-accent-color px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-accent-color/90 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2"
               >
                 Close
               </button>

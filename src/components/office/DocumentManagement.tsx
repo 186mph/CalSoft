@@ -221,7 +221,7 @@ const DocumentManagement: React.FC = () => {
         return <FileText className="h-6 w-6 text-green-500" />;
       case 'pptx':
       case 'ppt':
-        return <FileText className="h-6 w-6 text-orange-500" />;
+        return <FileText className="h-6 w-6 text-accent-color" />;
       case 'png':
       case 'jpg':
       case 'jpeg':

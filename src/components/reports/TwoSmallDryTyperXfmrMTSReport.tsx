@@ -785,7 +785,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           <button
             onClick={handleSave}
             disabled={loading || !isEditing}
-            className="bg-[#f26722] hover:bg-[#e55611] text-white font-medium px-4 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-accent-color hover:bg-accent-color-hover text-white font-medium px-4 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Saving...' : (reportId ? 'Update Report' : 'Save Report')}
           </button>
@@ -986,7 +986,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                       checked={formData.nameplate.connectionsPrimary === conn}
                       onChange={() => handleChange('nameplate.connectionsPrimary', conn)}
                       disabled={!isEditing}
-                      className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]"
+                      className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color"
                     />
                     <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{conn}</span>
                   </label>
@@ -1003,7 +1003,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                       checked={formData.nameplate.windingMaterialPrimary === mat}
                       onChange={() => handleChange('nameplate.windingMaterialPrimary', mat)}
                       disabled={!isEditing}
-                      className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]"
+                      className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color"
                     />
                     <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{mat}</span>
                   </label>
@@ -1043,7 +1043,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                       checked={formData.nameplate.connectionsSecondary === conn}
                       onChange={() => handleChange('nameplate.connectionsSecondary', conn)}
                       disabled={!isEditing}
-                      className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]"
+                      className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color"
                     />
                     <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{conn}</span>
                   </label>
@@ -1060,7 +1060,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                       checked={formData.nameplate.windingMaterialSecondary === mat}
                       onChange={() => handleChange('nameplate.windingMaterialSecondary', mat)}
                       disabled={!isEditing}
-                      className="form-radio h-4 w-4 text-[#f26722] border-gray-300 dark:border-gray-700 focus:ring-[#f26722]"
+                      className="form-radio h-4 w-4 text-accent-color border-gray-300 dark:border-gray-700 focus:ring-accent-color"
                     />
                     <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{mat}</span>
                   </label>

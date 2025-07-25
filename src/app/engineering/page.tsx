@@ -160,7 +160,7 @@ export default function EngineeringPage() {
               Upload Document
             </Button>
           )}
-          <Badge className="!bg-[#f26722] !text-white">Engineering</Badge>
+          <Badge className="!bg-accent-color !text-white">Engineering</Badge>
         </div>
       }
     >
