@@ -50,7 +50,8 @@ export function CalibrationJobButton({
     start_date: new Date().toISOString().split('T')[0],
     due_date: '',
     priority: 'medium',
-    notes: ''
+    notes: '',
+    job_type: ''
   });
 
   // State for generated job number
@@ -549,7 +550,8 @@ export function CalibrationJobButton({
         notes: formData.notes,
         priority: formData.priority,
         division: jobDivision,
-        ...(jobNumber && { job_number: jobNumber }) // Include job_number for calibration division
+        ...(jobNumber && { job_number: jobNumber }), // Include job_number for calibration division
+        ...(formData.job_type && { job_type: formData.job_type }) // Include job_type if provided
       };
 
       console.log('[CalibrationJobButton] Job data to insert:', jobData);
@@ -650,7 +652,8 @@ export function CalibrationJobButton({
         start_date: new Date().toISOString().split('T')[0],
         due_date: '',
         priority: 'medium',
-        notes: ''
+        notes: '',
+        job_type: ''
       });
       setGeneratedJobNumber(''); // Clear generated job number
       setCustomerSearchQuery(''); // Clear customer search
@@ -801,6 +804,83 @@ export function CalibrationJobButton({
               </div>
               )}
 
+              {/* Job Type field - only for calibration division */}
+              {jobDivision === 'calibration' && (
+              <div>
+                <label className="block text-sm font-medium mb-1">Job Type</label>
+                <SelectRoot value={formData.job_type} onValueChange={handleSelectChange('job_type')}>
+                  <SelectTrigger className="!border-gray-300 dark:!border-gray-600 hover:!border-[#339C5E] [&[data-state=open]]:!ring-2 [&[data-state=open]]:!ring-[#339C5E] [&[data-state=open]]:!border-[#339C5E] !outline-none focus:!outline-none focus-visible:!outline-none focus-within:!outline-none" style={{ outline: 'none !important', boxShadow: 'none !important' }} onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 2px #339C5E !important'; e.currentTarget.style.outline = 'none !important'; }} onBlur={(e) => { e.currentTarget.style.boxShadow = 'none !important'; }}>
+                    <SelectValue placeholder="Select job type..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem 
+                      value="on-site-truck-testing"
+                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
+                      style={{ outline: 'none !important' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
+                    >
+                      On-Site | Truck Testing/Inspection
+                    </SelectItem>
+                    <SelectItem 
+                      value="on-site-ppe-testing"
+                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
+                      style={{ outline: 'none !important' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
+                    >
+                      On-Site | PPE Testing
+                    </SelectItem>
+                    <SelectItem 
+                      value="in-lab-ppe-testing"
+                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
+                      style={{ outline: 'none !important' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
+                    >
+                      In-Lab | PPE Testing
+                    </SelectItem>
+                    <SelectItem 
+                      value="in-lab-repair"
+                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
+                      style={{ outline: 'none !important' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
+                    >
+                      In-Lab | Repair
+                    </SelectItem>
+                    <SelectItem 
+                      value="on-site-calibration"
+                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
+                      style={{ outline: 'none !important' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
+                    >
+                      On-Site | Calibration
+                    </SelectItem>
+                    <SelectItem 
+                      value="in-lab-calibration"
+                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
+                      style={{ outline: 'none !important' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
+                    >
+                      In-Lab | Calibration
+                    </SelectItem>
+                    <SelectItem 
+                      value="armadillo"
+                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
+                      style={{ outline: 'none !important' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
+                    >
+                      Armadillo
+                    </SelectItem>
+                  </SelectContent>
+                </SelectRoot>
+              </div>
+              )}
+
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium mb-1">Description</label>
                 <Textarea
@@ -838,25 +918,34 @@ export function CalibrationJobButton({
               <div>
                 <label className="block text-sm font-medium mb-1">Priority</label>
                 <SelectRoot value={formData.priority} onValueChange={handleSelectChange('priority')}>
-                  <SelectTrigger className="!border-gray-300 dark:!border-gray-600 focus:!ring-[#339C5E] focus:!border-[#339C5E] hover:!border-[#339C5E] [&[data-state=open]]:!ring-2 [&[data-state=open]]:!ring-[#339C5E] [&[data-state=open]]:!border-[#339C5E]">
+                  <SelectTrigger className="!border-gray-300 dark:!border-gray-600 hover:!border-[#339C5E] [&[data-state=open]]:!ring-2 [&[data-state=open]]:!ring-[#339C5E] [&[data-state=open]]:!border-[#339C5E] !outline-none focus:!outline-none focus-visible:!outline-none focus-within:!outline-none" style={{ outline: 'none !important', boxShadow: 'none !important' }} onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 2px #339C5E !important'; e.currentTarget.style.outline = 'none !important'; }} onBlur={(e) => { e.currentTarget.style.boxShadow = 'none !important'; }}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem 
                       value="low"
-                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white"
+                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
+                      style={{ outline: 'none !important' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
                     >
                       Low
                     </SelectItem>
                     <SelectItem 
                       value="medium"
-                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white"
+                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
+                      style={{ outline: 'none !important' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
                     >
                       Medium
                     </SelectItem>
                     <SelectItem 
                       value="high"
-                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white"
+                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
+                      style={{ outline: 'none !important' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
                     >
                       High
                     </SelectItem>

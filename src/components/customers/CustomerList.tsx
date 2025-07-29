@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, X, Filter, Tag } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Filter, Tag, Eye } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../lib/AuthContext';
@@ -82,14 +82,37 @@ export default function CustomerList() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    console.log("🔧 [CustomerList] handleSubmit called - starting form submission");
     try {
-      if (!user) return;
+      if (!user) {
+        console.log("🚨 [CustomerList] No user found, aborting submission");
+        return;
+      }
       
       setFormLoading(true);
+      console.log("🔧 [CustomerList] handleSubmit - Form submitted successfully! user:", user?.id);
 
       // For calibration division, we need to handle the category_id differently
       // due to schema limitations
       const isCalibDiv = isCalibrationDivision();
+      
+      console.log("🔧 [CustomerList] handleSubmit - isCalibDiv:", isCalibDiv, "formData:", formData);
+
+      // Validate required fields
+      if (!formData.company_name || formData.company_name.trim() === '') {
+        console.log("🚨 [CustomerList] Company name is required but missing");
+        alert('Company name is required');
+        setFormLoading(false);
+        return;
+      }
+
+      // For calibration division, generate company_id if not provided
+      let companyId = formData.company_id;
+      if (isCalibDiv && !companyId) {
+        console.log("🔧 [CustomerList] Generating company_id for calibration division");
+        companyId = await generateCustomerId(formData.company_name);
+        console.log("🔧 [CustomerList] Generated company_id:", companyId);
+      }
       
       // Create a new object with the form data to avoid typescript errors
       let dataToSave: any = {
@@ -99,7 +122,8 @@ export default function CustomerList() {
       
       // For the calibration division, add the company ID if provided
       if (isCalibDiv) {
-        dataToSave.id = formData.company_id || undefined;
+        dataToSave.company_id = companyId;
+        dataToSave.id = companyId;
         
         // Remove category_id for lab_customers to avoid schema errors
         if ('category_id' in dataToSave) {
@@ -110,7 +134,7 @@ export default function CustomerList() {
         dataToSave.status = 'active';
       }
       
-      console.log("Saving customer data:", dataToSave, "in division:", isCalibDiv ? "Calibration" : "Standard");
+      console.log("🔧 [CustomerList] Saving customer data:", dataToSave, "in division:", isCalibDiv ? "Calibration" : "Standard");
       
       if (isEditing && customerToEdit) {
         // Update existing customer
@@ -134,10 +158,11 @@ export default function CustomerList() {
         if (isCalibDiv) {
           // For Calibration division, create a clean minimal object with only the necessary fields
           // to avoid any potential data type issues with fields like user_id
+          console.log("🔧 [CustomerList] Creating calibration customer with company_id:", companyId);
           await createCustomer({ 
             name: formData.company_name,
             company_name: formData.company_name,
-            company_id: formData.company_id,
+            company_id: companyId,
             email: '',
             phone: '',
             address: formData.address || '',
@@ -145,6 +170,7 @@ export default function CustomerList() {
           });
         } else {
           // For non-Calibration, include user_id as before
+          console.log("🔧 [CustomerList] Creating standard customer");
           await createCustomer({ 
             ...dataToSave, 
             status: 'active',
@@ -159,16 +185,21 @@ export default function CustomerList() {
       setCustomerToEdit(null);
       fetchData();
     } catch (error) {
-      console.error('Error saving customer:', error);
+      console.error('🚨 [CustomerList] Error saving customer:', error);
+      console.error('🚨 [CustomerList] Error details:', JSON.stringify(error, null, 2));
+      
       // Check if this is a specific column error
       if (error && typeof error === 'object' && 'message' in error && 
           typeof error.message === 'string') {
         const errorMsg = error.message;
+        console.error('🚨 [CustomerList] Error message:', errorMsg);
         
         if (errorMsg.includes("category_id") || errorMsg.includes("company_id") || errorMsg.includes("status")) {
           alert('There appears to be a schema issue with the customer table. Please use the "Fix Schema Error" button at the bottom right of the screen, then try again.');
+        } else if (errorMsg.includes("company_id") && errorMsg.includes("required")) {
+          alert('Customer ID is required for calibration division customers. Please check that the Customer ID is being generated properly.');
         } else {
-          alert('Failed to save customer. Please try again.');
+          alert(`Failed to save customer: ${errorMsg}`);
         }
       } else {
         alert('Failed to save customer. Please try again.');
@@ -274,6 +305,12 @@ export default function CustomerList() {
       category_id: customer.category_id || null
     });
     setIsOpen(true);
+  }
+
+  function handleView(customer: Customer, e: React.MouseEvent) {
+    e.stopPropagation();
+    // Navigate to customer detail view for calibration division
+    navigate(`/calibration/customers/${customer.id}`);
   }
 
   const handleRowClick = (customerId: string) => {
@@ -523,20 +560,34 @@ export default function CustomerList() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                      customer.status === 'active' 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                        : customer.status === 'inactive'
-                        ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                        : customer.status === 'lead'
-                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                        : customer.status === 'prospect'
-                        ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-                        : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
-                    }`}>
-                      {customer.status}
-                    </span>
+                    {/* Hide status for calibration division */}
+                    {!isCalibrationDivision() && (
+                      <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                        customer.status === 'active' 
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                          : customer.status === 'inactive'
+                          ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                          : customer.status === 'lead'
+                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                          : customer.status === 'prospect'
+                          ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                          : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                      }`}>
+                        {customer.status}
+                      </span>
+                    )}
                     <div className="flex space-x-1">
+                      {/* Add view button for calibration division */}
+                      {isCalibrationDivision() && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleView(customer, e)}
+                          className="text-gray-400 hover:text-[#339C5E] dark:hover:text-[#339C5E] transition-colors"
+                          title="View customer details"
+                        >
+                          <Eye className="h-5 w-5" />
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={(e) => handleEdit(customer, e)}
@@ -757,6 +808,7 @@ export default function CustomerList() {
                 </button>
                 <button
                   type="submit"
+                  onClick={() => console.log("🔧 [CustomerList] Submit button clicked!")}
                   className={`inline-flex justify-center rounded-md border border-transparent ${accentClasses.bg} ${accentClasses.bgHover} px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 ${accentClasses.ring} focus:ring-offset-2`}
                   disabled={formLoading}
                 >

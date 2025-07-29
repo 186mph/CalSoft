@@ -1393,7 +1393,7 @@ export default function CalibrationBucketTruckReport() {
                     formDataStatus: formData.bucketTruckData.passFailStatus
                   });
                   if (isEditing) {
-                    handleSave();
+                  handleSave();
                   } else {
                     console.log('Save button clicked but not in editing mode');
                   }

@@ -143,7 +143,7 @@ export default function JobDetail() {
   // Missing state variables
   const [reportSearchQuery, setReportSearchQuery] = useState<string>('');
   const [assets, setAssets] = useState<{id: any; assets: any;}[]>([]);
-  
+
   // Meter Report states
   const [isMeterDropdownOpen, setIsMeterDropdownOpen] = useState(false);
   const [meterReportSearchQuery, setMeterReportSearchQuery] = useState<string>('');
@@ -1455,7 +1455,7 @@ export default function JobDetail() {
     }
   };
 
-    // Function to print all calibration reports in the job
+  // Function to print all calibration reports in the job
   const handlePrintAll = async () => {
     console.log('Print All button clicked!');
     
@@ -1463,23 +1463,23 @@ export default function JobDetail() {
       toast.error('Job information not available');
       return;
     }
-    
+      
     // Check division
     const divisionCheck = job.division?.toLowerCase() || '';
     if (!job.division || !['calibration', 'lab'].includes(divisionCheck)) {
-      toast.error('Print All is only available for calibration division jobs');
-      return;
-    }
+        toast.error('Print All is only available for calibration division jobs');
+        return;
+      }
 
     // Filter for calibration reports
-    const calibrationReports = jobAssets.filter(asset => {
+      const calibrationReports = jobAssets.filter(asset => {
       return asset.file_url.includes('calibration-');
-    });
+      });
 
-    if (calibrationReports.length === 0) {
-      toast.error('No calibration reports found in this job');
-      return;
-    }
+      if (calibrationReports.length === 0) {
+        toast.error('No calibration reports found in this job');
+        return;
+      }
 
     console.log(`Found ${calibrationReports.length} calibration reports`);
     toast.loading('Generating combined PDF...');
@@ -1489,16 +1489,16 @@ export default function JobDetail() {
       const pdfContent = document.createElement('div');
       let combinedHTML = '';
 
-      // Map report types to table names
-      const tableMap: { [key: string]: string } = {
-        'calibration-gloves': 'calibration_gloves_reports',
-        'calibration-sleeve': 'calibration_sleeve_reports', 
-        'calibration-blanket': 'calibration_blanket_reports',
-        'calibration-line-hose': 'calibration_line_hose_reports',
-        'calibration-hotstick': 'calibration_hotstick_reports',
-        'calibration-ground-cable': 'calibration_ground_cable_reports',
-        'calibration-bucket-truck': 'calibration_bucket_truck_reports'
-      };
+          // Map report types to table names
+          const tableMap: { [key: string]: string } = {
+            'calibration-gloves': 'calibration_gloves_reports',
+            'calibration-sleeve': 'calibration_sleeve_reports', 
+            'calibration-blanket': 'calibration_blanket_reports',
+            'calibration-line-hose': 'calibration_line_hose_reports',
+            'calibration-hotstick': 'calibration_hotstick_reports',
+            'calibration-ground-cable': 'calibration_ground_cable_reports',
+            'calibration-bucket-truck': 'calibration_bucket_truck_reports'
+          };
 
       // Process each calibration report
       for (let i = 0; i < calibrationReports.length; i++) {
@@ -1511,7 +1511,7 @@ export default function JobDetail() {
           const urlParts = asset.file_url.split('/');
           const reportType = urlParts[urlParts.length - 2]; // e.g., 'calibration-gloves'
           const reportId = urlParts[urlParts.length - 1];
-          
+
           const tableName = tableMap[reportType];
           if (!tableName) {
             console.log(`No table mapping found for report type: ${reportType}`);
@@ -1530,7 +1530,7 @@ export default function JobDetail() {
             console.error(`Error fetching report data for ${reportType}:`, error);
             continue;
           }
-
+          
           console.log(`Successfully fetched report data for ${reportType}`);
           
           // Generate HTML for this report using the same method as individual reports
@@ -1538,7 +1538,7 @@ export default function JobDetail() {
           
           if (reportHTML && reportHTML.length > 100) {
             // Add page break before each report except the first
-            if (i > 0) {
+          if (i > 0) {
               combinedHTML += '<div style="page-break-before: always;"></div>';
             }
             combinedHTML += reportHTML;
@@ -1557,7 +1557,7 @@ export default function JobDetail() {
 
       // Set the combined HTML content
       pdfContent.innerHTML = combinedHTML;
-      
+
       console.log(`Combined HTML length: ${combinedHTML.length}`);
       console.log('Starting PDF generation with combined content...');
 
@@ -2676,21 +2676,21 @@ export default function JobDetail() {
             Back
           </button>
         ) : (
-          <Button 
-            variant="ghost"
-            onClick={() => {
-              // Navigate to the appropriate jobs page based on division
-              if (job?.division?.toLowerCase() === 'calibration') {
-                navigate('/calibration/jobs');
-              } else {
-                navigate('/jobs');
-              }
-            }}
+        <Button 
+          variant="ghost"
+          onClick={() => {
+            // Navigate to the appropriate jobs page based on division
+            if (job?.division?.toLowerCase() === 'calibration') {
+              navigate('/calibration/jobs');
+            } else {
+              navigate('/jobs');
+            }
+          }}
             className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none"
-          >
-            <ArrowLeft className="h-5 w-5 min-w-[20px] flex-shrink-0" />
-            Back
-          </Button>
+        >
+          <ArrowLeft className="h-5 w-5 min-w-[20px] flex-shrink-0" />
+          Back
+        </Button>
         )}
         <div className="flex gap-2 items-center">
           {/* Add JobNotifications component */}
@@ -3671,15 +3671,15 @@ export default function JobDetail() {
                     Cancel
                   </button>
                 ) : (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsEditing(false)}
-                    disabled={isSubmitting}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none"
-                  >
-                    Cancel
-                  </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditing(false)}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none"
+                >
+                  Cancel
+                </Button>
                 )}
                 <Button
                   type="submit"

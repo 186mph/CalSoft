@@ -80,43 +80,43 @@ export default function DeletedAssetsPage() {
       } else {
         console.log(`Found ${deletedJobs?.length || 0} deleted jobs:`, deletedJobs);
         if (deletedJobs && deletedJobs.length > 0) {
-          console.log(`Found ${deletedJobs.length} deleted job(s)`);
-          
-          const deletedJobIds = deletedJobs.map(job => job.id);
-          
-          const { data: deletedJobAssets, error: deletedJobAssetsError } = await supabase
-            .schema('lab_ops')
-            .from('lab_assets')
-            .select('*')
-            .in('job_id', deletedJobIds)
-            .order('created_at', { ascending: false });
+        console.log(`Found ${deletedJobs.length} deleted job(s)`);
+        
+        const deletedJobIds = deletedJobs.map(job => job.id);
+        
+        const { data: deletedJobAssets, error: deletedJobAssetsError } = await supabase
+          .schema('lab_ops')
+          .from('lab_assets')
+          .select('*')
+          .in('job_id', deletedJobIds)
+          .order('created_at', { ascending: false });
 
-          if (deletedJobAssetsError) {
-            console.error('Error fetching assets from deleted jobs:', deletedJobAssetsError);
-          } else if (deletedJobAssets) {
-            // Create a job lookup map from deleted jobs
-            const jobLookup = (deletedJobs || []).reduce((acc, job) => {
-              acc[job.id] = job;
-              return acc;
-            }, {} as Record<string, any>);
+        if (deletedJobAssetsError) {
+          console.error('Error fetching assets from deleted jobs:', deletedJobAssetsError);
+        } else if (deletedJobAssets) {
+          // Create a job lookup map from deleted jobs
+          const jobLookup = (deletedJobs || []).reduce((acc, job) => {
+            acc[job.id] = job;
+            return acc;
+          }, {} as Record<string, any>);
 
-            // Transform deleted job assets
-            const transformedDeletedJobAssets: Asset[] = deletedJobAssets.map((item: any) => {
-              const jobInfo = jobLookup[item.job_id];
-              return {
-                id: item.id,
-                name: item.name,
-                file_url: item.file_url,
-                created_at: item.created_at,
-                asset_id: item.asset_id,
-                job_id: item.job_id || '',
-                job_number: jobInfo?.job_number || '',
-                job_title: jobInfo?.title || '',
-                deleted_at: jobInfo?.updated_at || item.updated_at
-              };
-            });
+          // Transform deleted job assets
+          const transformedDeletedJobAssets: Asset[] = deletedJobAssets.map((item: any) => {
+            const jobInfo = jobLookup[item.job_id];
+            return {
+              id: item.id,
+              name: item.name,
+              file_url: item.file_url,
+              created_at: item.created_at,
+              asset_id: item.asset_id,
+              job_id: item.job_id || '',
+              job_number: jobInfo?.job_number || '',
+              job_title: jobInfo?.title || '',
+              deleted_at: jobInfo?.updated_at || item.updated_at
+            };
+          });
 
-            allDeletedAssets = [...allDeletedAssets, ...transformedDeletedJobAssets];
+          allDeletedAssets = [...allDeletedAssets, ...transformedDeletedJobAssets];
           }
         }
       }

@@ -397,11 +397,11 @@ export default function AllAssetsPage() {
                 Retry
               </button>
             </div>
-          </div>
-        </div>
+                  </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div className="p-6 flex justify-center">
@@ -670,4 +670,4 @@ export default function AllAssetsPage() {
       </div>
     </div>
   );
-}
+} 

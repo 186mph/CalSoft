@@ -128,22 +128,45 @@ export default function ContactList() {
       }
 
       // 2. Fetch customer data for each contact
+      const isCalibration = location.pathname.startsWith('/calibration');
+      
       const contactsWithCustomers = await Promise.all(contactData.map(async (contact) => {
         if (!contact.customer_id) {
           return { ...contact, customers: null };
         }
         
         try {
+          // Try to fetch from the current division's customer table first
+          const schema = isCalibration ? 'lab_ops' : 'common';
+          const table = isCalibration ? 'lab_customers' : 'customers';
+          
           const { data: customerData, error: customerError } = await supabase
-            .schema('common')
-            .from('customers')
+            .schema(schema)
+            .from(table)
             .select('id, name, company_name')
             .eq('id', contact.customer_id)
             .single();
 
           if (customerError) {
-            console.warn(`Error fetching customer for contact ${contact.id}:`, customerError);
-            return { ...contact, customers: null };
+            // If not found in division-specific table, try the common table as fallback
+            if (isCalibration) {
+              const { data: fallbackCustomerData, error: fallbackError } = await supabase
+                .schema('common')
+                .from('customers')
+                .select('id, name, company_name')
+                .eq('id', contact.customer_id)
+                .single();
+                
+              if (fallbackError) {
+                console.warn(`Error fetching customer for contact ${contact.id} from both tables:`, customerError, fallbackError);
+                return { ...contact, customers: null };
+              }
+              
+              return { ...contact, customers: fallbackCustomerData };
+            } else {
+              console.warn(`Error fetching customer for contact ${contact.id}:`, customerError);
+              return { ...contact, customers: null };
+            }
           }
           
           // Use the `customers` key to match the existing Contact interface
@@ -165,13 +188,21 @@ export default function ContactList() {
 
   async function fetchCustomers() {
     try {
+      // Determine schema based on division context from URL
+      const isCalibration = location.pathname.startsWith('/calibration');
+      const schema = isCalibration ? 'lab_ops' : 'common';
+      const table = isCalibration ? 'lab_customers' : 'customers';
+      
+      console.log('🔧 [ContactList] fetchCustomers - isCalibration:', isCalibration, 'schema:', schema, 'table:', table);
+
       const { data, error } = await supabase
-        .schema('common')
-        .from('customers')
+        .schema(schema)
+        .from(table)
         .select('id, name, company_name')
         .order('name');
 
       if (error) throw error;
+      console.log('🔧 [ContactList] fetchCustomers - fetched customers:', data);
       setCustomers(data || []);
     } catch (error) {
       console.error('Error fetching customers:', error);
@@ -180,33 +211,209 @@ export default function ContactList() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!user) return;
+    console.log('🔧 [ContactList] handleSubmit called - starting contact submission');
+    
+    if (!user) {
+      console.log('🚨 [ContactList] No user found, aborting submission');
+      return;
+    }
+
+    console.log('🔧 [ContactList] handleSubmit - formData:', formData);
+    
+    // Validate required fields
+    if (!formData.customer_id || formData.customer_id.trim() === '') {
+      console.log('🚨 [ContactList] Customer is required but missing');
+      alert('Please select a customer');
+      return;
+    }
+    
+    if (!formData.first_name || formData.first_name.trim() === '') {
+      console.log('🚨 [ContactList] First name is required but missing');
+      alert('First name is required');
+      return;
+    }
+    
+    if (!formData.last_name || formData.last_name.trim() === '') {
+      console.log('🚨 [ContactList] Last name is required but missing');
+      alert('Last name is required');
+      return;
+    }
 
     try {
       if (isEditMode && editingContactId) {
+        console.log('🔧 [ContactList] Updating contact:', editingContactId, formData);
+        
+        // For calibration division, ensure customer exists in common.customers before updating
+        const isCalibration = location.pathname.startsWith('/calibration');
+        let finalCustomerId = formData.customer_id;
+        
+        if (isCalibration) {
+          console.log('🔧 [ContactList] Calibration division - checking/creating customer in common.customers for update');
+          
+          // Check if customer exists in common.customers
+          const { data: existingCustomer, error: checkError } = await supabase
+            .schema('common')
+            .from('customers')
+            .select('id')
+            .eq('id', formData.customer_id)
+            .single();
+            
+          if (checkError && checkError.code !== 'PGRST116') {
+            console.error('🚨 [ContactList] Error checking existing customer during update:', checkError);
+            throw checkError;
+          }
+          
+          if (!existingCustomer) {
+            console.log('🔧 [ContactList] Customer not found in common.customers during update, syncing from lab_customers');
+            
+            // Fetch and sync customer like in the create flow
+            const { data: labCustomer, error: labError } = await supabase
+              .schema('lab_ops')
+              .from('lab_customers')
+              .select('*')
+              .eq('id', formData.customer_id)
+              .single();
+              
+            if (labError) {
+              console.error('🚨 [ContactList] Error fetching customer from lab_customers during update:', labError);
+              throw new Error(`Customer not found in lab_customers: ${labError.message}`);
+            }
+            
+            const { error: syncError } = await supabase
+              .schema('common')
+              .from('customers')
+              .insert([{
+                id: labCustomer.id,
+                name: labCustomer.name,
+                company_name: labCustomer.company_name,
+                email: labCustomer.email || '',
+                phone: labCustomer.phone || '',
+                address: labCustomer.address || '',
+                status: labCustomer.status || 'active',
+                user_id: user.id,
+                created_at: labCustomer.created_at,
+                updated_at: new Date().toISOString()
+              }]);
+              
+            if (syncError) {
+              console.error('🚨 [ContactList] Error syncing customer during update:', syncError);
+              throw new Error(`Failed to sync customer: ${syncError.message}`);
+            }
+            
+            console.log('🔧 [ContactList] Customer synced successfully during update');
+          }
+        }
+        
         const { error } = await supabase
           .schema('common')
           .from('contacts')
-          .update({ ...formData })
+          .update({ ...formData, customer_id: finalCustomerId })
           .eq('id', editingContactId);
 
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        console.log('🔧 [ContactList] Creating new contact');
+        
+        // For calibration division, we need to ensure the customer exists in common.customers
+        // since contacts table has FK constraint to common.customers
+        const isCalibration = location.pathname.startsWith('/calibration');
+        let finalCustomerId = formData.customer_id;
+        
+        if (isCalibration) {
+          console.log('🔧 [ContactList] Calibration division - checking/creating customer in common.customers');
+          
+          // First, check if customer already exists in common.customers
+          const { data: existingCustomer, error: checkError } = await supabase
+            .schema('common')
+            .from('customers')
+            .select('id')
+            .eq('id', formData.customer_id)
+            .single();
+            
+          if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = not found
+            console.error('🚨 [ContactList] Error checking existing customer:', checkError);
+            throw checkError;
+          }
+          
+          if (!existingCustomer) {
+            console.log('🔧 [ContactList] Customer not found in common.customers, fetching from lab_customers to sync');
+            
+            // Fetch customer data from lab_customers
+            const { data: labCustomer, error: labError } = await supabase
+              .schema('lab_ops')
+              .from('lab_customers')
+              .select('*')
+              .eq('id', formData.customer_id)
+              .single();
+              
+            if (labError) {
+              console.error('🚨 [ContactList] Error fetching customer from lab_customers:', labError);
+              throw new Error(`Customer not found in lab_customers: ${labError.message}`);
+            }
+            
+            console.log('🔧 [ContactList] Syncing customer to common.customers:', labCustomer);
+            
+            // Create the customer in common.customers with the same ID
+            const { data: syncedCustomer, error: syncError } = await supabase
+              .schema('common')
+              .from('customers')
+              .insert([{
+                id: labCustomer.id, // Use the same ID
+                name: labCustomer.name,
+                company_name: labCustomer.company_name,
+                email: labCustomer.email || '',
+                phone: labCustomer.phone || '',
+                address: labCustomer.address || '',
+                status: labCustomer.status || 'active',
+                user_id: user.id,
+                created_at: labCustomer.created_at,
+                updated_at: new Date().toISOString()
+              }])
+              .select()
+              .single();
+              
+            if (syncError) {
+              console.error('🚨 [ContactList] Error syncing customer to common.customers:', syncError);
+              throw new Error(`Failed to sync customer: ${syncError.message}`);
+            }
+            
+            console.log('🔧 [ContactList] Customer synced successfully:', syncedCustomer);
+          } else {
+            console.log('🔧 [ContactList] Customer already exists in common.customers');
+          }
+        }
+        
+        const insertData = { ...formData, customer_id: finalCustomerId, user_id: user.id };
+        console.log('🔧 [ContactList] Inserting new contact:', insertData);
+        
+        const { data, error } = await supabase
           .schema('common')
           .from('contacts')
-          .insert([{ ...formData, user_id: user.id }]);
+          .insert([insertData])
+          .select();
 
         if (error) throw error;
+        console.log('🔧 [ContactList] Contact created successfully:', data);
       }
 
+      console.log('🎉 [ContactList] Contact saved successfully, closing form');
       setIsOpen(false);
       setFormData(initialFormData);
       setIsEditMode(false);
       setEditingContactId(null);
       fetchContacts();
     } catch (error) {
-      console.error('Error saving contact:', error);
+      console.error('🚨 [ContactList] Error saving contact:', error);
+      console.error('🚨 [ContactList] Error details:', JSON.stringify(error, null, 2));
+      
+      if (error && typeof error === 'object' && 'message' in error && 
+          typeof error.message === 'string') {
+        const errorMsg = error.message;
+        console.error('🚨 [ContactList] Error message:', errorMsg);
+        alert(`Failed to save contact: ${errorMsg}`);
+      } else {
+        alert('Failed to save contact. Please try again.');
+      }
     }
   }
 
@@ -259,10 +466,13 @@ export default function ContactList() {
   }
 
   function handleCustomerSelect(customer: Customer) {
+    console.log('🔧 [ContactList] handleCustomerSelect - Selected customer:', customer);
+    console.log('🔧 [ContactList] Setting customer_id to:', customer.id);
     setFormData(prev => ({ ...prev, customer_id: customer.id }));
     setCustomerSearch(customer.company_name);
     setFilteredCustomers([]);
     setShowCustomerResults(false);
+    console.log('🔧 [ContactList] Customer selection completed');
   }
 
   function handleAddContactForCustomer(customer: Customer) {
@@ -313,10 +523,15 @@ export default function ContactList() {
           <button
             type="button"
             onClick={() => {
+              console.log('🔧 [ContactList] Opening new contact form');
               setIsEditMode(false);
               setEditingContactId(null);
               setFormData(initialFormData);
+              setCustomerSearch('');
+              setFilteredCustomers([]);
+              setShowCustomerResults(false);
               setIsOpen(true);
+              console.log('🔧 [ContactList] New contact form opened with reset data');
             }}
             className={`inline-flex items-center justify-center rounded-md border border-transparent ${accentClasses.bg} ${accentClasses.bgHover} px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 ${accentClasses.ring} focus:ring-offset-2 sm:w-auto`}
           >
@@ -366,10 +581,15 @@ export default function ContactList() {
                   <button
                     type="button"
                     onClick={() => {
+                      console.log('🔧 [ContactList] Opening new contact form (from empty state)');
                       setIsEditMode(false);
                       setEditingContactId(null);
                       setFormData(initialFormData);
+                      setCustomerSearch('');
+                      setFilteredCustomers([]);
+                      setShowCustomerResults(false);
                       setIsOpen(true);
+                      console.log('🔧 [ContactList] New contact form opened with reset data (from empty state)');
                     }}
                     className={`inline-flex items-center rounded-md border border-transparent ${accentClasses.bg} px-4 py-2 text-sm font-medium text-white shadow-sm ${accentClasses.bgHover} focus:outline-none focus:ring-2 ${accentClasses.ring} focus:ring-offset-2`}
                   >
@@ -380,7 +600,7 @@ export default function ContactList() {
               )}
             </div>
           ) : (
-            <table className="min-w-full divide-y divide-gray-300">
+          <table className="min-w-full divide-y divide-gray-300">
             <thead className="bg-gray-50 dark:bg-dark-150">
               <tr>
                 <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
@@ -421,26 +641,26 @@ export default function ContactList() {
                   </td>
                   <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                     <div className="flex justify-end space-x-1">
-                      <button
+                    <button 
                         type="button"
-                        onClick={(e) => {
+                      onClick={(e) => {
                           e.stopPropagation();
-                          handleEdit(contact);
-                        }}
+                        handleEdit(contact);
+                      }}
                         className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
-                      >
+                    >
                         <Pencil className="h-5 w-5" />
-                      </button>
-                      <button
+                    </button>
+                    <button 
                         type="button"
-                        onClick={(e) => {
+                      onClick={(e) => {
                           e.stopPropagation();
-                          handleDelete(contact.id);
-                        }}
+                        handleDelete(contact.id);
+                      }}
                         className="text-gray-400 hover:text-red-500 dark:hover:text-red-400"
-                      >
+                    >
                         <Trash2 className="h-5 w-5" />
-                      </button>
+                    </button>
                     </div>
                   </td>
                 </tr>
@@ -452,9 +672,11 @@ export default function ContactList() {
       </div>
 
       <Dialog open={isOpen} onClose={() => {
+        console.log('🔧 [ContactList] Dialog closing via onClose');
         setIsOpen(false);
         setShowCustomerResults(false);
         setFilteredCustomers([]);
+        setCustomerSearch('');
       }} className="relative z-50">
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
@@ -575,6 +797,7 @@ export default function ContactList() {
               <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                 <button
                   type="submit"
+                  onClick={() => console.log("🔧 [ContactList] Submit button clicked!")}
                   className={`inline-flex w-full justify-center rounded-md border border-transparent ${accentClasses.bg} ${accentClasses.bgHover} px-4 py-2 text-base font-medium text-white shadow-sm focus:outline-none focus:ring-2 ${accentClasses.ring} focus:ring-offset-2 sm:col-start-2 sm:text-sm`}
                 >
                   {isEditMode ? 'Save Changes' : 'Add Contact'}

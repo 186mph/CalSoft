@@ -132,16 +132,16 @@ export default function CalibrationJobsPage() {
           // First try lab_ops.lab_customers (if we know table exists or haven't checked yet)
           if (labCustomersExists !== false) {
             try {
-              const labCustomerResult = await supabase
-                .schema('lab_ops')
-                .from('lab_customers')
-                .select('company_name, name')
-                .eq('id', job.customer_id)
-                .single();
+            const labCustomerResult = await supabase
+              .schema('lab_ops')
+              .from('lab_customers')
+              .select('company_name, name')
+              .eq('id', job.customer_id)
+              .single();
 
-              if (labCustomerResult.data && !labCustomerResult.error) {
-                customerData = labCustomerResult.data as Customer;
-                console.log(`✓ Found customer in lab_ops.lab_customers for job ${job.id}`);
+            if (labCustomerResult.data && !labCustomerResult.error) {
+              customerData = labCustomerResult.data as Customer;
+              console.log(`✓ Found customer in lab_ops.lab_customers for job ${job.id}`);
               }
             } catch (labError) {
               // Lab customers table might not exist or other error, continue to common.customers
@@ -152,17 +152,17 @@ export default function CalibrationJobsPage() {
           // If lab customer not found, try common.customers
           if (!customerData) {
             try {
-              const commonCustomerResult = await supabase
-                .schema('common')
-                .from('customers')
-                .select('company_name, name')
-                .eq('id', job.customer_id)
-                .single();
+            const commonCustomerResult = await supabase
+              .schema('common')
+              .from('customers')
+              .select('company_name, name')
+              .eq('id', job.customer_id)
+              .single();
 
-              if (commonCustomerResult.data && !commonCustomerResult.error) {
-                customerData = commonCustomerResult.data as Customer;
-                console.log(`✓ Found customer in common.customers for job ${job.id}`);
-              } else {
+            if (commonCustomerResult.data && !commonCustomerResult.error) {
+              customerData = commonCustomerResult.data as Customer;
+              console.log(`✓ Found customer in common.customers for job ${job.id}`);
+            } else {
                 console.warn(`⚠️ Customer ${job.customer_id} not found in common.customers for job ${job.id}`);
               }
             } catch (commonError) {
@@ -302,13 +302,13 @@ export default function CalibrationJobsPage() {
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-2xl font-bold">
+          <div>
+            <h1 className="text-2xl font-bold">
             Jobs
-          </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             {loading ? 'Loading...' : `${jobs.length} ${jobs.length === 1 ? 'job' : 'jobs'} found${statusFilter !== 'all' ? ` (${statusFilter} status)` : ''}`}
-          </p>
+            </p>
         </div>
         
         {/* Quick Stats */}
@@ -386,41 +386,41 @@ export default function CalibrationJobsPage() {
       <div className="mb-6">
         <div className="space-y-4 p-4 border rounded-md bg-gray-50 dark:bg-gray-800">
           <div className="flex flex-wrap gap-4 items-center">
-            <button 
-              className="flex items-center px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md transition-all duration-200 hover:bg-[#339C5E]/10 hover:text-[#339C5E] dark:hover:bg-[#339C5E]/20 focus:outline-none focus:ring-2 focus:ring-[#339C5E] focus:ring-offset-2 font-medium" 
-              onClick={() => setRefreshTrigger(prev => prev + 1)}
-            >
-              <Clock className="h-4 w-4 mr-2" />
-              Refresh Jobs
-            </button>
-            
+          <button 
+            className="flex items-center px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md transition-all duration-200 hover:bg-[#339C5E]/10 hover:text-[#339C5E] dark:hover:bg-[#339C5E]/20 focus:outline-none focus:ring-2 focus:ring-[#339C5E] focus:ring-offset-2 font-medium" 
+            onClick={() => setRefreshTrigger(prev => prev + 1)}
+          >
+            <Clock className="h-4 w-4 mr-2" />
+            Refresh Jobs
+          </button>
+          
             {/* Division Tab Interface */}
-            <div className="flex items-center gap-2">
-              <button 
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  activeFilter === 'calibration' 
-                    ? 'bg-[#339C5E] text-white' 
-                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'
-                }`}
+          <div className="flex items-center gap-2">
+            <button 
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                activeFilter === 'calibration' 
+                  ? 'bg-[#339C5E] text-white' 
+                  : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'
+              }`}
                 onClick={() => {
                   setActiveFilter('calibration');
                   setStatusFilter('all');
                 }}
-              >
-                Calibration Jobs
-              </button>
-              <button 
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  activeFilter === 'armadillo' 
-                    ? 'bg-gray-600 text-white' 
-                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'
-                }`}
+            >
+              Calibration Jobs
+            </button>
+            <button 
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                activeFilter === 'armadillo' 
+                  ? 'bg-gray-600 text-white' 
+                  : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'
+              }`}
                 onClick={() => {
                   setActiveFilter('armadillo');
                   setStatusFilter('all');
                 }}
-              >
-                Armadillo Jobs
+            >
+              Armadillo Jobs
               </button>
             </div>
           </div>
