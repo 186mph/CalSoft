@@ -137,6 +137,7 @@ export default function CustomerDetail() {
             'calibration-hotstick': 'calibration_hotstick_reports',
             'calibration-ground-cable': 'calibration_ground_cable_reports',
             'calibration-bucket-truck': 'calibration_bucket_truck_reports',
+  'calibration-digger': 'calibration_digger_reports',
             'meter-template': 'meter_template_reports'
           };
 
@@ -257,7 +258,7 @@ export default function CustomerDetail() {
       // Set the selected category from the customer data
       setSelectedCategoryId(customerData.category_id || null);
 
-            // Fetch categories
+      // Fetch categories
       const categoriesData = await getCategories();
       setCategories(categoriesData);
 
@@ -289,7 +290,7 @@ export default function CustomerDetail() {
         setContacts([]);
       } else {
         console.log('🔍 [CustomerDetail] Found contacts for customer ID', id, ':', contactsData);
-        setContacts(contactsData || []);
+      setContacts(contactsData || []);
       }
 
  
@@ -313,12 +314,12 @@ export default function CustomerDetail() {
         }
       } else {
         // For other divisions, fetch from neta_ops.jobs
-        const { data: jobsData, error: jobsError } = await supabase
-          .schema('neta_ops')
-          .from('jobs')
-          .select('*')
-          .eq('customer_id', id)
-          .order('created_at', { ascending: false });
+      const { data: jobsData, error: jobsError } = await supabase
+        .schema('neta_ops')
+        .from('jobs')
+        .select('*')
+        .eq('customer_id', id)
+        .order('created_at', { ascending: false });
 
         if (jobsError) {
           console.error('Error fetching jobs:', jobsError);
@@ -381,6 +382,7 @@ export default function CustomerDetail() {
       'calibration-hotstick': 'Hotstick',
       'calibration-ground-cable': 'Ground Cable',
       'calibration-bucket-truck': 'Bucket Truck',
+  'calibration-digger': 'Digger',
       'meter-template': 'Meter'
     };
 
@@ -537,25 +539,25 @@ export default function CustomerDetail() {
             <div className="space-y-4">
               {contacts.length > 0 ? (
                 contacts.map((contact) => (
-                  <div 
-                    key={contact.id} 
+                <div 
+                  key={contact.id} 
                     className="flex items-start p-3 rounded-lg border border-gray-200 dark:border-gray-600"
-                  >
-                    <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
-                      <span className="text-gray-500 dark:text-gray-400 text-lg font-medium">
-                        {contact.first_name?.charAt(0) || 'C'}
-                      </span>
-                    </div>
+                >
+                  <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                    <span className="text-gray-500 dark:text-gray-400 text-lg font-medium">
+                      {contact.first_name?.charAt(0) || 'C'}
+                    </span>
+                  </div>
                     <div className="ml-3 flex-1">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-sm font-medium text-gray-900 dark:text-white">
                           {contact.first_name} {contact.last_name}
                         </p>
-                        {contact.is_primary && (
+                          {contact.is_primary && (
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                            Primary
-                          </span>
-                        )}
+                              Primary
+                            </span>
+                          )}
                       </div>
                       
                       <div className="space-y-1">
@@ -564,7 +566,7 @@ export default function CustomerDetail() {
                           <span className="text-gray-700 dark:text-gray-300">
                             {contact.position || 'Not specified'}
                           </span>
-                        </div>
+                    </div>
                         
                         <div className="flex items-center text-xs">
                           <span className="font-medium text-gray-500 dark:text-gray-400 w-16">Email:</span>
@@ -601,86 +603,86 @@ export default function CustomerDetail() {
                   </p>
                 </div>
               )}
-            </div>
+          </div>
           </div>
         </div>
 
         {/* Tabs Navigation - Hide all tabs except overview for calibration division */}
         {!isCalibrationDivision() && (
-          <div className="border-b border-gray-200 dark:border-gray-700">
-            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-              <a
-                href="#overview"
-                className={`${
-                  activeTab === 'overview'
-                    ? 'border-accent-color text-accent-color'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActiveTab('overview');
-                }}
-              >
-                Overview
-              </a>
-              <a
-                href="#jobs"
-                className={`${
-                  activeTab === 'jobs'
-                    ? 'border-accent-color text-accent-color'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActiveTab('jobs');
-                }}
-              >
-                Jobs
-              </a>
-              <a
-                href="#documents"
-                className={`${
-                  activeTab === 'documents'
-                    ? 'border-accent-color text-accent-color'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActiveTab('documents');
-                }}
-              >
-                Documents
-              </a>
-              <a
-                href="#interactions"
-                className={`${
-                  activeTab === 'interactions'
-                    ? 'border-accent-color text-accent-color'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActiveTab('interactions');
-                }}
-              >
-                Interactions
-              </a>
-              <a
-                href="#health"
-                className={`${
-                  activeTab === 'health'
-                    ? 'border-accent-color text-accent-color'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActiveTab('health');
-                }}
-              >
-                Health
-              </a>
-            </nav>
-          </div>
+        <div className="border-b border-gray-200 dark:border-gray-700">
+          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+            <a
+              href="#overview"
+              className={`${
+                activeTab === 'overview'
+                  ? 'border-accent-color text-accent-color'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveTab('overview');
+              }}
+            >
+              Overview
+            </a>
+            <a
+              href="#jobs"
+              className={`${
+                activeTab === 'jobs'
+                  ? 'border-accent-color text-accent-color'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveTab('jobs');
+              }}
+            >
+              Jobs
+            </a>
+            <a
+              href="#documents"
+              className={`${
+                activeTab === 'documents'
+                  ? 'border-accent-color text-accent-color'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveTab('documents');
+              }}
+            >
+              Documents
+            </a>
+            <a
+              href="#interactions"
+              className={`${
+                activeTab === 'interactions'
+                  ? 'border-accent-color text-accent-color'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveTab('interactions');
+              }}
+            >
+              Interactions
+            </a>
+            <a
+              href="#health"
+              className={`${
+                activeTab === 'health'
+                  ? 'border-accent-color text-accent-color'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveTab('health');
+              }}
+            >
+              Health
+            </a>
+          </nav>
+        </div>
         )}
 
         {/* Tab content */}
@@ -689,68 +691,68 @@ export default function CustomerDetail() {
             <div className="space-y-6">
               {/* Jobs section - Hide for calibration division */}
               {!isCalibrationDivision() && (
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-lg font-medium text-gray-900 dark:text-white">Recent Jobs</h2>
-                      <Link
-                        to="#jobs"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setActiveTab('jobs');
-                        }}
-                        className="text-sm font-medium text-accent-color hover:text-accent-color/90 dark:text-accent-color dark:hover:text-accent-color/90"
-                      >
-                        View all jobs
-                      </Link>
-              </div>
-                  </div>
-                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {jobs.slice(0, 2).map((job) => (
-                      <Link 
-                        key={job.id} 
-                        to={`/jobs/${job.id}`}
-                        className="block p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <Briefcase className="h-5 w-5 text-accent-color" />
-                            <div className="ml-3">
-                              <p className="text-sm font-medium text-gray-900 dark:text-white">{job.title}</p>
-                              <div className="flex items-center mt-1 space-x-2">
-                                <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                                  job.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                                  job.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                }`}>
-                                  {job.status}
-                                </span>
-                                <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                                  job.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                                  job.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                                  'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                }`}>
-                                  {job.priority}
-                                </span>
-                              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-medium text-gray-900 dark:text-white">Recent Jobs</h2>
+                    <Link
+                      to="#jobs"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setActiveTab('jobs');
+                      }}
+                      className="text-sm font-medium text-accent-color hover:text-accent-color/90 dark:text-accent-color dark:hover:text-accent-color/90"
+                    >
+                      View all jobs
+                    </Link>
+            </div>
+                </div>
+                <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {jobs.slice(0, 2).map((job) => (
+                    <Link 
+                      key={job.id} 
+                      to={`/jobs/${job.id}`}
+                      className="block p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Briefcase className="h-5 w-5 text-accent-color" />
+                          <div className="ml-3">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">{job.title}</p>
+                            <div className="flex items-center mt-1 space-x-2">
+                              <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                                job.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                job.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                              }`}>
+                                {job.status}
+                              </span>
+                              <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                                job.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                                job.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                              }`}>
+                                {job.priority}
+                              </span>
                             </div>
                           </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            ${job.budget?.toLocaleString() || '-'}
-                          </div>
                         </div>
-                        <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                          Due: {job.due_date ? format(new Date(job.due_date), 'MMM d, yyyy') : 'Not set'}
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          ${job.budget?.toLocaleString() || '-'}
                         </div>
-                      </Link>
-                    ))}
-                    {jobs.length === 0 && (
-                      <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">
-                        No jobs found
-                      </p>
-                    )}
-                  </div>
+                      </div>
+                      <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        Due: {job.due_date ? format(new Date(job.due_date), 'MMM d, yyyy') : 'Not set'}
+                      </div>
+                    </Link>
+                  ))}
+                  {jobs.length === 0 && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">
+                      No jobs found
+                    </p>
+                  )}
                 </div>
+              </div>
               )}
 
               {/* Documents section - Hide for calibration division */}
@@ -816,123 +818,123 @@ export default function CustomerDetail() {
 
               {/* Two-column layout for Interactions and Health - Hide for calibration division */}
               {!isCalibrationDivision() && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Interactions section */}
-                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-                    <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                      <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-medium text-gray-900 dark:text-white">Recent Interactions</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Interactions section */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-lg font-medium text-gray-900 dark:text-white">Recent Interactions</h2>
+                      <Link
+                        to="#interactions"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setActiveTab('interactions');
+                        }}
+                        className="text-sm font-medium text-accent-color hover:text-accent-color/90 dark:text-accent-color dark:hover:text-accent-color/90"
+                      >
+                        View all interactions
+                      </Link>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    {/* This is a placeholder - we would fetch actual interactions in a real implementation */}
+                    <div className="space-y-4">
+                      <div className="flex items-start">
+                        <div className="relative">
+                          <div className="h-8 w-8 rounded-full bg-accent-color/10 flex items-center justify-center">
+                            <Phone className="h-4 w-4 text-accent-color" />
+                          </div>
+                          <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-green-400 border-2 border-white dark:border-gray-800"></span>
+                        </div>
+                        <div className="ml-4">
+                          <h3 className="text-sm font-medium text-gray-900 dark:text-white">Phone Call</h3>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Apr 10, 2023 at 2:30 PM</p>
+                          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Discussed upcoming project requirements</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <div className="relative">
+                          <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                            <Mail className="h-4 w-4 text-blue-700 dark:text-blue-300" />
+                          </div>
+                          <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-green-400 border-2 border-white dark:border-gray-800"></span>
+                        </div>
+                        <div className="ml-4">
+                          <h3 className="text-sm font-medium text-gray-900 dark:text-white">Email</h3>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Apr 8, 2023 at 11:15 AM</p>
+                          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Sent invoice and project timeline</p>
+                        </div>
+                      </div>
+                      <div className="pt-2 text-center">
                         <Link
                           to="#interactions"
                           onClick={(e) => {
                             e.preventDefault();
                             setActiveTab('interactions');
                           }}
-                          className="text-sm font-medium text-accent-color hover:text-accent-color/90 dark:text-accent-color dark:hover:text-accent-color/90"
+                          className="inline-flex items-center text-sm font-medium text-accent-color hover:text-accent-color/90"
                         >
-                          View all interactions
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add interaction
                         </Link>
                       </div>
                     </div>
-                    <div className="p-6">
-                      {/* This is a placeholder - we would fetch actual interactions in a real implementation */}
-                      <div className="space-y-4">
-                        <div className="flex items-start">
-                          <div className="relative">
-                            <div className="h-8 w-8 rounded-full bg-accent-color/10 flex items-center justify-center">
-                              <Phone className="h-4 w-4 text-accent-color" />
-                            </div>
-                            <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-green-400 border-2 border-white dark:border-gray-800"></span>
-                          </div>
-                          <div className="ml-4">
-                            <h3 className="text-sm font-medium text-gray-900 dark:text-white">Phone Call</h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Apr 10, 2023 at 2:30 PM</p>
-                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Discussed upcoming project requirements</p>
-                          </div>
-                        </div>
-                        <div className="flex items-start">
-                          <div className="relative">
-                            <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                              <Mail className="h-4 w-4 text-blue-700 dark:text-blue-300" />
-                            </div>
-                            <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-green-400 border-2 border-white dark:border-gray-800"></span>
-                          </div>
-                          <div className="ml-4">
-                            <h3 className="text-sm font-medium text-gray-900 dark:text-white">Email</h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Apr 8, 2023 at 11:15 AM</p>
-                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Sent invoice and project timeline</p>
-                          </div>
-                        </div>
-                        <div className="pt-2 text-center">
-                          <Link
-                            to="#interactions"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setActiveTab('interactions');
-                            }}
-                            className="inline-flex items-center text-sm font-medium text-accent-color hover:text-accent-color/90"
-                          >
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add interaction
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
                   </div>
+                </div>
 
-                  {/* Health metrics section */}
-                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Customer Health Dashboard</h2>
+                {/* Health metrics section */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Customer Health Dashboard</h2>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-4 flex flex-col items-center">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">Overall Health</div>
+                      <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center mb-2">
+                        <span className="text-white text-2xl font-bold">85</span>
+                      </div>
+                      <div className="font-medium text-green-600 dark:text-green-400">Good</div>
+                    </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                      <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-4 flex flex-col items-center">
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">Overall Health</div>
-                        <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center mb-2">
-                          <span className="text-white text-2xl font-bold">85</span>
-                        </div>
-                        <div className="font-medium text-green-600 dark:text-green-400">Good</div>
+                    <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-4">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Engagement</div>
+                      <div className="flex items-end mt-1">
+                        <div className="text-xl font-bold text-gray-900 dark:text-white">85%</div>
+                        <div className="text-xs text-green-600 dark:text-green-400 ml-2 mb-1">▲ 5%</div>
                       </div>
-                      
-                      <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-4">
-                        <div className="text-xs text-gray-500 dark:text-gray-400">Engagement</div>
-                        <div className="flex items-end mt-1">
-                          <div className="text-xl font-bold text-gray-900 dark:text-white">85%</div>
-                          <div className="text-xs text-green-600 dark:text-green-400 ml-2 mb-1">▲ 5%</div>
-                        </div>
-                        <div className="mt-2 h-2 w-full bg-gray-200 dark:bg-gray-600 rounded-full">
-                          <div className="h-full bg-green-500 rounded-full" style={{ width: "85%" }}></div>
-                        </div>
-                      </div>
-                      
-                      <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-4">
-                        <div className="text-xs text-gray-500 dark:text-gray-400">Satisfaction</div>
-                        <div className="flex items-end mt-1">
-                          <div className="text-xl font-bold text-gray-900 dark:text-white">92%</div>
-                          <div className="text-xs text-green-600 dark:text-green-400 ml-2 mb-1">▲ 3%</div>
-                        </div>
-                        <div className="mt-2 h-2 w-full bg-gray-200 dark:bg-gray-600 rounded-full">
-                          <div className="h-full bg-green-500 rounded-full" style={{ width: "92%" }}></div>
-                        </div>
-                      </div>
-                      
-                      <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-4">
-                        <div className="text-xs text-gray-500 dark:text-gray-400">Response Time</div>
-                        <div className="flex items-end mt-1">
-                          <div className="text-xl font-bold text-gray-900 dark:text-white">78%</div>
-                          <div className="text-xs text-yellow-600 dark:text-yellow-400 ml-2 mb-1">▼ 2%</div>
-                        </div>
-                        <div className="mt-2 h-2 w-full bg-gray-200 dark:bg-gray-600 rounded-full">
-                          <div className="h-full bg-yellow-500 rounded-full" style={{ width: "78%" }}></div>
-                        </div>
+                      <div className="mt-2 h-2 w-full bg-gray-200 dark:bg-gray-600 rounded-full">
+                        <div className="h-full bg-green-500 rounded-full" style={{ width: "85%" }}></div>
                       </div>
                     </div>
                     
-                    <div className="mt-8 flex justify-end">
-                      <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-accent-color px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-accent-color/90 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2">
-                        Generate Health Report
-                      </button>
+                    <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-4">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Satisfaction</div>
+                      <div className="flex items-end mt-1">
+                        <div className="text-xl font-bold text-gray-900 dark:text-white">92%</div>
+                        <div className="text-xs text-green-600 dark:text-green-400 ml-2 mb-1">▲ 3%</div>
+                      </div>
+                      <div className="mt-2 h-2 w-full bg-gray-200 dark:bg-gray-600 rounded-full">
+                        <div className="h-full bg-green-500 rounded-full" style={{ width: "92%" }}></div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-4">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Response Time</div>
+                      <div className="flex items-end mt-1">
+                        <div className="text-xl font-bold text-gray-900 dark:text-white">78%</div>
+                        <div className="text-xs text-yellow-600 dark:text-yellow-400 ml-2 mb-1">▼ 2%</div>
+                      </div>
+                      <div className="mt-2 h-2 w-full bg-gray-200 dark:bg-gray-600 rounded-full">
+                        <div className="h-full bg-yellow-500 rounded-full" style={{ width: "78%" }}></div>
+                      </div>
                     </div>
                   </div>
+                  
+                  <div className="mt-8 flex justify-end">
+                    <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-accent-color px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-accent-color/90 focus:outline-none focus:ring-2 focus:ring-accent-color focus:ring-offset-2">
+                      Generate Health Report
+                    </button>
+                  </div>
+                </div>
                 </div>
               )}
 
@@ -1096,9 +1098,9 @@ export default function CustomerDetail() {
                         </div>
                       </div>
                     )}
-                  </div>
-                </div>
-              )}
+              </div>
+            </div>
+          )}
 
               {/* Assets section for calibration division */}
               {isCalibrationDivision() && (

@@ -245,7 +245,7 @@ export default function ContactList() {
         
         // For calibration division, ensure customer exists in common.customers before updating
         const isCalibration = location.pathname.startsWith('/calibration');
-        let finalCustomerId = formData.customer_id;
+        const finalCustomerId = formData.customer_id;
         
         if (isCalibration) {
           console.log('🔧 [ContactList] Calibration division - checking/creating customer in common.customers for update');
@@ -317,7 +317,7 @@ export default function ContactList() {
         // For calibration division, we need to ensure the customer exists in common.customers
         // since contacts table has FK constraint to common.customers
         const isCalibration = location.pathname.startsWith('/calibration');
-        let finalCustomerId = formData.customer_id;
+        const finalCustomerId = formData.customer_id;
         
         if (isCalibration) {
           console.log('🔧 [ContactList] Calibration division - checking/creating customer in common.customers');

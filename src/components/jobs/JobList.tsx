@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, X, MapPin, Calendar, ChevronRight, Building, User, Globe, Users } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { Plus, Pencil, Trash2, X, MapPin, Calendar, ChevronRight, ChevronDown, Building, User, Globe, Users, MessageCircle } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 import { format } from 'date-fns';
 import { supabase, isConnectionError } from '@/lib/supabase';
@@ -8,6 +8,7 @@ import { useNavigate, useSearchParams, useParams, useLocation } from 'react-rout
 import { useDivision } from '../../App';
 import { JobNotifications } from './JobNotifications';
 import { Database } from '@/types/supabase'; // Assuming this is the correct path to your generated types
+import { toast } from 'react-hot-toast';
 import { getDivisionAccentClasses } from '../../lib/utils';
 
 // Helper function to determine if the division is lab-related
@@ -34,8 +35,10 @@ interface Job {
   notes?: string | null;
   job_type?: string | null;
   portal_type?: string | null;
+  equipment_types?: string[] | null;
   created_at?: string;
   updated_at?: string;
+  comment_count?: number;
   customers?: { 
     id: string;
     name: string;
@@ -59,7 +62,8 @@ interface JobFormData {
   budget: string; 
   priority: string;
   notes?: string;
-  job_number?: string; 
+  job_number?: string;
+  equipment_types?: string[];
 }
 
 const initialFormData: JobFormData = {
@@ -70,9 +74,10 @@ const initialFormData: JobFormData = {
   start_date: '',
   due_date: '',
   budget: '',
-  priority: 'medium',
+      priority: '7-day',
   notes: '',
   job_number: '',
+  equipment_types: [],
 };
 
 export default function JobList() {
@@ -93,6 +98,13 @@ export default function JobList() {
   const [formData, setFormData] = useState<JobFormData>(initialFormData);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
+  const [isEquipmentDropdownOpen, setIsEquipmentDropdownOpen] = useState(false);
+  const equipmentDropdownRef = useRef<HTMLDivElement>(null);
+  const [updatingStatusJobId, setUpdatingStatusJobId] = useState<string | null>(null);
+  
+  // Completion confirmation prompt state
+  const [showCompletionPrompt, setShowCompletionPrompt] = useState(false);
+  const [pendingStatusChange, setPendingStatusChange] = useState<{ jobId: string; status: string } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -100,6 +112,23 @@ export default function JobList() {
       fetchCustomers();
     }
   }, [user, divisionValue]);
+
+  // Handle clicking outside the equipment dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (equipmentDropdownRef.current && !equipmentDropdownRef.current.contains(event.target as Node)) {
+        setIsEquipmentDropdownOpen(false);
+      }
+    }
+    
+    if (isEquipmentDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isEquipmentDropdownOpen]);
 
   async function fetchJobs() {
     setLoading(true);
@@ -165,7 +194,28 @@ export default function JobList() {
         }
       }));
 
-      setJobs(jobsWithCustomers as Job[]); // Cast to Job[]
+      // Fetch comment counts for each job
+      const jobsWithComments = await Promise.all(jobsWithCustomers.map(async (job) => {
+        try {
+          const { count, error: countError } = await supabase
+            .schema(currentSchema)
+            .from('job_comments')
+            .select('*', { count: 'exact', head: true })
+            .eq('job_id', job.id);
+
+          if (countError) {
+            console.warn(`Error fetching comment count for job ${job.id}:`, countError);
+            return { ...job, comment_count: 0 };
+          }
+
+          return { ...job, comment_count: count || 0 };
+        } catch (err) {
+          console.warn(`Error processing comment count for job ${job.id}:`, err);
+          return { ...job, comment_count: 0 };
+        }
+      }));
+
+      setJobs(jobsWithComments as Job[]); // Cast to Job[]
 
     } catch (error) {
       console.error('Error in fetchJobs function:', error);
@@ -233,12 +283,12 @@ export default function JobList() {
       let result;
       
       if (currentSchema === 'lab_ops') {
-        const labJobData: Database['lab_ops']['Tables']['lab_jobs']['Insert'] = {
+        const labJobData: Database['lab_ops']['Tables']['lab_jobs']['Insert'] & { equipment_types?: string[] | null } = {
           title: formData.title,
           customer_id: formData.customer_id || null, 
           description: formData.description || undefined,
           status: formData.status || 'pending',
-          priority: formData.priority || 'medium',
+          priority: formData.priority || '7-day',
           start_date: formData.start_date || null, 
           due_date: formData.due_date || null,     
           notes: formData.notes || undefined,
@@ -247,6 +297,7 @@ export default function JobList() {
           division: activeDivision,                
           budget: finalBudget === undefined ? null : finalBudget, 
           portal_type: 'lab',
+          equipment_types: formData.equipment_types && formData.equipment_types.length > 0 ? formData.equipment_types : null,
         };
         payloadToLog = labJobData;
 
@@ -264,12 +315,12 @@ export default function JobList() {
             return; 
         }
 
-        const netaJobData: Database['neta_ops']['Tables']['jobs']['Insert'] = {
+        const netaJobData: Database['neta_ops']['Tables']['jobs']['Insert'] & { equipment_types?: string[] | null } = {
           title: formData.title,
           customer_id: formData.customer_id, // Must be string
           description: formData.description || undefined,
           status: formData.status || 'pending',
-          priority: formData.priority || 'medium',
+          priority: formData.priority || '7-day',
           start_date: formData.start_date || undefined,
           due_date: formData.due_date || undefined,
           notes: formData.notes || undefined,
@@ -278,6 +329,7 @@ export default function JobList() {
           division: activeDivision || undefined,
           budget: finalBudget, 
           portal_type: 'neta',
+          equipment_types: formData.equipment_types && formData.equipment_types.length > 0 ? formData.equipment_types : null,
           // amount_paid is intentionally removed as it's not in the Insert type
         };
         payloadToLog = netaJobData;
@@ -315,6 +367,51 @@ export default function JobList() {
   ) {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  }
+
+  // Equipment types options
+  const equipmentTypes = [
+    'Gloves',
+    'Sleeves', 
+    'Blankets',
+    'Live-Line Tools',
+    'Line Hose',
+    'Ground Cables',
+    'Meters',
+    'Torques',
+    'Bucket Trucks',
+    'Diggers/Derek'
+  ];
+
+  // Handle equipment type selection
+  function handleEquipmentTypeToggle(equipmentType: string) {
+    setFormData(prev => {
+      const currentTypes = prev.equipment_types || [];
+      const isSelected = currentTypes.includes(equipmentType);
+      
+      if (isSelected) {
+        return {
+          ...prev,
+          equipment_types: currentTypes.filter(type => type !== equipmentType)
+        };
+      } else {
+        return {
+          ...prev,
+          equipment_types: [...currentTypes, equipmentType]
+        };
+      }
+    });
+  }
+
+  // Get display text for equipment types
+  function getEquipmentTypesDisplay() {
+    if (!formData.equipment_types || formData.equipment_types.length === 0) {
+      return 'Select equipment types...';
+    }
+    if (formData.equipment_types.length === 1) {
+      return formData.equipment_types[0];
+    }
+    return `${formData.equipment_types.length} types selected`;
   }
 
   function getStatusColor(status: string) {
@@ -370,6 +467,71 @@ export default function JobList() {
       alert('Error deleting job. Please try again.');
     }
   }
+
+  // Handle status update for individual jobs
+  const handleJobStatusChange = async (jobId: string, newStatus: string, currentStatus: string) => {
+    if (newStatus === currentStatus) return;
+
+    // If changing to completed, show confirmation prompt
+    if (newStatus === 'completed') {
+      setPendingStatusChange({ jobId, status: newStatus });
+      setShowCompletionPrompt(true);
+      return;
+    }
+
+    // For other status changes, proceed normally
+    await updateJobStatus(jobId, newStatus);
+  };
+
+  // Function to actually update the job status
+  const updateJobStatus = async (jobId: string, newStatus: string) => {
+    setUpdatingStatusJobId(jobId);
+    
+    try {
+      const jobToUpdate = jobs.find(j => j.id === jobId);
+      if (!jobToUpdate) return;
+
+      // Determine schema and table based on job division
+      const isLabJob = isLabDivision(jobToUpdate.division);
+      const schema = isLabJob ? 'lab_ops' : 'neta_ops';
+      const table = isLabJob ? 'lab_jobs' : 'jobs';
+
+      const { error } = await supabase
+        .schema(schema)
+        .from(table)
+        .update({ status: newStatus })
+        .eq('id', jobId);
+
+      if (error) throw error;
+
+      // Update local jobs state
+      setJobs(prev => prev.map(job => 
+        job.id === jobId ? { ...job, status: newStatus } : job
+      ));
+
+      toast.success('Status updated successfully!');
+    } catch (error) {
+      console.error('Error updating job status:', error);
+      toast.error('Failed to update status');
+    } finally {
+      setUpdatingStatusJobId(null);
+    }
+  };
+
+  // Handle completion confirmation
+  const handleCompletionConfirm = async () => {
+    if (pendingStatusChange) {
+      await updateJobStatus(pendingStatusChange.jobId, pendingStatusChange.status);
+    }
+    setShowCompletionPrompt(false);
+    setPendingStatusChange(null);
+  };
+
+  // Handle completion cancellation
+  const handleCompletionCancel = () => {
+    setShowCompletionPrompt(false);
+    setPendingStatusChange(null);
+  };
 
   function confirmDelete(jobId: string, e: React.MouseEvent) {
     e.stopPropagation(); 
@@ -469,15 +631,36 @@ export default function JobList() {
                     {job.job_number || 'Pending'}
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-600 dark:text-gray-300">
-                    {job.title}
+                    <div className="flex items-center space-x-2">
+                      <span>{job.title}</span>
+                      {job.comment_count && job.comment_count > 0 && (
+                        <div className="flex items-center">
+                          <MessageCircle className="h-4 w-4 text-blue-500" />
+                          <span className="text-xs text-blue-500 ml-1">{job.comment_count}</span>
+                        </div>
+                      )}
+                    </div>
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-600 dark:text-gray-300">
                     {job.customers?.company_name || job.customers?.name || 'No customer'}
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                    <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getStatusColor(job.status)}`}>
-                      {job.status}
-                    </span>
+                    <select
+                      value={job.status}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleJobStatusChange(job.id, e.target.value, job.status);
+                      }}
+                      disabled={updatingStatusJobId === job.id}
+                      className={`px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 min-w-[100px] ${
+                        updatingStatusJobId === job.id ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="in-progress">In Progress</option>
+                      <option value="completed">Completed</option>
+                      <option value="ready-to-bill">Ready To Bill</option>
+                    </select>
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                     {job.due_date ? format(new Date(job.due_date), 'MMM d, yyyy') : '-'}
@@ -490,11 +673,14 @@ export default function JobList() {
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                     <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                      job.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400' :
-                      job.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400' :
-                      'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400'
+                      job.priority === 'same-day' || job.priority === 'on-site' ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400' :
+                      job.priority === '1-day' || job.priority === '2-day' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-400' :
+                      job.priority === '3-day' || job.priority === '5-day' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400' :
+                      job.priority === '7-day' || job.priority === '14-day' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400' :
+                      job.priority === '1-month' || job.priority === '6-month' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400' :
+                      'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-400'
                     }`}>
-                      {job.priority}
+                      {job.priority || 'Not set'}
                     </span>
                   </td>
                   <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
@@ -675,10 +861,66 @@ export default function JobList() {
                       onChange={handleInputChange}
                       className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
                     >
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
+                      <option value="7-day">7-Day</option>
+                      <option value="3-day">3-Day</option>
+                      <option value="2-day">2 day</option>
+                      <option value="same-day">Same-Day</option>
+                      <option value="on-site">On-Site</option>
+                      <option value="1-month">1-Month</option>
+                      <option value="1-day">1-Day</option>
+                      <option value="14-day">14 Day</option>
+                      <option value="6-month">6 - Month</option>
+                      <option value="5-day">5-Day</option>
                     </select>
+                  </div>
+                </div>
+
+                {/* Equipment Types field - only show for editing since we can't determine division during creation */}
+                <div className="sm:col-span-2">
+                  <label htmlFor="equipment_types" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Equipment Types
+                  </label>
+                  <div className="mt-1 relative" ref={equipmentDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setIsEquipmentDropdownOpen(!isEquipmentDropdownOpen)}
+                      className="w-full px-3 py-2 text-left bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-blue-500 dark:text-white"
+                    >
+                      <span className={(formData.equipment_types?.length || 0) === 0 ? 'text-gray-500' : ''}>
+                        {getEquipmentTypesDisplay()}
+                      </span>
+                      <ChevronDown className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 transition-transform ${isEquipmentDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {isEquipmentDropdownOpen && (
+                      <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                        {equipmentTypes.map(equipmentType => (
+                          <label
+                            key={equipmentType}
+                            className="flex items-center px-3 py-2 hover:bg-blue-600 hover:text-white cursor-pointer transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={formData.equipment_types?.includes(equipmentType) || false}
+                              onChange={() => handleEquipmentTypeToggle(equipmentType)}
+                              className="mr-2 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <span className="text-sm">{equipmentType}</span>
+                          </label>
+                        ))}
+                        {(formData.equipment_types?.length || 0) > 0 && (
+                          <div className="border-t border-gray-200 dark:border-gray-600 p-2">
+                            <button
+                              type="button"
+                              onClick={() => setFormData(prev => ({ ...prev, equipment_types: [] }))}
+                              className="text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                            >
+                              Clear all selections
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -786,6 +1028,74 @@ export default function JobList() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Completion Confirmation Dialog */}
+      <Dialog
+        open={showCompletionPrompt}
+        onClose={handleCompletionCancel}
+        className="fixed inset-0 z-10 overflow-y-auto"
+      >
+        <div className="flex items-center justify-center min-h-screen">
+          <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+
+          <div className="relative bg-white dark:bg-dark-150 rounded-lg max-w-md w-full mx-auto p-6 shadow-xl">
+            <div className="absolute top-0 right-0 pt-4 pr-4">
+              <button
+                type="button"
+                className="text-gray-400 hover:text-gray-500"
+                onClick={handleCompletionCancel}
+              >
+                <span className="sr-only">Close</span>
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            
+            <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              Complete Job Confirmation
+            </Dialog.Title>
+            
+            <div className="space-y-3 mb-6">
+              <div className="flex items-start space-x-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Confirm reports have been received by customer
+                </p>
+              </div>
+              
+              <div className="flex items-start space-x-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Mark if order is shipped or picked up
+                </p>
+              </div>
+              
+              <div className="flex items-start space-x-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  If shipped: must provide tracking number
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 flex justify-end space-x-3">
+              <button
+                type="button"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-100 border border-gray-300 dark:border-dark-300 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-dark-200 focus:outline-none"
+                onClick={handleCompletionCancel}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none"
+                onClick={handleCompletionConfirm}
+              >
+                Confirm
+              </button>
+            </div>
           </div>
         </div>
       </Dialog>

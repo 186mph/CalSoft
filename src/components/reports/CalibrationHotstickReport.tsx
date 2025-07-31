@@ -77,6 +77,25 @@ interface JobInfo {
   customers: CustomerData;
 }
 
+// Add these interfaces after the existing interfaces
+interface HotstickTestHistory {
+  id: string;
+  hotstick_report_id: string;
+  test_result: 'PASS' | 'FAIL';
+  tested_by: string;
+  test_notes?: string;
+  test_date: string;
+  created_at: string;
+}
+
+interface TestHistoryEntry {
+  id: string;
+  test_date: string;
+  test_result: 'PASS' | 'FAIL';
+  tested_by_email: string;
+  test_notes?: string;
+}
+
 export default function CalibrationHotstickReport() {
   const { id: jobId, reportId: urlReportId } = useParams<{ id: string; reportId?: string }>();
   const { user } = useAuth();
@@ -140,6 +159,8 @@ export default function CalibrationHotstickReport() {
     status: 'PASS'
   });
   const [status, setStatus] = useState<'PASS' | 'FAIL'>('PASS');
+  const [testHistory, setTestHistory] = useState<TestHistoryEntry[]>([]);
+  const [loadingTestHistory, setLoadingTestHistory] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -349,7 +370,7 @@ export default function CalibrationHotstickReport() {
   const handleSave = async () => {
     if (!jobId || !user?.id) {
       toast.error('Missing job or user information');
-      return;
+      return null;
     }
 
     setLoading(true);
@@ -482,10 +503,13 @@ export default function CalibrationHotstickReport() {
       }
 
       // Don't navigate away automatically - let user click back button when ready
+      
+      return savedReportId;
     } catch (error: any) {
       console.error('Failed to save report:', error);
       setLoading(false);
       toast.error(`Error: ${error.message || 'Failed to save report'}`);
+      return null;
     }
   };
 
@@ -640,10 +664,105 @@ export default function CalibrationHotstickReport() {
     }
   };
 
+  const loadTestHistory = async (reportId: string) => {
+    if (!reportId) return;
+    
+    try {
+      setLoadingTestHistory(true);
+      const { data, error } = await supabase
+        .schema('lab_ops')
+        .from('hotstick_test_history')
+        .select(`
+          id,
+          test_date,
+          test_result,
+          tested_by,
+          test_notes,
+          created_at
+        `)
+        .eq('hotstick_report_id', reportId)
+        .order('test_date', { ascending: false });
+
+      if (error) throw error;
+
+      if (data) {
+        // For now, let's use a simpler approach - just show the user ID
+        // We can improve this later when the profiles table is properly set up
+        const historyWithNames: TestHistoryEntry[] = data.map(entry => ({
+          id: entry.id,
+          test_date: entry.test_date,
+          test_result: entry.test_result,
+          tested_by_email: `User ${entry.tested_by?.slice(0, 8)}...` || 'Unknown User',
+          test_notes: entry.test_notes
+        }));
+
+        setTestHistory(historyWithNames);
+      }
+    } catch (error) {
+      console.error('Error loading test history:', error);
+      setError(`Failed to load test history: ${(error as Error).message}`);
+    } finally {
+      setLoadingTestHistory(false);
+    }
+  };
+
+  const addTestHistoryEntry = async (testResult: 'PASS' | 'FAIL', notes?: string, reportIdToUse?: string) => {
+    const targetReportId = reportIdToUse || reportId;
+    if (!targetReportId || !user?.id) {
+      console.warn('Cannot add test history entry: missing reportId or user.id', { targetReportId, userId: user?.id });
+      return;
+    }
+
+    try {
+      console.log('Adding test history entry:', { targetReportId, testResult, userId: user.id, notes });
+      
+      const { data, error } = await supabase
+        .schema('lab_ops')
+        .from('hotstick_test_history')
+        .insert({
+          hotstick_report_id: targetReportId,
+          test_result: testResult,
+          tested_by: user.id,
+          test_notes: notes || null
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase error adding test history:', error);
+        throw error;
+      }
+
+      console.log('Successfully added test history entry:', data);
+
+      // Use the current user's email or a shortened user ID
+      const userName = user.email || `User ${user.id.slice(0, 8)}...`;
+
+      // Add the new entry to the local state immediately with the user's name
+      const newEntry: TestHistoryEntry = {
+        id: data.id,
+        test_date: data.test_date,
+        test_result: data.test_result,
+        tested_by_email: userName, // Now displays the user's email or shortened ID
+        test_notes: data.test_notes
+      };
+
+      setTestHistory(prev => [newEntry, ...prev]); // Add to the beginning of the list
+    } catch (error) {
+      console.error('Error adding test history entry:', error);
+      setError(`Failed to add test history entry: ${(error as Error).message}`);
+    }
+  };
+
   useEffect(() => { 
     const fetchData = async () => { 
       await loadJobInfo(); 
       await loadReport(); 
+      
+      // Load test history if report exists
+      if (reportId) {
+        await loadTestHistory(reportId);
+      }
     }; 
     fetchData(); 
   }, [jobId, reportId]);
@@ -721,16 +840,36 @@ export default function CalibrationHotstickReport() {
         </div>
         <div className="flex items-center space-x-4">
           <button
-            onClick={() => {
-              if (isEditing) {
-                setStatus(status === 'PASS' ? 'FAIL' : 'PASS');
+            onClick={async () => {
+              setStatus('PASS');
+              updatePassFailStatus('PASS');
+              const savedReportId = await handleSave();
+              // Add test history entry after successful save
+              if (savedReportId) {
+                await addTestHistoryEntry('PASS', undefined, savedReportId);
               }
             }}
             className={`px-4 py-2 rounded-md text-white font-medium ${
-              status === 'PASS' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
-            } ${!isEditing ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}
+              status === 'PASS' ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 hover:bg-gray-500'
+            }`}
           >
-            {status}
+            PASS
+          </button>
+          <button
+            onClick={async () => {
+              setStatus('FAIL');
+              updatePassFailStatus('FAIL');
+              const savedReportId = await handleSave();
+              // Add test history entry after successful save
+              if (savedReportId) {
+                await addTestHistoryEntry('FAIL', undefined, savedReportId);
+              }
+            }}
+            className={`px-4 py-2 rounded-md text-white font-medium ${
+              status === 'FAIL' ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-400 hover:bg-gray-500'
+            }`}
+          >
+            FAIL
           </button>
           <button
             onClick={handlePrint}
@@ -760,7 +899,13 @@ export default function CalibrationHotstickReport() {
                 </svg>
               </button>
               <button 
-                onClick={handleSave} 
+                onClick={async () => {
+                  const savedReportId = await handleSave();
+                  if (savedReportId) {
+                    setReportId(savedReportId);
+                    setIsEditing(false);
+                  }
+                }} 
                 disabled={!isEditing}
                 className="px-4 py-2 text-sm text-white bg-[#339C5E] hover:bg-[#2d8a52] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#339C5E]"
               >
@@ -848,16 +993,50 @@ export default function CalibrationHotstickReport() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Pass/Fail</label>
-            <input 
-              type="text" 
-              value={formData.hotstickData.passFailStatus}
-              readOnly
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 ${
-                formData.hotstickData.passFailStatus === 'PASS' 
-                  ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' 
-                  : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
-              } shadow-sm focus:border-accent-color focus:ring-accent-color font-medium`}
-            />
+            <div className="flex space-x-2 mt-1">
+              <button
+                onClick={async () => {
+                  if (isEditing) {
+                    setStatus('PASS');
+                    updatePassFailStatus('PASS');
+                    const savedReportId = await handleSave();
+                    // Add test history entry after successful save
+                    if (savedReportId) {
+                      await addTestHistoryEntry('PASS', undefined, savedReportId);
+                    }
+                  }
+                }}
+                disabled={!isEditing}
+                className={`px-3 py-2 rounded-md text-white font-medium text-sm ${
+                  formData.hotstickData.passFailStatus === 'PASS' 
+                    ? 'bg-green-600 hover:bg-green-700' 
+                    : 'bg-gray-400 hover:bg-gray-500'
+                } ${!isEditing ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                PASS
+              </button>
+              <button
+                onClick={async () => {
+                  if (isEditing) {
+                    setStatus('FAIL');
+                    updatePassFailStatus('FAIL');
+                    const savedReportId = await handleSave();
+                    // Add test history entry after successful save
+                    if (savedReportId) {
+                      await addTestHistoryEntry('FAIL', undefined, savedReportId);
+                    }
+                  }
+                }}
+                disabled={!isEditing}
+                className={`px-3 py-2 rounded-md text-white font-medium text-sm ${
+                  formData.hotstickData.passFailStatus === 'FAIL' 
+                    ? 'bg-red-600 hover:bg-red-700' 
+                    : 'bg-gray-400 hover:bg-gray-500'
+                } ${!isEditing ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                FAIL
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -874,6 +1053,71 @@ export default function CalibrationHotstickReport() {
           readOnly={!isEditing}
           className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
         />
+      </div>
+
+      {/* Test History */}
+      <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+          Test History
+        </h2>
+        {!reportId ? (
+          <div className="text-center py-4">
+            <div className="text-gray-500 dark:text-gray-400">Test history will appear here after saving the report</div>
+          </div>
+        ) : loadingTestHistory ? (
+          <div className="text-center py-4">
+            <div className="text-gray-500 dark:text-gray-400">Loading test history...</div>
+          </div>
+        ) : testHistory.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-dark-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Test Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Result
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Tested By
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Notes
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                {testHistory.map((entry) => (
+                  <tr key={entry.id} className="hover:bg-gray-50 dark:hover:bg-dark-100">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {new Date(entry.test_date).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        entry.test_result === 'PASS' 
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                      }`}>
+                        {entry.test_result}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {entry.tested_by_email}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                      {entry.test_notes || '-'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-4">
+            <div className="text-gray-500 dark:text-gray-400">No test history available</div>
+          </div>
+        )}
       </div>
       
       <style>{`

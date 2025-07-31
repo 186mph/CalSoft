@@ -80,6 +80,25 @@ interface JobInfo {
   customers: CustomerData;
 }
 
+// Add these interfaces after the existing interfaces
+interface SleeveTestHistory {
+  id: string;
+  sleeve_report_id: string;
+  test_result: 'PASS' | 'FAIL';
+  tested_by: string;
+  test_notes?: string;
+  test_date: string;
+  created_at: string;
+}
+
+interface TestHistoryEntry {
+  id: string;
+  test_date: string;
+  test_result: 'PASS' | 'FAIL';
+  tested_by_email: string;
+  test_notes?: string;
+}
+
 export default function CalibrationSleeveReport() {
   const { id: jobId, reportId: urlReportId } = useParams<{ id: string; reportId?: string }>();
   const { user } = useAuth();
@@ -140,7 +159,11 @@ export default function CalibrationSleeveReport() {
     comments: '', 
     status: 'PASS'
   });
+  const [isEditMode, setIsEditMode] = useState<boolean>(!reportId);
   const [status, setStatus] = useState<'PASS' | 'FAIL'>('PASS');
+  const [testHistory, setTestHistory] = useState<TestHistoryEntry[]>([]);
+  const [loadingTestHistory, setLoadingTestHistory] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleChange = (section: keyof FormData | null, field: string, value: any) => {
     setFormData(prev => {
@@ -287,6 +310,7 @@ export default function CalibrationSleeveReport() {
       }
 
       // Update form data with job and customer info - with fallbacks for everything
+      console.log('Setting form data with customerIdForAsset:', customerIdForAssetGen);
       setFormData(prevData => ({
         ...prevData,
         customer: customerData?.company_name || customerData?.name || 'Unknown Customer',
@@ -295,6 +319,7 @@ export default function CalibrationSleeveReport() {
         customerId: jobInfo.customer_id || '',
         customerIdForAsset: customerIdForAssetGen // Store the company_id or default
       }));
+      console.log('Form data updated, customerIdForAsset should trigger useEffect');
 
     } catch (error) {
       console.error('Error loading job info:', error);
@@ -346,36 +371,22 @@ export default function CalibrationSleeveReport() {
   };
 
   const handleSave = async () => {
-    if (!jobId || !user?.id) {
-      toast.error('Missing job or user information');
-      return;
-    }
-
-    setLoading(true);
+    if (!jobId || !user?.id || !isEditMode) return null;
 
     try {
-      // Make sure we have a valid customerIdForAsset, defaulting to '1' if not available
-      // Use any stored value, or extract it from customerId if possible
-      let idForAssetGeneration = formData.customerIdForAsset || '1';
+      setIsSaving(true);
+      let result;
       
-      // If it's a UUID (contains hyphens), use '1' as default
-      if (idForAssetGeneration.includes('-')) {
-        console.log('Customer ID appears to be a UUID, using default "1" instead');
-        idForAssetGeneration = '1';
-      }
+      // Get the customer ID for asset generation
+      const customerIdForAssetGen = formData.customerIdForAsset || '1';
       
-      console.log('Starting save process with:', {
-        customerId: formData.customerId,
-        customerIdForAsset: idForAssetGeneration
-      });
-
       // For new reports, only generate an asset ID at save time
       let assetIdToUse = formData.sleeveData.assetId;
       
       if (!reportId && !assetIdToUse) {
         try {
           console.log('Generating Asset ID for new report');
-          const nextAssetId = await getNextAssetId(idForAssetGeneration);
+          const nextAssetId = await getNextAssetId(customerIdForAssetGen);
           
           if (nextAssetId) {
             console.log('Generated Asset ID:', nextAssetId);
@@ -387,106 +398,95 @@ export default function CalibrationSleeveReport() {
           console.error('Error generating Asset ID:', error);
         }
       }
-
-      // Update the form data with the asset ID and ensure status is correct
-      const reportData = {
-        ...formData,
-        sleeveData: {
-          ...formData.sleeveData,
-          assetId: assetIdToUse,
-          passFailStatus: status
-        },
-        status: status
-      };
-
+      
       let savedReportId = reportId;
-
-      // Save or update the report
+      
       if (reportId) {
-        console.log('Updating existing report:', reportId);
-        const { data, error } = await supabase
+        // Update existing report
+        result = await supabase
           .schema('lab_ops')
           .from('calibration_sleeve_reports')
           .update({
-            report_info: reportData,
-            updated_at: new Date().toISOString(),
-            status: status
+            report_info: {
+              ...formData,
+              sleeveData: {
+                ...formData.sleeveData,
+                assetId: assetIdToUse // Use the pre-generated asset ID
+              },
+              status: status
+            },
+            updated_at: new Date().toISOString()
           })
           .eq('id', reportId)
-          .select('id')
+          .select()
           .single();
-
-        if (error) throw error;
-        savedReportId = data.id;
       } else {
-        console.log('Creating new report');
-        const { data, error } = await supabase
+        // Create new report
+        result = await supabase
           .schema('lab_ops')
           .from('calibration_sleeve_reports')
           .insert({
             job_id: jobId,
-            report_info: reportData,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
+            report_info: {
+              ...formData,
+              sleeveData: {
+                ...formData.sleeveData,
+                assetId: assetIdToUse // Use the pre-generated asset ID
+              },
+              status: status
+            },
             user_id: user.id,
-            status: status
+            created_at: new Date().toISOString()
           })
-          .select('id')
+          .select()
           .single();
 
-        if (error) throw error;
-        savedReportId = data.id;
-        console.log('New report created with ID:', savedReportId);
-      }
+        // Create asset entry for the report
+        if (result.data) {
+          const assetData = {
+            name: `Sleeve Report - ${formData.sleeveData.manufacturer || formData.customer || 'Unnamed'}`,
+            file_url: `report:/jobs/${jobId}/calibration-sleeve/${result.data.id}`,
+            job_id: jobId,
+            user_id: user.id,
+            asset_id: assetIdToUse // Add the asset ID to the asset record
+          };
 
-      // Create asset record only for new reports
-      if (savedReportId && !reportId) {
-        const assetName = `Sleeve Report - ${formData.sleeveData.manufacturer || ''} - ${new Date().toLocaleDateString()}`;
-        const assetUrl = `report:/jobs/${jobId}/calibration-sleeve/${savedReportId}`;
+          const { data: assetResult, error: assetError } = await supabase
+            .schema('lab_ops')
+            .from('lab_assets')
+            .insert(assetData)
+            .select()
+            .single();
 
-        console.log('Creating asset record with name:', assetName);
-        console.log('Asset URL:', assetUrl);
-
-        try {
-          const assetResult = await createCalibrationAsset(
-            jobId,
-            formData.customerId,  // UUID for database relations
-            assetName,
-            assetUrl,
-            user.id,
-            idForAssetGeneration,  // Pass the numeric ID for asset generation
-            // Pass the bucket truck report ID if created from within one
-            returnToReport && returnToReport !== 'new' && returnToReportType === 'bucket-truck' 
-              ? returnToReport 
-              : undefined
-          );
-
-          if (!assetResult) {
-            console.error('Failed to create asset, but report was saved');
-            toast.error('Report saved, but there was an issue creating the asset record');
+          if (assetError) {
+            console.error('Error creating asset:', assetError);
+            // Don't throw error, just log it - the report was saved successfully
           } else {
             console.log('Asset created successfully:', assetResult);
           }
-        } catch (assetError) {
-          console.error('Error creating asset:', assetError);
-          toast.error('Report saved, but there was an issue creating the asset record');
         }
       }
 
-      setLoading(false);
-      toast.success(reportId ? 'Report updated!' : 'Report saved!');
+      if (result.error) throw result.error;
+      savedReportId = result.data.id;
 
-      // Only exit edit mode and update reportId when saving a new report
-      if (!reportId && savedReportId) {
-        setIsEditing(false);
-        setReportId(savedReportId);
+      // For new reports, set the report ID and exit edit mode
+      if (!reportId && result.data) {
+        setReportId(result.data.id);
+        setIsEditMode(false);
       }
 
-      // Don't navigate away automatically - let user click back button when ready
+      // Return the saved report ID (no alert popup)
+      return savedReportId;
+      
+      // Don't navigate away - let user stay on the report
     } catch (error: any) {
-      console.error('Failed to save report:', error);
-      setLoading(false);
-      toast.error(`Error: ${error.message || 'Failed to save report'}`);
+      console.error('Error saving report:', error);
+      // Only show alert for actual errors, not successful saves
+      alert(`Failed to save report: ${error?.message || 'Unknown error'}`);
+      return null;
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -639,13 +639,144 @@ export default function CalibrationSleeveReport() {
     }
   };
 
+  // Test History functions
+  const loadTestHistory = async (reportId: string) => {
+    if (!reportId) return;
+    
+    try {
+      setLoadingTestHistory(true);
+      const { data, error } = await supabase
+        .schema('lab_ops')
+        .from('sleeve_test_history')
+        .select(`
+          id,
+          test_date,
+          test_result,
+          tested_by,
+          test_notes,
+          created_at
+        `)
+        .eq('sleeve_report_id', reportId)
+        .order('test_date', { ascending: false });
+
+      if (error) throw error;
+
+      if (data) {
+        // For now, let's use a simpler approach - just show the user ID
+        // We can improve this later when the profiles table is properly set up
+        const historyWithNames: TestHistoryEntry[] = data.map(entry => ({
+          id: entry.id,
+          test_date: entry.test_date,
+          test_result: entry.test_result,
+          tested_by_email: `User ${entry.tested_by?.slice(0, 8)}...` || 'Unknown User',
+          test_notes: entry.test_notes
+        }));
+
+        setTestHistory(historyWithNames);
+      }
+    } catch (error) {
+      console.error('Error loading test history:', error);
+      setError(`Failed to load test history: ${(error as Error).message}`);
+    } finally {
+      setLoadingTestHistory(false);
+    }
+  };
+
+  const addTestHistoryEntry = async (testResult: 'PASS' | 'FAIL', notes?: string, reportIdToUse?: string) => {
+    const targetReportId = reportIdToUse || reportId;
+    if (!targetReportId || !user?.id) {
+      console.warn('Cannot add test history entry: missing reportId or user.id', { targetReportId, userId: user?.id });
+      return;
+    }
+
+    try {
+      console.log('Adding test history entry:', { targetReportId, testResult, userId: user.id, notes });
+      
+      const { data, error } = await supabase
+        .schema('lab_ops')
+        .from('sleeve_test_history')
+        .insert({
+          sleeve_report_id: targetReportId,
+          test_result: testResult,
+          tested_by: user.id,
+          test_notes: notes || null
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase error adding test history:', error);
+        throw error;
+      }
+
+      console.log('Successfully added test history entry:', data);
+
+      // Use the current user's email or a shortened user ID
+      const userName = user.email || `User ${user.id.slice(0, 8)}...`;
+
+      // Add the new entry to the local state immediately with the user's name
+      const newEntry: TestHistoryEntry = {
+        id: data.id,
+        test_date: data.test_date,
+        test_result: data.test_result,
+        tested_by_email: userName, // Now displays the user's email or shortened ID
+        test_notes: data.test_notes
+      };
+
+      setTestHistory(prev => [newEntry, ...prev]); // Add to the beginning of the list
+    } catch (error) {
+      console.error('Error adding test history entry:', error);
+      setError(`Failed to add test history entry: ${(error as Error).message}`);
+    }
+  };
+
   useEffect(() => { 
-    const fetchData = async () => { 
-      await loadJobInfo(); 
-      await loadReport(); 
-    }; 
-    fetchData(); 
-  }, [jobId, reportId]);
+    const loadReport = async () => {
+      if (!reportId) {
+        setLoading(false);
+        setIsEditMode(true);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        
+        const { data, error } = await supabase
+          .schema('lab_ops')
+          .from('calibration_sleeve_reports')
+          .select('*')
+          .eq('id', reportId)
+          .single();
+        
+        if (error) throw error;
+        
+        if (data && data.report_info) {
+          setFormData(prev => ({
+            ...prev,
+            ...data.report_info,
+          }));
+          
+          if (data.report_info.status) {
+            setStatus(data.report_info.status);
+          }
+          
+          setIsEditMode(false);
+        }
+
+        // Load test history if report exists
+        if (reportId) {
+          await loadTestHistory(reportId);
+        }
+      } catch (error) {
+        console.error('Error loading report:', error);
+        setError(`Failed to load report: ${(error as Error).message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadReport();
+  }, [reportId]);
 
   // Sync the top-level status with the passFailStatus in form data
   useEffect(() => {
@@ -667,6 +798,13 @@ export default function CalibrationSleeveReport() {
       }));
     }
   }, [urlReportId]);
+
+  // Force asset ID generation on mount for new reports
+  useEffect(() => {
+    if (!reportId && !formData.sleeveData.assetId) {
+      console.log('New report detected, will generate asset ID when customer data is available');
+    }
+  }, []);
 
   // Add an effect to generate the Asset ID on load for new reports
   useEffect(() => {
@@ -720,12 +858,36 @@ export default function CalibrationSleeveReport() {
         </div>
         <div className="flex items-center space-x-4">
           <button
-            onClick={() => setStatus(status === 'PASS' ? 'FAIL' : 'PASS')}
+            onClick={async () => {
+              setStatus('PASS');
+              updatePassFailStatus('PASS');
+              const savedReportId = await handleSave();
+              // Add test history entry after successful save
+              if (savedReportId) {
+                await addTestHistoryEntry('PASS', undefined, savedReportId);
+              }
+            }}
             className={`px-4 py-2 rounded-md text-white font-medium ${
-              status === 'PASS' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
+              status === 'PASS' ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 hover:bg-gray-500'
             }`}
           >
-            {status}
+            PASS
+          </button>
+          <button
+            onClick={async () => {
+              setStatus('FAIL');
+              updatePassFailStatus('FAIL');
+              const savedReportId = await handleSave();
+              // Add test history entry after successful save
+              if (savedReportId) {
+                await addTestHistoryEntry('FAIL', undefined, savedReportId);
+              }
+            }}
+            className={`px-4 py-2 rounded-md text-white font-medium ${
+              status === 'FAIL' ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-400 hover:bg-gray-500'
+            }`}
+          >
+            FAIL
           </button>
           <button
             onClick={handlePrint}
@@ -745,7 +907,13 @@ export default function CalibrationSleeveReport() {
             </button>
           ) : (
             <button 
-              onClick={handleSave} 
+              onClick={async () => {
+                const savedId = await handleSave();
+                if (savedId) {
+                  setReportId(savedId);
+                  setIsEditMode(false);
+                }
+              }} 
               disabled={!isEditing}
               className="px-4 py-2 text-sm text-white bg-[#339C5E] hover:bg-[#2d8a52] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#339C5E]"
             >
@@ -832,16 +1000,50 @@ export default function CalibrationSleeveReport() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Pass/Fail</label>
-              <input 
-                type="text" 
-                value={formData.sleeveData.passFailStatus}
-                readOnly
-                className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 ${
-                  formData.sleeveData.passFailStatus === 'PASS' 
-                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' 
-                    : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
-                } shadow-sm focus:border-accent-color focus:ring-accent-color font-medium`}
-              />
+              <div className="flex space-x-2 mt-1">
+                <button
+                  onClick={async () => {
+                    if (isEditing) {
+                      setStatus('PASS');
+                      updatePassFailStatus('PASS');
+                      const savedReportId = await handleSave();
+                      // Add test history entry after successful save
+                      if (savedReportId) {
+                        await addTestHistoryEntry('PASS', undefined, savedReportId);
+                      }
+                    }
+                  }}
+                  disabled={!isEditing}
+                  className={`px-3 py-2 rounded-md text-white font-medium text-sm ${
+                    formData.sleeveData.passFailStatus === 'PASS' 
+                      ? 'bg-green-600 hover:bg-green-700' 
+                      : 'bg-gray-400 hover:bg-gray-500'
+                  } ${!isEditing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  PASS
+                </button>
+                <button
+                  onClick={async () => {
+                    if (isEditing) {
+                      setStatus('FAIL');
+                      updatePassFailStatus('FAIL');
+                      const savedReportId = await handleSave();
+                      // Add test history entry after successful save
+                      if (savedReportId) {
+                        await addTestHistoryEntry('FAIL', undefined, savedReportId);
+                      }
+                    }
+                  }}
+                  disabled={!isEditing}
+                  className={`px-3 py-2 rounded-md text-white font-medium text-sm ${
+                    formData.sleeveData.passFailStatus === 'FAIL' 
+                      ? 'bg-red-600 hover:bg-red-700' 
+                      : 'bg-gray-400 hover:bg-gray-500'
+                  } ${!isEditing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  FAIL
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -858,6 +1060,71 @@ export default function CalibrationSleeveReport() {
             readOnly={!isEditing}
             className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
           />
+        </div>
+
+        {/* Test History */}
+        <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">
+            Test History
+          </h2>
+          {!reportId ? (
+            <div className="text-center py-4">
+              <div className="text-gray-500 dark:text-gray-400">Test history will appear here after saving the report</div>
+            </div>
+          ) : loadingTestHistory ? (
+            <div className="text-center py-4">
+              <div className="text-gray-500 dark:text-gray-400">Loading test history...</div>
+            </div>
+          ) : testHistory.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-dark-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Test Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Result
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Tested By
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Notes
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-gray-200 dark:divide-gray-700">
+                  {testHistory.map((entry) => (
+                    <tr key={entry.id} className="hover:bg-gray-50 dark:hover:bg-dark-100">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {new Date(entry.test_date).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          entry.test_result === 'PASS' 
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        }`}>
+                          {entry.test_result}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {entry.tested_by_email}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                        {entry.test_notes || '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <div className="text-gray-500 dark:text-gray-400">No test history available</div>
+            </div>
+          )}
         </div>
       </div>
       

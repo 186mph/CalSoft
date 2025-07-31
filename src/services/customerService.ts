@@ -527,7 +527,7 @@ export async function createCustomer(customer: Omit<Customer, 'id' | 'created_at
     const table = isCalibration ? 'lab_customers' : 'customers';
     
     // For calibration division, we need to modify the customer object
-    let customerData = { ...customer };
+    const customerData = { ...customer };
     
     if (isCalibration) {
       // The lab_customers table might not have these columns
@@ -581,7 +581,7 @@ export async function updateCustomer(id: string, customer: Partial<Customer>) {
   const table = isCalibration ? 'lab_customers' : 'customers';
 
   // For calibration division, we need to modify the customer object
-  let customerData = { ...customer };
+  const customerData = { ...customer };
   
   if (isCalibration) {
     // The lab_customers table might not have these columns

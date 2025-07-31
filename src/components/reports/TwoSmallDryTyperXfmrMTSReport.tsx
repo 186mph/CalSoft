@@ -602,7 +602,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
         // Update table minimum values based on voltage ranges for each test
         newData.insulationResistance.tests = newData.insulationResistance.tests.map((test, index) => {
           let tableMinimum = '0.5'; // Default for 0-600V
-          let tableMinimumUnits = 'GΩ';
+          const tableMinimumUnits = 'GΩ';
 
           // Primary to Ground (index 0) - use primary voltage
           if (index === 0) {

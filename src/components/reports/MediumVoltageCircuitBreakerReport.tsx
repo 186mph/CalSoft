@@ -330,7 +330,7 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
     const keys = name.split('.');
     
     setFormData(prev => {
-      let current = { ...prev } as any;
+      const current = { ...prev } as any;
       let pointer = current;
       keys.forEach((key, index) => {
         if (index === keys.length - 1) {

@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../lib/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import { format } from 'date-fns';
-import { Eye, Package, Search, Trash2 } from 'lucide-react';
+import { Eye, Package, Search, Trash2, History, Activity } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/Dialog';
+import AssetTestingHistoryComponent from '@/components/assets/AssetTestingHistory';
 
 interface Asset {
   id: string;
@@ -59,6 +60,10 @@ export default function AllAssetsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [assetToDelete, setAssetToDelete] = useState<Asset | null>(null);
 
+  // Testing history state
+  const [showTestingHistory, setShowTestingHistory] = useState(false);
+  const [selectedAssetForHistory, setSelectedAssetForHistory] = useState<Asset | null>(null);
+
   // Function to fetch pass/fail status for assets from calibration report tables
   const fetchPassFailStatus = async (assets: Asset[]): Promise<Asset[]> => {
     const assetsWithStatus = await Promise.all(
@@ -84,7 +89,8 @@ export default function AllAssetsPage() {
             'calibration-line-hose': { table: 'calibration_line_hose_reports', statusPath: 'lineHoseData.passFailStatus' },
             'calibration-hotstick': { table: 'calibration_hotstick_reports', statusPath: 'hotstickData.passFailStatus' },
             'calibration-ground-cable': { table: 'calibration_ground_cable_reports', statusPath: 'groundCableData.passFailStatus' },
-            'calibration-bucket-truck': { table: 'calibration_bucket_truck_reports', statusPath: 'bucketTruckData.passFailStatus' }
+            'calibration-bucket-truck': { table: 'calibration_bucket_truck_reports', statusPath: 'bucketTruckData.passFailStatus' },
+  'calibration-digger': { table: 'calibration_digger_reports', statusPath: 'diggerData.passFailStatus' }
           };
 
           const reportConfig = reportTableMap[reportSlug];
@@ -304,7 +310,8 @@ export default function AllAssetsPage() {
           'calibration-line-hose': 'Line Hose',
           'calibration-hotstick': 'Hotstick',
           'calibration-ground-cable': 'Ground Cable',
-          'calibration-bucket-truck': 'Bucket Truck'
+          'calibration-bucket-truck': 'Bucket Truck',
+  'calibration-digger': 'Digger'
         };
         
         return reportTypeMap[cleanReportSlug] || 'Report';
@@ -619,6 +626,19 @@ export default function AllAssetsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            className="text-[#339C5E] hover:text-[#2d8a54] p-0 h-auto focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedAssetForHistory(asset);
+                              setShowTestingHistory(true);
+                            }}
+                            title="View Testing History"
+                          >
+                            <History className="h-5 w-5 min-w-[20px] flex-shrink-0" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-0 h-auto focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -665,6 +685,26 @@ export default function AllAssetsPage() {
                 Delete Asset
               </Button>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Testing History Dialog */}
+        <Dialog open={showTestingHistory} onOpenChange={setShowTestingHistory}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                Testing History - {selectedAssetForHistory?.name}
+              </DialogTitle>
+            </DialogHeader>
+            
+            {selectedAssetForHistory && (
+              <AssetTestingHistoryComponent
+                assetId={selectedAssetForHistory.id}
+                assetName={selectedAssetForHistory.name}
+                schema="lab_ops"
+                jobId={selectedAssetForHistory.job_id}
+              />
+            )}
           </DialogContent>
         </Dialog>
       </div>

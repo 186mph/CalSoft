@@ -1,16 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { ArrowLeft, Edit, Trash2, Eye, Clock, Plus, Pencil } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Eye, Clock, Plus, Pencil, ChevronDown, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/Separator';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import Card, { CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { CalibrationJobButton } from '@/components/jobs/CalibrationJobButton';
@@ -36,6 +36,8 @@ interface Job {
   customers: Customer;
   division: string;
   notes?: string;
+  equipment_types?: string[];
+  comment_count?: number;
 }
 
 export default function CalibrationJobsPage() {
@@ -52,6 +54,13 @@ export default function CalibrationJobsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editFormData, setEditFormData] = useState<Job | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEquipmentDropdownOpen, setIsEquipmentDropdownOpen] = useState(false);
+  const equipmentDropdownRef = useRef<HTMLDivElement>(null);
+  const [updatingStatusJobId, setUpdatingStatusJobId] = useState<string | null>(null);
+
+  // Completion confirmation prompt state
+  const [showCompletionPrompt, setShowCompletionPrompt] = useState(false);
+  const [pendingStatusChange, setPendingStatusChange] = useState<{ jobId: string; status: string } | null>(null);
 
   // Redirect to portal if user is not authenticated
   useEffect(() => {
@@ -100,6 +109,23 @@ export default function CalibrationJobsPage() {
     fetchJobs(activeFilter);
   }, [refreshTrigger, activeFilter, statusFilter]);
 
+
+  // Handle clicking outside the equipment dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (equipmentDropdownRef.current && !equipmentDropdownRef.current.contains(event.target as Node)) {
+        setIsEquipmentDropdownOpen(false);
+      }
+    }
+    
+    if (isEquipmentDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isEquipmentDropdownOpen]);
   const fetchJobs = async (filter: 'calibration' | 'armadillo' = 'calibration') => {
     try {
       setLoading(true);
@@ -184,10 +210,31 @@ export default function CalibrationJobsPage() {
         }
       }));
 
+
+      // Fetch comment counts for each job
+      const jobsWithComments = await Promise.all(jobsWithCustomers.map(async (job) => {
+        try {
+          const { count, error: countError } = await supabase
+            .schema("lab_ops")
+            .from("job_comments")
+            .select("*", { count: "exact", head: true })
+            .eq("job_id", job.id);
+
+          if (countError) {
+            console.warn(`Error fetching comment count for job ${job.id}:`, countError);
+            return { ...job, comment_count: 0 };
+          }
+
+          return { ...job, comment_count: count || 0 };
+        } catch (err) {
+          console.warn(`Error processing comment count for job ${job.id}:`, err);
+          return { ...job, comment_count: 0 };
+        }
+      }));
       // Apply status filtering
       const filteredJobs = statusFilter === 'all' 
-        ? jobsWithCustomers 
-        : jobsWithCustomers.filter(job => job.status === statusFilter);
+        ? jobsWithComments 
+        : jobsWithComments.filter(job => job.status === statusFilter);
 
       setJobs(filteredJobs);
     } catch (err) {
@@ -206,6 +253,52 @@ export default function CalibrationJobsPage() {
     if (!editFormData) return;
     const { name, value } = e.target;
     setEditFormData(prev => prev ? { ...prev, [name]: value } : null);
+  };
+
+  // Equipment types options
+  const equipmentTypes = [
+    'Gloves',
+    'Sleeves', 
+    'Blankets',
+    'Live-Line Tools',
+    'Line Hose',
+    'Ground Cables',
+    'Meters',
+    'Torques',
+    'Bucket Trucks',
+    'Diggers/Derek'
+  ];
+
+  // Handle equipment type selection
+  const handleEquipmentTypeToggle = (equipmentType: string) => {
+    setEditFormData(prev => {
+      if (!prev) return null;
+      const currentTypes = prev.equipment_types || [];
+      const isSelected = currentTypes.includes(equipmentType);
+      
+      if (isSelected) {
+        return {
+          ...prev,
+          equipment_types: currentTypes.filter(type => type !== equipmentType)
+        };
+      } else {
+        return {
+          ...prev,
+          equipment_types: [...currentTypes, equipmentType]
+        };
+      }
+    });
+  };
+
+  // Get display text for equipment types
+  const getEquipmentTypesDisplay = () => {
+    if (!editFormData?.equipment_types || editFormData.equipment_types.length === 0) {
+      return 'Select equipment types...';
+    }
+    if (editFormData.equipment_types.length === 1) {
+      return editFormData.equipment_types[0];
+    }
+    return `${editFormData.equipment_types.length} types selected`;
   };
 
   // Handle edit form submission
@@ -227,6 +320,7 @@ export default function CalibrationJobsPage() {
           due_date: editFormData.due_date || null,
           budget: editFormData.budget ? parseFloat(editFormData.budget.toString()) : null,
           notes: editFormData.notes || null,
+          equipment_types: editFormData.equipment_types || null,
         })
         .eq('id', editFormData.id);
 
@@ -250,6 +344,61 @@ export default function CalibrationJobsPage() {
   const handleStartEdit = (job: Job) => {
     setEditFormData(job);
     setIsEditing(true);
+  };
+
+  // Handle status update for individual jobs
+  const handleJobStatusChange = async (jobId: string, newStatus: string, currentStatus: string) => {
+    // If changing to completed, show confirmation prompt
+    if (newStatus === "completed") {
+      setPendingStatusChange({ jobId, status: newStatus });
+      setShowCompletionPrompt(true);
+      return;
+    }
+
+    // For other status changes, proceed normally
+    await updateJobStatus(jobId, newStatus);
+  };
+
+  // Function to actually update the job status
+  const updateJobStatus = async (jobId: string, newStatus: string) => {
+    setUpdatingStatusJobId(jobId);
+    
+    try {
+      const { error } = await supabase
+        .schema("lab_ops")
+        .from("lab_jobs")
+        .update({ status: newStatus })
+        .eq("id", jobId);
+
+      if (error) throw error;
+
+      // Update local jobs state
+      setJobs(prev => prev.map(job => 
+        job.id === jobId ? { ...job, status: newStatus } : job
+      ));
+
+      toast.success("Status updated successfully!");
+    } catch (error) {
+      console.error("Error updating job status:", error);
+      toast.error("Failed to update status");
+    } finally {
+      setUpdatingStatusJobId(null);
+    }
+  };
+
+  // Handle completion confirmation
+  const handleCompletionConfirm = async () => {
+    if (pendingStatusChange) {
+      await updateJobStatus(pendingStatusChange.jobId, pendingStatusChange.status);
+    }
+    setShowCompletionPrompt(false);
+    setPendingStatusChange(null);
+  };
+
+  // Handle completion cancellation
+  const handleCompletionCancel = () => {
+    setShowCompletionPrompt(false);
+    setPendingStatusChange(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -512,12 +661,36 @@ export default function CalibrationJobsPage() {
                       <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                         {job.job_number}
                       </h3>
-                      <Badge className={`ml-2 ${getStatusColor(job.status)}`}>
-                        {job.status}
-                      </Badge>
+                      {job.comment_count && job.comment_count > 0 && (
+                        <div className="flex items-center ml-2">
+                          <MessageCircle className="h-4 w-4 text-blue-500" />
+                          <span className="text-xs text-blue-500 ml-1">{job.comment_count}</span>
+                        </div>
+                      )}
+                      <select
+                        value={job.status}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleJobStatusChange(job.id, e.target.value, job.status);
+                        }}
+                        disabled={updatingStatusJobId === job.id}
+                        className={`ml-2 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#339C5E] min-w-[100px] ${
+                          updatingStatusJobId === job.id ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="ready-to-bill">Ready To Bill</option>
+                      </select>
                       <Badge className="ml-2 bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
                         {job.division.charAt(0).toUpperCase() + job.division.slice(1)}
                       </Badge>
+                      {job.priority && (
+                        <Badge className="ml-2 bg-[#339C5E] text-white">
+                          {job.priority}
+                        </Badge>
+                      )}
                     </div>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                       {job.customers?.company_name || job.customers?.name || 'Unknown Customer'}
@@ -653,16 +826,70 @@ export default function CalibrationJobsPage() {
                   <label className="block text-sm font-medium mb-1">Priority</label>
                   <select
                     name="priority"
-                    value={editFormData.priority || 'medium'}
+                    value={editFormData.priority || '7-day'}
                     onChange={handleEditInputChange}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#339C5E] focus:border-[#339C5E] dark:bg-dark-100 dark:text-white"
                   >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
+                    <option value="7-day">7-Day</option>
+                    <option value="3-day">3-Day</option>
+                    <option value="2-day">2 day</option>
+                    <option value="same-day">Same-Day</option>
+                    <option value="on-site">On-Site</option>
+                    <option value="1-month">1-Month</option>
+                    <option value="1-day">1-Day</option>
+                    <option value="14-day">14 Day</option>
+                    <option value="6-month">6 - Month</option>
+                    <option value="5-day">5-Day</option>
                   </select>
                 </div>
 
+
+                {/* Equipment Types field */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Equipment Types</label>
+                  <div className="relative" ref={equipmentDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setIsEquipmentDropdownOpen(!isEquipmentDropdownOpen)}
+                      className="w-full px-3 py-2 text-left bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#339C5E] focus:border-[#339C5E] hover:border-[#339C5E] dark:text-white"
+                    >
+                      <span className={(editFormData?.equipment_types?.length || 0) === 0 ? "text-gray-500" : ""}>
+                        {getEquipmentTypesDisplay()}
+                      </span>
+                      <ChevronDown className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 transition-transform ${isEquipmentDropdownOpen ? "rotate-180" : ""}`} />
+                    </button>
+                    
+                    {isEquipmentDropdownOpen && (
+                      <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                        {equipmentTypes.map(equipmentType => (
+                          <label
+                            key={equipmentType}
+                            className="flex items-center px-3 py-2 hover:bg-[#339C5E] hover:text-white cursor-pointer transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={editFormData?.equipment_types?.includes(equipmentType) || false}
+                              onChange={() => handleEquipmentTypeToggle(equipmentType)}
+                              className="mr-2 text-[#339C5E] focus:ring-[#339C5E] border-gray-300 rounded"
+                            />
+                            <span className="text-sm">{equipmentType}</span>
+                          </label>
+                        ))}
+                        {(editFormData?.equipment_types?.length || 0) > 0 && (
+                          <div className="border-t border-gray-200 dark:border-gray-600 p-2">
+                            <button
+                              type="button"
+                              onClick={() => setEditFormData(prev => prev ? { ...prev, equipment_types: [] } : null)}
+                              className="text-xs text-gray-500 hover:text-[#339C5E] transition-colors"
+                            >
+                              Clear all selections
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium mb-1">Notes</label>
                   <Textarea
@@ -696,6 +923,53 @@ export default function CalibrationJobsPage() {
               </div>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Completion Confirmation Dialog */}
+      <Dialog open={showCompletionPrompt} onOpenChange={setShowCompletionPrompt}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Complete Job Confirmation</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-3 py-4">
+            <div className="flex items-start space-x-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Confirm reports have been received by customer
+              </p>
+            </div>
+            
+            <div className="flex items-start space-x-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Mark if order is shipped or picked up
+              </p>
+            </div>
+            
+            <div className="flex items-start space-x-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                If shipped: must provide tracking number
+              </p>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <button
+              onClick={handleCompletionCancel}
+              className="flex items-center px-3 py-1.5 text-sm font-medium bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCompletionConfirm}
+              className="px-4 py-2 bg-[#339C5E] hover:bg-[#2d8751] text-white text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-[#339C5E] focus:ring-offset-2 transition-colors"
+            >
+              Confirm
+            </button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

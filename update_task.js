@@ -15,14 +15,14 @@ program
       const subtask31 = task3.subtasks.find(subtask => subtask.id === '3.1');
       if (subtask31) {
         subtask31.status = 'done';
-        subtask31.details += '
+        subtask31.details += `
 
 Implemented TechnicianScheduleManagement component with comprehensive features:
 - Time-off request management system with approval workflow
 - Calendar integration for visualizing schedules
 - Database schema with technician_time_off table
 - RLS policies for security
-- Service methods for CRUD operations on scheduling data';
+- Service methods for CRUD operations on scheduling data`;
       }
       
       fs.writeFileSync(tasksFile, JSON.stringify(tasks, null, 2));

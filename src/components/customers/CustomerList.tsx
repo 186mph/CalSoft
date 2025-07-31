@@ -115,7 +115,7 @@ export default function CustomerList() {
       }
       
       // Create a new object with the form data to avoid typescript errors
-      let dataToSave: any = {
+      const dataToSave: any = {
         ...formData,
         name: formData.company_name
       };
@@ -194,10 +194,12 @@ export default function CustomerList() {
         const errorMsg = error.message;
         console.error('🚨 [CustomerList] Error message:', errorMsg);
         
-        if (errorMsg.includes("category_id") || errorMsg.includes("company_id") || errorMsg.includes("status")) {
+        if (errorMsg.includes("category_id") || errorMsg.includes("status")) {
           alert('There appears to be a schema issue with the customer table. Please use the "Fix Schema Error" button at the bottom right of the screen, then try again.');
         } else if (errorMsg.includes("company_id") && errorMsg.includes("required")) {
           alert('Customer ID is required for calibration division customers. Please check that the Customer ID is being generated properly.');
+        } else if (errorMsg.includes("company_id")) {
+          alert('There appears to be a schema issue with the customer table. Please use the "Fix Schema Error" button at the bottom right of the screen, then try again.');
         } else {
           alert(`Failed to save customer: ${errorMsg}`);
         }

@@ -31,6 +31,8 @@ export function CalibrationJobButton({
   const [customerSearchQuery, setCustomerSearchQuery] = useState('');
   const [isCustomerDropdownOpen, setIsCustomerDropdownOpen] = useState(false);
   const customerDropdownRef = useRef<HTMLDivElement>(null);
+  const [isEquipmentDropdownOpen, setIsEquipmentDropdownOpen] = useState(false);
+  const equipmentDropdownRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { division: appDivision } = useDivision();
 
@@ -49,9 +51,10 @@ export function CalibrationJobButton({
     description: '',
     start_date: new Date().toISOString().split('T')[0],
     due_date: '',
-    priority: 'medium',
+    priority: '7-day',
     notes: '',
-    job_type: ''
+    job_type: '',
+    equipment_types: [] as string[]
   });
 
   // State for generated job number
@@ -216,22 +219,25 @@ export function CalibrationJobButton({
     }
   }, [showDialog]);
 
-  // Handle clicking outside the customer dropdown
+  // Handle clicking outside the customer and equipment dropdowns
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (customerDropdownRef.current && !customerDropdownRef.current.contains(event.target as Node)) {
         setIsCustomerDropdownOpen(false);
       }
+      if (equipmentDropdownRef.current && !equipmentDropdownRef.current.contains(event.target as Node)) {
+        setIsEquipmentDropdownOpen(false);
+      }
     }
     
-    if (isCustomerDropdownOpen) {
+    if (isCustomerDropdownOpen || isEquipmentDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isCustomerDropdownOpen]);
+  }, [isCustomerDropdownOpen, isEquipmentDropdownOpen]);
 
   // Filter customers based on search query
   const getFilteredCustomers = () => {
@@ -314,6 +320,51 @@ export function CalibrationJobButton({
       }
     }
   }, [formData.customer_id, customers]);
+
+  // Equipment types options
+  const equipmentTypes = [
+    'Gloves',
+    'Sleeves', 
+    'Blankets',
+    'Live-Line Tools',
+    'Line Hose',
+    'Ground Cables',
+    'Meters',
+    'Torques',
+    'Bucket Trucks',
+    'Diggers/Derek'
+  ];
+
+  // Handle equipment type selection
+  const handleEquipmentTypeToggle = (equipmentType: string) => {
+    setFormData(prev => {
+      const currentTypes = prev.equipment_types || [];
+      const isSelected = currentTypes.includes(equipmentType);
+      
+      if (isSelected) {
+        return {
+          ...prev,
+          equipment_types: currentTypes.filter(type => type !== equipmentType)
+        };
+      } else {
+        return {
+          ...prev,
+          equipment_types: [...currentTypes, equipmentType]
+        };
+      }
+    });
+  };
+
+  // Get display text for equipment types
+  const getEquipmentTypesDisplay = () => {
+    if (!formData.equipment_types || formData.equipment_types.length === 0) {
+      return 'Select equipment types...';
+    }
+    if (formData.equipment_types.length === 1) {
+      return formData.equipment_types[0];
+    }
+    return `${formData.equipment_types.length} types selected`;
+  };
 
   // Function to generate automatic job number for both Calibration and Armadillo divisions
   const generateJobNumber = async (): Promise<string> => {
@@ -551,7 +602,8 @@ export function CalibrationJobButton({
         priority: formData.priority,
         division: jobDivision,
         ...(jobNumber && { job_number: jobNumber }), // Include job_number for calibration division
-        ...(formData.job_type && { job_type: formData.job_type }) // Include job_type if provided
+        ...(formData.job_type && { job_type: formData.job_type }), // Include job_type if provided
+        ...(formData.equipment_types && formData.equipment_types.length > 0 && { equipment_types: formData.equipment_types }) // Include equipment_types if selected
       };
 
       console.log('[CalibrationJobButton] Job data to insert:', jobData);
@@ -651,13 +703,15 @@ export function CalibrationJobButton({
         description: '',
         start_date: new Date().toISOString().split('T')[0],
         due_date: '',
-        priority: 'medium',
+        priority: '7-day',
         notes: '',
-        job_type: ''
+        job_type: '',
+        equipment_types: [] as string[]
       });
       setGeneratedJobNumber(''); // Clear generated job number
       setCustomerSearchQuery(''); // Clear customer search
       setIsCustomerDropdownOpen(false); // Close customer dropdown
+      setIsEquipmentDropdownOpen(false); // Close equipment dropdown
 
       if (onJobCreated) {
         onJobCreated();
@@ -881,6 +935,55 @@ export function CalibrationJobButton({
               </div>
               )}
 
+              {/* Equipment Types field - only for calibration division */}
+              {jobDivision === 'calibration' && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-1">Equipment Types</label>
+                <div className="relative" ref={equipmentDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsEquipmentDropdownOpen(!isEquipmentDropdownOpen)}
+                    className="w-full px-3 py-2 text-left bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#339C5E] focus:border-[#339C5E] hover:border-[#339C5E] dark:text-white"
+                  >
+                    <span className={formData.equipment_types.length === 0 ? 'text-gray-500' : ''}>
+                      {getEquipmentTypesDisplay()}
+                    </span>
+                    <ChevronDown className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 transition-transform ${isEquipmentDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {isEquipmentDropdownOpen && (
+                    <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      {equipmentTypes.map(equipmentType => (
+                        <label
+                          key={equipmentType}
+                          className="flex items-center px-3 py-2 hover:bg-[#339C5E] hover:text-white cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.equipment_types.includes(equipmentType)}
+                            onChange={() => handleEquipmentTypeToggle(equipmentType)}
+                            className="mr-2 text-[#339C5E] focus:ring-[#339C5E] border-gray-300 rounded"
+                          />
+                          <span className="text-sm">{equipmentType}</span>
+                        </label>
+                      ))}
+                      {formData.equipment_types.length > 0 && (
+                        <div className="border-t border-gray-200 dark:border-gray-600 p-2">
+                          <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, equipment_types: [] as string[] }))}
+                            className="text-xs text-gray-500 hover:text-[#339C5E] transition-colors"
+                          >
+                            Clear all selections
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+              )}
+
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium mb-1">Description</label>
                 <Textarea
@@ -923,31 +1026,94 @@ export function CalibrationJobButton({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem 
-                      value="low"
+                      value="7-day"
                       className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
                       style={{ outline: 'none !important' }}
                       onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
                     >
-                      Low
+                      7-Day
                     </SelectItem>
                     <SelectItem 
-                      value="medium"
+                      value="3-day"
                       className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
                       style={{ outline: 'none !important' }}
                       onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
                     >
-                      Medium
+                      3-Day
                     </SelectItem>
                     <SelectItem 
-                      value="high"
+                      value="2-day"
                       className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
                       style={{ outline: 'none !important' }}
                       onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
                     >
-                      High
+                      2 day
+                    </SelectItem>
+                    <SelectItem 
+                      value="same-day"
+                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
+                      style={{ outline: 'none !important' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
+                    >
+                      Same-Day
+                    </SelectItem>
+                    <SelectItem 
+                      value="on-site"
+                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
+                      style={{ outline: 'none !important' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
+                    >
+                      On-Site
+                    </SelectItem>
+                    <SelectItem 
+                      value="1-month"
+                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
+                      style={{ outline: 'none !important' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
+                    >
+                      1-Month
+                    </SelectItem>
+                    <SelectItem 
+                      value="1-day"
+                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
+                      style={{ outline: 'none !important' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
+                    >
+                      1-Day
+                    </SelectItem>
+                    <SelectItem 
+                      value="14-day"
+                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
+                      style={{ outline: 'none !important' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
+                    >
+                      14 Day
+                    </SelectItem>
+                    <SelectItem 
+                      value="6-month"
+                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
+                      style={{ outline: 'none !important' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
+                    >
+                      6 - Month
+                    </SelectItem>
+                    <SelectItem 
+                      value="5-day"
+                      className="hover:bg-[#339C5E] hover:text-white focus:bg-[#339C5E] focus:text-white data-[highlighted]:bg-[#339C5E] data-[highlighted]:text-white !outline-none"
+                      style={{ outline: 'none !important' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#339C5E !important'; e.currentTarget.style.color = 'white !important'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
+                    >
+                      5-Day
                     </SelectItem>
                   </SelectContent>
                 </SelectRoot>

@@ -24,7 +24,7 @@ interface FormData {
   budget?: string;
   start_date: string;
   due_date?: string;
-  priority: 'low' | 'medium' | 'high';
+  priority: '7-day' | '3-day' | '2-day' | 'same-day' | 'on-site' | '1-month' | '1-day' | '14-day' | '6-month' | '5-day';
   notes?: string;
 }
 
@@ -44,7 +44,7 @@ export function JobCreationForm({ division, onJobCreated, compact = false, butto
     title: '',
     description: '',
     start_date: new Date().toISOString().split('T')[0],
-    priority: 'medium'
+    priority: '7-day'
   });
 
   // Function to open the dialog from outside
@@ -176,7 +176,7 @@ export function JobCreationForm({ division, onJobCreated, compact = false, butto
         title: '',
         description: '',
         start_date: new Date().toISOString().split('T')[0],
-        priority: 'medium'
+        priority: '7-day'
       });
 
       if (onJobCreated) {
@@ -295,14 +295,28 @@ export function JobCreationForm({ division, onJobCreated, compact = false, butto
                   onChange={handleInputChange}
                   className="w-full"
                   options={[
-                    { value: 'low', label: 'Low' },
-                    { value: 'medium', label: 'Medium' },
-                    { value: 'high', label: 'High' }
+                    { value: '7-day', label: '7-Day' },
+                    { value: '3-day', label: '3-Day' },
+                    { value: '2-day', label: '2 day' },
+                    { value: 'same-day', label: 'Same-Day' },
+                    { value: 'on-site', label: 'On-Site' },
+                    { value: '1-month', label: '1-Month' },
+                    { value: '1-day', label: '1-Day' },
+                    { value: '14-day', label: '14 Day' },
+                    { value: '6-month', label: '6 - Month' },
+                    { value: '5-day', label: '5-Day' }
                   ]}
                 >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
+                  <option value="7-day">7-Day</option>
+                  <option value="3-day">3-Day</option>
+                  <option value="2-day">2 day</option>
+                  <option value="same-day">Same-Day</option>
+                  <option value="on-site">On-Site</option>
+                  <option value="1-month">1-Month</option>
+                  <option value="1-day">1-Day</option>
+                  <option value="14-day">14 Day</option>
+                  <option value="6-month">6 - Month</option>
+                  <option value="5-day">5-Day</option>
                 </Select>
               </div>
               

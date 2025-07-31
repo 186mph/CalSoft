@@ -8,6 +8,7 @@ import { Button } from '../ui/Button';
 import { reportImportService } from '../../services/reportImport';
 import Card, { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/Card";
 import { Badge } from "../ui/Badge";
+import JobComments from './JobComments';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/Table";
 import { Popover, PopoverTrigger, PopoverContent } from '../ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/Dialog';
@@ -39,6 +40,10 @@ interface Job {
   customer_id: string;
   division?: string | null;
   notes?: string | null;
+  equipment_types?: string[] | null;
+  comment_count?: number;
+  created_at?: string;
+  updated_at?: string;
   customers: {
     id: string;
     name: string;
@@ -116,6 +121,7 @@ export default function JobDetail() {
   const [isEditing, setIsEditing] = useState(shouldEdit); // Initialize with shouldEdit
   const [editFormData, setEditFormData] = useState<Job | null>(null);
 
+
   // State management
   const [filteredJobAssets, setFilteredJobAssets] = useState<EnhancedAsset[]>([]);
   const [newAssetName, setNewAssetName] = useState('');
@@ -127,6 +133,8 @@ export default function JobDetail() {
   const [isDueDateEditing, setIsDueDateEditing] = useState(false);
   const [tempDueDate, setTempDueDate] = useState<string>('');
   const [activeTab, setActiveTab] = useState('assets');
+  const [isEquipmentDropdownOpen, setIsEquipmentDropdownOpen] = useState(false);
+  const equipmentDropdownRef = useRef<HTMLDivElement>(null);
   const [currentTab, setCurrentTab] = useState('details');
   const [selectedAssetType, setSelectedAssetType] = useState<string>('document');
   const [showUploadDialog, setShowUploadDialog] = useState(false);
@@ -145,7 +153,6 @@ export default function JobDetail() {
   const [assets, setAssets] = useState<{id: any; assets: any;}[]>([]);
 
   // Meter Report states
-  const [isMeterDropdownOpen, setIsMeterDropdownOpen] = useState(false);
   const [meterReportSearchQuery, setMeterReportSearchQuery] = useState<string>('');
   const [existingMeterReports, setExistingMeterReports] = useState<Asset[]>([]);
 
@@ -371,6 +378,7 @@ export default function JobDetail() {
             'calibration-hotstick': { table: 'calibration_hotstick_reports', statusPath: 'status' },
             'calibration-ground-cable': { table: 'calibration_ground_cable_reports', statusPath: 'status' },
             'calibration-bucket-truck': { table: 'calibration_bucket_truck_reports', statusPath: 'status' },
+  'calibration-digger': { table: 'calibration_digger_reports', statusPath: 'status' },
             'meter-template': { table: 'meter_template_reports', statusPath: 'status' }
           };
 
@@ -425,6 +433,52 @@ export default function JobDetail() {
     setEditFormData(prev => prev ? { ...prev, [name]: value } : null);
   };
 
+  // Equipment types options
+  const equipmentTypes = [
+    'Gloves',
+    'Sleeves', 
+    'Blankets',
+    'Live-Line Tools',
+    'Line Hose',
+    'Ground Cables',
+    'Meters',
+    'Torques',
+    'Bucket Trucks',
+    'Diggers/Derek'
+  ];
+
+  // Handle equipment type selection
+  const handleEquipmentTypeToggle = (equipmentType: string) => {
+    setEditFormData(prev => {
+      if (!prev) return null;
+      const currentTypes = prev.equipment_types || [];
+      const isSelected = currentTypes.includes(equipmentType);
+      
+      if (isSelected) {
+        return {
+          ...prev,
+          equipment_types: currentTypes.filter(type => type !== equipmentType)
+        };
+      } else {
+        return {
+          ...prev,
+          equipment_types: [...currentTypes, equipmentType]
+        };
+      }
+    });
+  };
+
+  // Get display text for equipment types
+  const getEquipmentTypesDisplay = () => {
+    if (!editFormData?.equipment_types || editFormData.equipment_types.length === 0) {
+      return 'Select equipment types...';
+    }
+    if (editFormData.equipment_types.length === 1) {
+      return editFormData.equipment_types[0];
+    }
+    return `${editFormData.equipment_types.length} types selected`;
+  };
+
   // Handle edit form submission
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -449,6 +503,7 @@ export default function JobDetail() {
           due_date: editFormData.due_date || null,
           budget: editFormData.budget ? parseFloat(editFormData.budget.toString()) : null,
           notes: editFormData.notes || null,
+          equipment_types: editFormData.equipment_types || null,
         })
         .eq('id', id);
 
@@ -467,6 +522,78 @@ export default function JobDetail() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Status updating state
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  
+  // Completion confirmation prompt state
+  const [showCompletionPrompt, setShowCompletionPrompt] = useState(false);
+  const [pendingStatusChange, setPendingStatusChange] = useState<string | null>(null);
+
+  // Handle status update
+  const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newStatus = e.target.value;
+    if (!job || !id || newStatus === job.status) return;
+
+    // If changing to completed, show confirmation prompt
+    if (newStatus === 'completed') {
+      setPendingStatusChange(newStatus);
+      setShowCompletionPrompt(true);
+      // Reset dropdown to current status until confirmed
+      e.target.value = job.status;
+      return;
+    }
+
+    // For other status changes, proceed normally
+    await updateJobStatus(newStatus);
+  };
+
+  // Function to actually update the job status
+  const updateJobStatus = async (newStatus: string) => {
+    if (!job || !id) return;
+
+    setIsUpdatingStatus(true);
+
+    try {
+      // Determine which schema and table to use based on job division
+      const isLabJob = job?.division?.toLowerCase() === 'calibration' || job?.division?.toLowerCase() === 'armadillo';
+      const schema = isLabJob ? 'lab_ops' : 'neta_ops';
+      const table = isLabJob ? 'lab_jobs' : 'jobs';
+
+      const { error } = await supabase
+        .schema(schema)
+        .from(table)
+        .update({ status: newStatus })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Update local job state immediately for real-time UI feedback
+      setJob(prev => prev ? { ...prev, status: newStatus } : null);
+      
+      toast.success('Status updated successfully!');
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast.error('Failed to update status');
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
+  // Handle completion confirmation
+  const handleCompletionConfirm = async () => {
+    if (pendingStatusChange) {
+      await updateJobStatus(pendingStatusChange);
+    }
+    setShowCompletionPrompt(false);
+    setPendingStatusChange(null);
+  };
+
+  // Handle completion cancellation
+  const handleCompletionCancel = () => {
+    setShowCompletionPrompt(false);
+    setPendingStatusChange(null);
   };
 
   // Load job details on component mount
@@ -490,12 +617,14 @@ export default function JobDetail() {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
-        setIsMeterDropdownOpen(false);
+      }
+      if (equipmentDropdownRef.current && !equipmentDropdownRef.current.contains(event.target as Node)) {
+        setIsEquipmentDropdownOpen(false);
       }
     }
     
     // Add event listener only if any dropdown is open
-    if (isDropdownOpen || isMeterDropdownOpen) {
+    if (isDropdownOpen || isEquipmentDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     
@@ -503,7 +632,7 @@ export default function JobDetail() {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isDropdownOpen, isMeterDropdownOpen]);
+  }, [isDropdownOpen, isEquipmentDropdownOpen]);
 
   // Check for tab query parameter and update the active tab
   useEffect(() => {
@@ -643,6 +772,7 @@ export default function JobDetail() {
                 'calibration-hotstick': 'Hotstick',
                 'calibration-ground-cable': 'Ground Cable',
                 'calibration-bucket-truck': 'Bucket Truck',
+                'calibration-digger': 'Digger',
                 'panelboard-report': 'Panelboard',
                 'low-voltage-switch-multi-device-test': 'LV Switch',
                 'low-voltage-circuit-breaker-electronic-trip-ats-report': 'LV Circuit Breaker',
@@ -828,7 +958,7 @@ export default function JobDetail() {
             
             // For calibration gloves reports, try to extract assetId from report
             if (asset.file_url && asset.file_url.includes('calibration-gloves') && !userAssetId) {
-              const reportIdMatch = asset.file_url.match(/calibration-gloves\/([^\/\?]+)/);
+              const reportIdMatch = asset.file_url.match(/calibration-gloves\/([^/?]+)/);
               const reportId = reportIdMatch ? reportIdMatch[1] : null;
               
               if (reportId) {
@@ -895,24 +1025,29 @@ export default function JobDetail() {
 
   async function fetchOpportunityForJob(jobId: string) {
     try {
+      // Check if opportunities table exists first
       const { data, error } = await supabase
         .schema('common')
         .from('opportunities')
-        .select('id, quote_number') // Removed division
+        .select('id, quote_number')
         .eq('job_id', jobId)
         .single();
 
       if (error) {
-        if (error.code === 'PGRST116') {
-          // No opportunity found, which is fine
+        // If table doesn't exist or other error, just return null gracefully
+        if (error.code === 'PGRST116' || error.code === '42P01') {
+          // No opportunity found or table doesn't exist, which is fine
           return null;
         }
-        throw error;
+        // Log other errors but don't throw
+        console.warn('Error fetching opportunity for job (non-critical):', error);
+        return null;
       }
 
       return data;
     } catch (error) {
-      console.error('Error fetching opportunity for job:', error);
+      // Catch any other errors and return null gracefully
+      console.warn('Error fetching opportunity for job (non-critical):', error);
       return null;
     }
   }
@@ -1304,6 +1439,7 @@ export default function JobDetail() {
       'calibration-hotstick': 'calibration-hotstick',
       'calibration-ground-cable': 'calibration-ground-cable',
       'calibration-bucket-truck': 'calibration-bucket-truck',
+  'calibration-digger': 'calibration-digger',
       'meter-template': 'meter-template'
       // ensure all slugs from defaultAssets and App.tsx routes are here
     };
@@ -1497,7 +1633,8 @@ export default function JobDetail() {
             'calibration-line-hose': 'calibration_line_hose_reports',
             'calibration-hotstick': 'calibration_hotstick_reports',
             'calibration-ground-cable': 'calibration_ground_cable_reports',
-            'calibration-bucket-truck': 'calibration_bucket_truck_reports'
+            'calibration-bucket-truck': 'calibration_bucket_truck_reports',
+  'calibration-digger': 'calibration_digger_reports'
           };
 
       // Process each calibration report
@@ -1608,8 +1745,10 @@ export default function JobDetail() {
         return generateBlanketHTML(formData, status);
       case 'calibration-line-hose':
         return generateLineHoseHTML(formData, status);
-      case 'calibration-bucket-truck':
-        return generateBucketTruckHTML(formData, status);
+              case 'calibration-bucket-truck':
+          return generateBucketTruckHTML(formData, status);
+        case 'calibration-digger':
+          return generateDiggerHTML(formData, status);
       case 'meter-template':
         return generateMeterHTML(formData, status);
       default:
@@ -2490,6 +2629,104 @@ export default function JobDetail() {
     `;
   };
 
+  // Generate HTML for Digger Report
+  const generateDiggerHTML = (formData: any, status: string): string => {
+    console.log('generateDiggerHTML called with:', { formData, status });
+    
+    // Extract data from formData
+    const customer = formData.customer || '';
+    const jobNumber = formData.jobNumber || '';
+    const date = formData.date || '';
+    const comments = formData.comments || '';
+    
+    // Handle digger data - it might be nested differently
+    const diggerData = formData.diggerData || formData;
+    const assetId = diggerData.assetId || formData.assetId || '';
+    const diggerNumber = diggerData.diggerNumber || formData.diggerNumber || '';
+    const serialNumber = diggerData.serialNumber || formData.serialNumber || '';
+    const manufacturer = diggerData.manufacturer || formData.manufacturer || '';
+    const model = diggerData.model || formData.model || '';
+    
+    return `
+      <div style="padding: 20px; font-family: Arial, sans-serif; color: black; background: white; font-size: 12px;">
+        <!-- Header -->
+        <div style="margin-bottom: 15px;">
+          <!-- AMP CALIBRATION Logo Area -->
+          <div style="margin-bottom: 10px; display: flex; align-items: center;">
+            <img src="/img/amp-cal-logo.png" 
+                 alt="AMP Calibration Logo" 
+                 style="height: 60px; margin-right: 8px;" />
+          </div>
+          
+          <h2 style="font-size: 16px; font-weight: bold; margin: 10px 0 5px 0; color: black;">Digger Test Certificate</h2>
+        </div>
+
+        <!-- Main Content - Two Column Layout -->
+        <div style="display: flex; margin-bottom: 15px;">
+          <!-- Left Column - Overview -->
+          <div style="flex: 1; margin-right: 20px;">
+            <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black;">Overview</h3>
+            
+            <div style="margin-bottom: 6px;"><strong>Customer Name:</strong></div>
+            <div style="margin-bottom: 8px;">${customer || '[Customer Name]'}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Project #:</strong></div>
+            <div style="margin-bottom: 8px;">${jobNumber || '[Project Number]'}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>AMP ID:</strong></div>
+            <div style="margin-bottom: 8px;">${assetId}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Digger Number:</strong></div>
+            <div style="margin-bottom: 8px;">${diggerNumber}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Manufacturer:</strong></div>
+            <div style="margin-bottom: 8px;">${manufacturer}</div>
+          </div>
+
+          <!-- Right Column - Result -->
+          <div style="flex: 1;">
+            <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black;">Result <span style="color: ${status === 'PASS' ? 'green' : 'red'};">${status}</span></h3>
+            
+            <div style="margin-bottom: 6px;"><strong>Test Date:</strong></div>
+            <div style="margin-bottom: 8px;">${date}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Serial Number:</strong></div>
+            <div style="margin-bottom: 8px;">${serialNumber}</div>
+            
+            <div style="margin-bottom: 6px;"><strong>Model:</strong></div>
+            <div style="margin-bottom: 8px;">${model}</div>
+          </div>
+        </div>
+
+        <!-- Comments Section -->
+        ${comments ? `
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 8px 0; color: black; text-decoration: underline;">Comments</h3>
+          <p style="font-size: 11px; line-height: 1.3; margin: 0; color: #333;">${comments}</p>
+        </div>
+        ` : ''}
+
+        <!-- Footer -->
+        <div style="position: relative; margin-top: 40px;">
+          <!-- Signature Image -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <img src="/img/signature.png" 
+                 alt="Signature" 
+                 style="height: 150px; width: auto; display: block; margin: 0 auto;" />
+          </div>
+          
+          <!-- Limited Liability -->
+          <div style="margin-top: 30px;">
+            <h4 style="font-size: 12px; font-weight: bold; margin: 0 0 5px 0; color: black; text-decoration: underline;">Limited Liability</h4>
+            <p style="font-size: 10px; line-height: 1.3; margin: 0; color: #333;">
+              The tests guarantee the equipment is functioning within product specifications when it leaves the AMP Calibration Services Lab. AMP and/or any of our partners will not assume any liability incurred during the use of this unit should it not perform properly for any reason.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
   // Generate HTML for Meter Template Report
   const generateMeterHTML = (formData: any, status: string): string => {
     console.log('generateMeterHTML called with:', { formData, status });
@@ -2720,6 +2957,11 @@ export default function JobDetail() {
         </div>
       </div>
 
+      {/* Comments Section */}
+      <div className="mb-8">
+        <JobComments jobId={id || ''} jobDivision={job?.division || ''} />
+      </div>
+
       <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-dark-150 shadow">
         {isEditing ? (
           <div className="px-6 py-4">
@@ -2737,15 +2979,20 @@ export default function JobDetail() {
                     Job #{job.job_number || 'Pending'}
                   </p>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <Badge className={`${
-                    job.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    job.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
-                    job.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {job.status}
-                  </Badge>
+                                <div className="flex items-center space-x-4">
+                  <select
+                    value={job.status}
+                    onChange={handleStatusChange}
+                    disabled={isUpdatingStatus}
+                    className={`px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[120px] ${
+                      isUpdatingStatus ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="ready-to-bill">Ready To Bill</option>
+                  </select>
                   <Badge className={`${
                     job.priority === 'high' ? 'bg-red-100 text-red-800' :
                     job.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
@@ -2758,11 +3005,29 @@ export default function JobDetail() {
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                 <div>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Job Number</h3>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                    {job.job_number || 'Not assigned'}
+                  </p>
+                </div>
+                <div>
                   <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Customer</h3>
                   <p className="mt-1 text-sm text-gray-900 dark:text-white">
                     {job.customers?.company_name || job.customers?.name || 'Unknown Customer'}
                   </p>
+                  {job.customers?.address && (
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      {job.customers.address}
+                    </p>
+                  )}
                 </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Division</h3>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                    {job.division ? job.division.charAt(0).toUpperCase() + job.division.slice(1) : 'Not set'}
+                  </p>
+                </div>
+
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Start Date</h3>
                   <p className="mt-1 text-sm text-gray-900 dark:text-white">
@@ -2775,19 +3040,60 @@ export default function JobDetail() {
                     {job.due_date ? format(new Date(job.due_date), 'MMM d, yyyy') : 'Not set'}
                   </p>
                 </div>
+                {job.budget && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Budget</h3>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                      ${job.budget.toLocaleString()}
+                    </p>
+                  </div>
+                )}
 
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Division</h3>
-                  <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                    {job.division ? job.division.charAt(0).toUpperCase() + job.division.slice(1) : 'Not set'}
-                  </p>
-                </div>
+                {job.equipment_types && job.equipment_types.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Equipment Types</h3>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                      {job.equipment_types.join(', ')}
+                    </p>
+                  </div>
+                )}
               </div>
               
               {job.description && (
                 <div className="mt-6">
                   <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Description</h3>
                   <p className="mt-1 text-sm text-gray-900 dark:text-white">{job.description}</p>
+                </div>
+              )}
+
+              {job.notes && (
+                <div className="mt-6">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Notes</h3>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-white">{job.notes}</p>
+                </div>
+              )}
+
+              {(job.created_at || job.updated_at) && (
+                <div className="mt-6">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Timestamps</h3>
+                  <div className="mt-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {job.created_at && (
+                      <div>
+                        <h4 className="text-xs font-medium text-gray-400 dark:text-gray-500">Created</h4>
+                        <p className="text-sm text-gray-900 dark:text-white">
+                          {format(new Date(job.created_at), 'MMM d, yyyy h:mm a')}
+                        </p>
+                      </div>
+                    )}
+                    {job.updated_at && (
+                      <div>
+                        <h4 className="text-xs font-medium text-gray-400 dark:text-gray-500">Last Updated</h4>
+                        <p className="text-sm text-gray-900 dark:text-white">
+                          {format(new Date(job.updated_at), 'MMM d, yyyy h:mm a')}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -2825,7 +3131,7 @@ export default function JobDetail() {
                           </Button>
                         )}
                         
-                        {/* New Calibration Add Asset button */}
+                        {/* Combined Add Asset button for Calibration Division */}
                         {job?.division?.toLowerCase() === 'calibration' && (
                           <>
                             <Button 
@@ -2834,14 +3140,6 @@ export default function JobDetail() {
                             >
                               <Plus className="h-5 w-5 min-w-[20px] flex-shrink-0" />
                               Add Asset
-                            </Button>
-                            
-                            <Button 
-                              onClick={() => setIsMeterDropdownOpen(!isMeterDropdownOpen)}
-                              className="flex items-center gap-2 bg-[#339C5E] hover:bg-[#2d8a54] text-white"
-                            >
-                              <Plus className="h-5 w-5 min-w-[20px] flex-shrink-0" />
-                              Add Meter
                             </Button>
                             
                             <Button 
@@ -2861,9 +3159,12 @@ export default function JobDetail() {
                             <div className="p-2">
                               <input
                                 type="text"
-                                placeholder="Search reports..."
+                                placeholder="Search reports and meters..."
                                 value={reportSearchQuery}
-                                onChange={(e) => setReportSearchQuery(e.target.value)}
+                                onChange={(e) => {
+                                  setReportSearchQuery(e.target.value);
+                                  setMeterReportSearchQuery(e.target.value);
+                                }}
                                 className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md mb-2 bg-white dark:bg-dark-100 text-gray-900 dark:text-white"
                               />
                               
@@ -2944,6 +3245,104 @@ export default function JobDetail() {
                                       <span className="truncate">Bucket Truck Report</span>
                                     </div>
                                   </Link>
+                                  <Link 
+                                    to={`/jobs/${id}/calibration-digger`}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    onClick={() => setIsDropdownOpen(false)}
+                                  >
+                                    <div className="flex items-center">
+                                      <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                      <span className="truncate">Digger Report</span>
+                                    </div>
+                                  </Link>
+                                  
+                                  {/* Meter Reports Section */}
+                                  <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700">
+                                    Meter Reports
+                                  </div>
+                                  
+                                  {/* New Meter Report */}
+                                  <Link 
+                                    to={`/jobs/${id}/meter-template`}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    onClick={() => setIsDropdownOpen(false)}
+                                  >
+                                    <div className="flex items-center">
+                                      <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                      <span className="truncate">Meter Template</span>
+                                    </div>
+                                  </Link>
+                                  
+                                  {/* Existing Meter Reports */}
+                                  {existingMeterReports.length > 0 && (
+                                    <>
+                                      <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700">
+                                        Existing Meter Reports ({existingMeterReports.length})
+                                      </div>
+                                      {existingMeterReports
+                                        .filter(report => 
+                                          meterReportSearchQuery === '' || 
+                                          report.name.toLowerCase().includes(meterReportSearchQuery.toLowerCase())
+                                        )
+                                        .map((report) => {
+                                          // Handle templates differently from regular reports
+                                          const isTemplate = report.file_url.startsWith('template:');
+                                          const templateId = isTemplate ? report.id.replace('meter-template-', '') : null;
+                                          
+                                          if (isTemplate) {
+                                            // For templates, make name clickable to use template, with edit icon
+                                            return (
+                                              <div key={report.id} className="flex items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                                <Link 
+                                                  to={`/jobs/${id}/meter-template?templateId=${templateId}`}
+                                                  className="flex-1 flex items-center"
+                                                  onClick={() => setIsDropdownOpen(false)}
+                                                >
+                                                  <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                                  <span className="truncate">{report.name}</span>
+                                                </Link>
+                                                <div className="flex items-center ml-2">
+                                                  <Link 
+                                                    to={`/meter-template/${templateId}?returnPath=/jobs/${id}%3Ftab%3Dassets`}
+                                                    className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+                                                    onClick={() => setIsDropdownOpen(false)}
+                                                    title="Edit Template"
+                                                  >
+                                                    <Pencil className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                                                  </Link>
+                                                </div>
+                                              </div>
+                                            );
+                                          } else {
+                                            // For regular reports, navigate to edit the existing report
+                                            return (
+                                              <Link 
+                                                key={report.id}
+                                                to={report.file_url.replace('report:', '')}
+                                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                onClick={() => setIsDropdownOpen(false)}
+                                              >
+                                                <div className="flex items-center justify-between">
+                                                  <div className="flex items-center">
+                                                    <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                                    <span className="truncate">{report.name}</span>
+                                                  </div>
+                                                  <div className="flex items-center ml-2">
+                                                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                                      report.pass_fail_status === 'PASS' 
+                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
+                                                        : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
+                                                    }`}>
+                                                      {report.pass_fail_status}
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                              </Link>
+                                            );
+                                          }
+                                        })}
+                                    </>
+                                  )}
                                 </div>
                               ) : (
                                 // Original reports for other divisions
@@ -3042,108 +3441,7 @@ export default function JobDetail() {
                           </div>
                         )}
                         
-                        {/* Meter Reports dropdown menu */}
-                        {isMeterDropdownOpen && (
-                          <div className="absolute right-0 mt-12 w-96 bg-white dark:bg-dark-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 z-50" style={{ top: '100%', marginLeft: '150px' }}>
-                            <div className="p-2">
-                              <input
-                                type="text"
-                                placeholder="Search meter reports..."
-                                value={meterReportSearchQuery}
-                                onChange={(e) => setMeterReportSearchQuery(e.target.value)}
-                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md mb-2 bg-white dark:bg-dark-100 text-gray-900 dark:text-white"
-                              />
-                              
-                              {/* Meter Template */}
-                              <div className="py-1">
-                                <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700">
-                                  New Meter Report
-                                </div>
-                                <Link 
-                                  to={`/jobs/${id}/meter-template`}
-                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                  onClick={() => setIsMeterDropdownOpen(false)}
-                                >
-                                  <div className="flex items-center">
-                                    <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                    <span className="truncate">Meter Template</span>
-                                  </div>
-                                </Link>
-                              </div>
-                              
-                              {/* Existing Meter Reports */}
-                              {existingMeterReports.length > 0 && (
-                                <div className="py-1">
-                                  <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700">
-                                    Existing Meter Reports ({existingMeterReports.length})
-                                  </div>
-                                  {existingMeterReports
-                                    .filter(report => 
-                                      meterReportSearchQuery === '' || 
-                                      report.name.toLowerCase().includes(meterReportSearchQuery.toLowerCase())
-                                    )
-                                    .map((report) => {
-                                      // Handle templates differently from regular reports
-                                      const isTemplate = report.file_url.startsWith('template:');
-                                      const templateId = isTemplate ? report.id.replace('meter-template-', '') : null;
-                                      
-                                      if (isTemplate) {
-                                        // For templates, make name clickable to use template, with edit icon
-                                        return (
-                                          <div key={report.id} className="flex items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                            <Link 
-                                              to={`/jobs/${id}/meter-template?templateId=${templateId}`}
-                                              className="flex-1 flex items-center"
-                                              onClick={() => setIsMeterDropdownOpen(false)}
-                                            >
-                                              <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                              <span className="truncate">{report.name}</span>
-                                            </Link>
-                                            <div className="flex items-center ml-2">
-                                              <Link 
-                                                to={`/meter-template/${templateId}?returnPath=/jobs/${id}%3Ftab%3Dassets`}
-                                                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
-                                                onClick={() => setIsMeterDropdownOpen(false)}
-                                                title="Edit Template"
-                                              >
-                                                <Pencil className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                                              </Link>
-                                            </div>
-                                          </div>
-                                        );
-                                      } else {
-                                        // For regular reports, navigate to edit the existing report
-                                        return (
-                                          <Link 
-                                            key={report.id}
-                                            to={report.file_url.replace('report:', '')}
-                                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                            onClick={() => setIsMeterDropdownOpen(false)}
-                                          >
-                                            <div className="flex items-center justify-between">
-                                              <div className="flex items-center">
-                                                <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                                <span className="truncate">{report.name}</span>
-                                              </div>
-                                              <div className="flex items-center ml-2">
-                                                <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                                                  report.pass_fail_status === 'PASS' 
-                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
-                                                    : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
-                                                }`}>
-                                                  {report.pass_fail_status}
-                                                </span>
-                                              </div>
-                                            </div>
-                                          </Link>
-                                        );
-                                      }
-                                    })}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
+
                       </div>
                     </div>
 
@@ -3265,7 +3563,7 @@ export default function JobDetail() {
                             <TableBody className="divide-y divide-gray-200 dark:divide-gray-700">
                               {filteredJobAssets.map((asset) => {
                                 // Use the user-entered Asset ID if available (from glove reports)
-                                let displayAssetId = (asset as any).userAssetId || asset.id;
+                                const displayAssetId = (asset as any).userAssetId || asset.id;
                                 
                                 // Function to determine the simplified report type from the file_url
                                 const getSimplifiedReportType = (asset: Asset) => {
@@ -3287,6 +3585,7 @@ export default function JobDetail() {
                                         'calibration-hotstick': 'Hotstick',
                                         'calibration-ground-cable': 'Ground Cable',
                                         'calibration-bucket-truck': 'Bucket Truck',
+                                        'calibration-digger': 'Digger',
                                         'meter-template': 'Meter',
                                         'panelboard-report': 'Panelboard',
                                         'low-voltage-switch-multi-device-test': 'LV Switch',
@@ -3617,11 +3916,71 @@ export default function JobDetail() {
                         : 'focus:ring-[#f26722] focus:border-[#f26722]'
                     }`}
                   >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
+                    <option value="7-day">7-Day</option>
+                    <option value="3-day">3-Day</option>
+                    <option value="2-day">2 day</option>
+                    <option value="same-day">Same-Day</option>
+                    <option value="on-site">On-Site</option>
+                    <option value="1-month">1-Month</option>
+                    <option value="1-day">1-Day</option>
+                    <option value="14-day">14 Day</option>
+                    <option value="6-month">6 - Month</option>
+                    <option value="5-day">5-Day</option>
                   </select>
                 </div>
+
+                {/* Equipment Types field - only for calibration division */}
+                {job?.division?.toLowerCase() === 'calibration' && (
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Equipment Types</label>
+                  <div className="relative" ref={equipmentDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setIsEquipmentDropdownOpen(!isEquipmentDropdownOpen)}
+                      className={`w-full px-3 py-2 text-left bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 hover:border-[#339C5E] dark:text-white ${
+                        job?.division?.toLowerCase() === 'calibration' 
+                          ? 'focus:ring-[#339C5E] focus:border-[#339C5E]'
+                          : 'focus:ring-[#f26722] focus:border-[#f26722]'
+                      }`}
+                    >
+                      <span className={(editFormData?.equipment_types?.length || 0) === 0 ? 'text-gray-500' : ''}>
+                        {getEquipmentTypesDisplay()}
+                      </span>
+                      <ChevronDown className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 transition-transform ${isEquipmentDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {isEquipmentDropdownOpen && (
+                      <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                        {equipmentTypes.map(equipmentType => (
+                          <label
+                            key={equipmentType}
+                            className="flex items-center px-3 py-2 hover:bg-[#339C5E] hover:text-white cursor-pointer transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={editFormData?.equipment_types?.includes(equipmentType) || false}
+                              onChange={() => handleEquipmentTypeToggle(equipmentType)}
+                              className="mr-2 text-[#339C5E] focus:ring-[#339C5E] border-gray-300 rounded"
+                            />
+                            <span className="text-sm">{equipmentType}</span>
+                          </label>
+                        ))}
+                        {(editFormData?.equipment_types?.length || 0) > 0 && (
+                          <div className="border-t border-gray-200 dark:border-gray-600 p-2">
+                            <button
+                              type="button"
+                              onClick={() => setEditFormData(prev => prev ? { ...prev, equipment_types: [] } : null)}
+                              className="text-xs text-gray-500 hover:text-[#339C5E] transition-colors"
+                            >
+                              Clear all selections
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                )}
 
                 {/* Only show budget field for non-calibration/armadillo jobs */}
                 {!(job?.division?.toLowerCase() === 'calibration' || job?.division?.toLowerCase() === 'armadillo') && (
@@ -3695,6 +4054,53 @@ export default function JobDetail() {
               </div>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Completion Confirmation Prompt */}
+      <Dialog open={showCompletionPrompt} onOpenChange={setShowCompletionPrompt}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Complete Job Confirmation</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-3 py-4">
+            <div className="flex items-start space-x-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Confirm reports have been received by customer
+              </p>
+            </div>
+            
+            <div className="flex items-start space-x-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Mark if order is shipped or picked up
+              </p>
+            </div>
+            
+            <div className="flex items-start space-x-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                If shipped: must provide tracking number
+              </p>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <button
+              onClick={handleCompletionCancel}
+              className="flex items-center px-3 py-1.5 text-sm font-medium bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCompletionConfirm}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            >
+              Confirm
+            </button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

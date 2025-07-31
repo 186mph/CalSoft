@@ -705,7 +705,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
       }
 
       // Calculate temperature corrected value if needed
-      let newTempCorrectedInsulation = [...prev.tempCorrectedInsulation];
+      const newTempCorrectedInsulation = [...prev.tempCorrectedInsulation];
       if (!newTempCorrectedInsulation[index]) {
         newTempCorrectedInsulation[index] = {
           positionIdentifier: newInsulationResistance[index].positionIdentifier,

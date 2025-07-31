@@ -164,6 +164,7 @@ import CalibrationLineHoseReport from './components/reports/CalibrationLineHoseR
 import CalibrationHotstickReport from './components/reports/CalibrationHotstickReport';
 import CalibrationGroundCableReport from './components/reports/CalibrationGroundCableReport';
 import CalibrationBucketTruckReport from './components/reports/CalibrationBucketTruckReport';
+import CalibrationDiggerReport from './components/reports/CalibrationDiggerReport';
 
 // Import Meter Template Report
 import MeterTemplateReport from './components/reports/MeterTemplateReport';
@@ -515,6 +516,7 @@ function App() {
                   <Route path="/jobs/:id/calibration-hotstick/:reportId?" element={<RequireAuth><Layout><CalibrationHotstickReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/calibration-ground-cable/:reportId?" element={<RequireAuth><Layout><CalibrationGroundCableReport /></Layout></RequireAuth>} />
                   <Route path="/jobs/:id/calibration-bucket-truck/:reportId?" element={<RequireAuth><Layout><CalibrationBucketTruckReport /></Layout></RequireAuth>} />
+                  <Route path="/jobs/:id/calibration-digger/:reportId?" element={<RequireAuth><Layout><CalibrationDiggerReport /></Layout></RequireAuth>} />
                   
                   {/* Added route for Meter Template Report */}
                   <Route path="/jobs/:id/meter-template/:reportId?" element={<RequireAuth><Layout><MeterTemplateReport /></Layout></RequireAuth>} />

@@ -279,7 +279,8 @@ export default function DeletedAssetsPage() {
           'calibration-line-hose': 'Line Hose',
           'calibration-hotstick': 'Hotstick',
           'calibration-ground-cable': 'Ground Cable',
-          'calibration-bucket-truck': 'Bucket Truck'
+          'calibration-bucket-truck': 'Bucket Truck',
+  'calibration-digger': 'Digger'
         };
         
         return reportTypeMap[cleanReportSlug] || 'Report';
