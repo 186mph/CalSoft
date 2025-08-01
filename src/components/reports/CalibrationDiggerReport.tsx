@@ -297,9 +297,9 @@ export default function CalibrationBucketTruckReport() {
       created_at: new Date().toISOString(),
     },
     {
-      id: 'calibration-bucket-truck',
-      name: 'Bucket Truck Report',
-      file_url: `report:/jobs/${jobId}/calibration-bucket-truck?returnToAssets=true`,
+      id: 'calibration-digger',
+      name: 'Digger Report',
+      file_url: `report:/jobs/${jobId}/calibration-digger?returnToAssets=true`,
       created_at: new Date().toISOString(),
     }
   ];
@@ -441,7 +441,7 @@ export default function CalibrationBucketTruckReport() {
         // Create asset entry for the report
         if (data) {
           const assetData = {
-            name: `Bucket Truck Report - ${formData.bucketTruckData.truckNumber || 'Unnamed'}`,
+            name: `Digger Report - ${formData.bucketTruckData.truckNumber || 'Unnamed'}`,
             file_url: `report:/jobs/${jobId}/bucket-truck-report/${data.id}`,
             user_id: user.id
           };
@@ -1957,8 +1957,8 @@ export default function CalibrationBucketTruckReport() {
 
       // Create asset record only for new reports
       if (savedReportId && !reportId) {
-        const assetName = `Bucket Truck Report - ${formData.bucketTruckData.manufacturer || ''} - ${new Date().toLocaleDateString()}`;
-        const assetUrl = `report:/jobs/${jobId}/calibration-bucket-truck/${savedReportId}`;
+        const assetName = `Digger Report - ${formData.bucketTruckData.manufacturer || ''} - ${new Date().toLocaleDateString()}`;
+        const assetUrl = `report:/jobs/${jobId}/calibration-digger/${savedReportId}`;
 
         console.log('Creating asset record with name:', assetName);
         console.log('Asset URL:', assetUrl);
@@ -2465,7 +2465,7 @@ export default function CalibrationBucketTruckReport() {
     if (!jobId) return;
     
     try {
-      console.log(`Fetching assets for Bucket Truck Report ${urlReportId || 'new'}`);
+      console.log(`Fetching assets for Digger Report ${urlReportId || 'new'}`);
       
       // For calibration jobs, fetch assets linked to this specific bucket truck report
       let query = supabase
@@ -2488,12 +2488,12 @@ export default function CalibrationBucketTruckReport() {
       const { data, error } = await query;
         
       if (error) {
-        console.error('Error fetching bucket truck report assets:', error);
+        console.error('Error fetching digger report assets:', error);
         throw error;
       }
       
       const assetsData = data || [];
-      console.log(`Retrieved ${assetsData.length} bucket truck report assets:`, assetsData);
+              console.log(`Retrieved ${assetsData.length} digger report assets:`, assetsData);
       
       // Transform the assets
       const transformedAssets: Asset[] = [];
@@ -2529,7 +2529,7 @@ export default function CalibrationBucketTruckReport() {
       setFilteredJobAssets(enhancedAssets);
       
     } catch (error) {
-      console.error('Error fetching bucket truck report assets:', error);
+              console.error('Error fetching digger report assets:', error);
     }
   }
 
@@ -2602,7 +2602,7 @@ export default function CalibrationBucketTruckReport() {
           name: newAssetName,
           file_url: publicUrl,
           job_id: jobId,
-          report_id: urlReportId, // Link to this specific bucket truck report
+          report_id: urlReportId, // Link to this specific digger report
           user_id: user?.id,
           asset_id: generatedAssetId, // Add the generated Asset ID
           created_at: new Date().toISOString(),
@@ -2708,7 +2708,7 @@ export default function CalibrationBucketTruckReport() {
       'calibration-line-hose': 'calibration-line-hose',
       'calibration-hotstick': 'calibration-hotstick',
       'calibration-ground-cable': 'calibration-ground-cable',
-      'calibration-bucket-truck': 'calibration-bucket-truck'
+              'calibration-digger': 'calibration-digger'
     };
 
     const mappedReportName = reportPathMap[reportNameSlug];
@@ -2732,7 +2732,7 @@ export default function CalibrationBucketTruckReport() {
     const initializeNewReport = async () => {
       // For new reports, generate Asset ID immediately
       if (!urlReportId && !formData.bucketTruckData.assetId) {
-        console.log('Initializing new bucket truck report - generating Asset ID immediately');
+        console.log('Initializing new digger report - generating Asset ID immediately');
         try {
           // Use customer ID if available, otherwise use default
           const customerIdForAssetGen = formData.customerId || formData.customerIdForAsset || '1';
@@ -2775,7 +2775,7 @@ export default function CalibrationBucketTruckReport() {
             Back
           </button>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {urlReportId ? 'Edit Bucket Truck Report' : 'New Bucket Truck Report'}
+                            {urlReportId ? 'Edit Digger Report' : 'New Digger Report'}
           </h1>
         </div>
         <div className="flex items-center space-x-4">
@@ -2830,9 +2830,9 @@ export default function CalibrationBucketTruckReport() {
           ) : (
             <>
               <button
-                onClick={() => navigate(`/jobs/${jobId}/calibration-bucket-truck`)}
+                onClick={() => navigate(`/jobs/${jobId}/calibration-digger`)}
                 className={`${accentClasses.bg} ${accentClasses.bgHover} text-white font-medium px-3 py-2 rounded-md flex items-center justify-center`}
-                title="Create New Bucket Truck Report"
+                title="Create New Digger Report"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -3397,7 +3397,7 @@ export default function CalibrationBucketTruckReport() {
               <div>
                 <CardTitle>Linked Assets</CardTitle>
                 <CardDescription>
-                  Assets and documents that have been linked to this bucket truck report
+                  Assets and documents that have been linked to this digger report
                 </CardDescription>
               </div>
               <div className="w-1/3">
@@ -3414,7 +3414,7 @@ export default function CalibrationBucketTruckReport() {
           <CardContent>
             {jobAssets.length === 0 ? (
               <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                <p>No assets have been linked to this bucket truck report yet.</p>
+                <p>No assets have been linked to this digger report yet.</p>
               </div>
             ) : filteredJobAssets.length === 0 ? (
               <div className="text-center py-4 text-gray-500 dark:text-gray-400">

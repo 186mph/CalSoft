@@ -67,7 +67,7 @@ async function applyMigrations() {
         console.log('Creating migrations table...');
         const { error: createTableError } = await supabase.rpc('exec_sql', {
           sql_query: `
-            CREATE TABLE IF NOT EXISTS migrations (
+            CREATE TABLE IF NOT EXISTS common.migrations (
               id SERIAL PRIMARY KEY,
               name TEXT NOT NULL UNIQUE,
               applied_at TIMESTAMPTZ DEFAULT NOW()
@@ -83,13 +83,13 @@ async function applyMigrations() {
     } catch (err) {
       // Check if migrations table exists
       try {
-        const { data, error } = await supabase.from('migrations').select('*').limit(1);
+        const { data, error } = await supabase.schema('common').from('migrations').select('*').limit(1);
         if (error) {
           // Table likely doesn't exist, create it
           console.log('Creating migrations table...');
           const { error: createTableError } = await supabase.rpc('exec_sql', {
             sql_query: `
-              CREATE TABLE IF NOT EXISTS migrations (
+              CREATE TABLE IF NOT EXISTS common.migrations (
                 id SERIAL PRIMARY KEY,
                 name TEXT NOT NULL UNIQUE,
                 applied_at TIMESTAMPTZ DEFAULT NOW()
@@ -110,6 +110,7 @@ async function applyMigrations() {
     
     // Get list of already applied migrations
     const { data: appliedMigrations, error: listError } = await supabase
+      .schema('common')
       .from('migrations')
       .select('name');
     
@@ -164,6 +165,7 @@ async function applyMigrations() {
         
         // Record migration as applied
         const { error: recordError } = await supabase
+          .schema('common')
           .from('migrations')
           .insert({ name: file });
         

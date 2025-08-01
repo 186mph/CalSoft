@@ -76,6 +76,8 @@ interface Asset {
   template_type?: 'MTS' | 'ATS' | null;
   asset_id?: string;  // Add this field for calibration assets
   pass_fail_status?: 'PASS' | 'FAIL' | null;
+  job_id?: string | null;  // Job ID if asset is linked to a specific job
+  source_table?: string;  // Source table for the asset
 }
 
 interface RelatedOpportunity {
@@ -98,6 +100,7 @@ const reportRoutes = {
 };
 
 export default function JobDetail() {
+  console.log('🔧 JobDetail: Component rendered - job title will show "Project" instead of "Calibration Job"');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -151,6 +154,9 @@ export default function JobDetail() {
   // Missing state variables
   const [reportSearchQuery, setReportSearchQuery] = useState<string>('');
   const [assets, setAssets] = useState<{id: any; assets: any;}[]>([]);
+  const [existingAssets, setExistingAssets] = useState<Asset[]>([]);
+  const [isSearchingAssets, setIsSearchingAssets] = useState(false);
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>('');
 
   // Meter Report states
   const [meterReportSearchQuery, setMeterReportSearchQuery] = useState<string>('');
@@ -611,6 +617,22 @@ export default function JobDetail() {
       }
     }
   }, [job]);
+
+  // Debounced search effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(reportSearchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [reportSearchQuery]);
+
+  // Effect to trigger search when debounced query changes
+  useEffect(() => {
+    if (debouncedSearchQuery !== reportSearchQuery) {
+      searchExistingAssets(debouncedSearchQuery);
+    }
+  }, [debouncedSearchQuery]);
 
   // Handle clicking outside the dropdown
   useEffect(() => {
@@ -1119,6 +1141,250 @@ export default function JobDetail() {
       setExistingMeterReports([]);
     }
   }
+
+  // Function to search for existing assets across all jobs and master assets
+  const searchExistingAssets = async (searchTerm: string) => {
+    if (!searchTerm.trim() || searchTerm.length < 2) {
+      setExistingAssets([]);
+      return;
+    }
+
+    setIsSearchingAssets(true);
+    try {
+      let allAssets: Asset[] = [];
+
+      if (job?.division?.toLowerCase() === 'calibration') {
+        // Search calibration assets from lab_ops schema
+        const calibrationTables = [
+          'calibration_gloves_reports',
+          'calibration_sleeve_reports', 
+          'calibration_blanket_reports',
+          'calibration_line_hose_reports',
+          'calibration_hotstick_reports',
+          'calibration_ground_cable_reports',
+          'calibration_bucket_truck_reports',
+          'calibration_digger_reports'
+        ];
+
+        for (const table of calibrationTables) {
+          try {
+            const { data, error } = await supabase
+              .schema('lab_ops')
+              .from(table)
+              .select(`
+                id,
+                report_info,
+                created_at,
+                job_id
+              `)
+              .or(`report_info->customer.ilike.%${searchTerm}%,report_info->bucketTruckData->truckNumber.ilike.%${searchTerm}%,report_info->bucketTruckData->serialNumber.ilike.%${searchTerm}%,report_info->bucketTruckData->manufacturer.ilike.%${searchTerm}%,report_info->assetId.ilike.%${searchTerm}%`)
+              .limit(10);
+
+            if (!error && data) {
+              const assets = data.map(item => ({
+                id: `${table}-${item.id}`,
+                name: `${getReportTypeName(table)} - ${item.report_info?.customer || 'Unknown Customer'} - ${item.report_info?.bucketTruckData?.truckNumber || item.report_info?.bucketTruckData?.serialNumber || item.report_info?.assetId || 'Unknown Asset'}`,
+                file_url: `report:/jobs/${item.job_id}/${getReportRoute(table)}/${item.id}`,
+                created_at: item.created_at,
+                pass_fail_status: item.report_info?.status || null,
+                job_id: item.job_id,
+                asset_id: item.report_info?.assetId || null,
+                source_table: table
+              }));
+              allAssets.push(...assets);
+            }
+          } catch (error) {
+            console.error(`Error searching ${table}:`, error);
+          }
+        }
+      } else {
+        // Search other division assets (MTS/ATS reports) from neta_ops schema
+        const { data, error } = await supabase
+          .schema('neta_ops')
+          .from('assets')
+          .select(`
+            id,
+            name,
+            file_url,
+            created_at
+          `)
+          .or(`name.ilike.%${searchTerm}%,file_url.ilike.%${searchTerm}%`)
+          .limit(20);
+
+        if (!error && data) {
+          allAssets = data.map(item => ({
+            ...item,
+            pass_fail_status: null,
+            job_id: null,
+            asset_id: item.id,
+            source_table: 'assets'
+          }));
+        }
+      }
+
+      // Also search master assets from common schema if available
+      try {
+        const { data: masterAssets, error: masterError } = await supabase
+          .schema('common')
+          .from('assets')
+          .select(`
+            id,
+            name,
+            file_url,
+            created_at
+          `)
+          .or(`name.ilike.%${searchTerm}%,file_url.ilike.%${searchTerm}%`)
+          .limit(10);
+
+        if (!masterError && masterAssets) {
+          const masterAssetList = masterAssets.map(item => ({
+            id: `master-${item.id}`,
+            name: `Master Asset - ${item.name}`,
+            file_url: item.file_url,
+            created_at: item.created_at,
+            pass_fail_status: null,
+            job_id: null,
+            asset_id: item.id,
+            source_table: 'master_assets'
+          }));
+          allAssets.push(...masterAssetList);
+        }
+      } catch (error) {
+        console.error('Error searching master assets:', error);
+      }
+
+      setExistingAssets(allAssets);
+    } catch (error) {
+      console.error('Error searching existing assets:', error);
+    } finally {
+      setIsSearchingAssets(false);
+    }
+  };
+
+  // Helper function to get report type name
+  const getReportTypeName = (table: string): string => {
+    const typeMap: { [key: string]: string } = {
+      'calibration_gloves_reports': 'Glove Report',
+      'calibration_sleeve_reports': 'Sleeve Report',
+      'calibration_blanket_reports': 'Blanket Report',
+      'calibration_line_hose_reports': 'Line Hose Report',
+      'calibration_hotstick_reports': 'Hotstick Report',
+      'calibration_ground_cable_reports': 'Ground Cable Report',
+      'calibration_bucket_truck_reports': 'Bucket Truck Report',
+      'calibration_digger_reports': 'Digger Report'
+    };
+    return typeMap[table] || 'Report';
+  };
+
+  // Helper function to get report route
+  const getReportRoute = (table: string): string => {
+    const routeMap: { [key: string]: string } = {
+      'calibration_gloves_reports': 'calibration-gloves',
+      'calibration_sleeve_reports': 'calibration-sleeve',
+      'calibration_blanket_reports': 'calibration-blanket',
+      'calibration_line_hose_reports': 'calibration-line-hose',
+      'calibration_hotstick_reports': 'calibration-hotstick',
+      'calibration_ground_cable_reports': 'calibration-ground-cable',
+      'calibration_bucket_truck_reports': 'calibration-bucket-truck',
+      'calibration_digger_reports': 'calibration-digger'
+    };
+    return routeMap[table] || 'report';
+  };
+
+  // Function to link an existing asset to the current project
+  const linkAssetToProject = async (asset: Asset) => {
+    if (!id || !user?.id) {
+      console.error('Missing job ID or user ID');
+      return;
+    }
+
+    try {
+      console.log('🔧 Linking asset to project:', asset);
+
+      // Determine the correct schema based on job division
+      const schema = job?.division?.toLowerCase() === 'calibration' ? 'lab_ops' : 'neta_ops';
+      
+      if (schema === 'lab_ops') {
+        // For lab_ops, create a new lab_assets entry linked to this job
+        const assetData = {
+          name: asset.name,
+          file_url: asset.file_url,
+          job_id: id,
+          created_at: new Date().toISOString()
+        };
+
+        const { data: newAsset, error: assetError } = await supabase
+          .schema('lab_ops')
+          .from('lab_assets')
+          .insert(assetData)
+          .select()
+          .single();
+
+        if (assetError) {
+          console.error('Error creating lab asset:', assetError);
+          throw assetError;
+        }
+
+        console.log('✅ Lab asset successfully linked to project');
+      } else {
+        // For neta_ops, use the job_assets junction table for many-to-many relationship
+        // First, check if asset already exists in neta_ops.assets
+        let assetId = asset.asset_id;
+        
+        if (!assetId) {
+          // Create asset entry in neta_ops.assets
+          const assetData = {
+            name: asset.name,
+            file_url: asset.file_url,
+            user_id: user.id,
+            created_at: new Date().toISOString()
+          };
+
+          const { data: newAsset, error: assetError } = await supabase
+            .schema('neta_ops')
+            .from('assets')
+            .insert(assetData)
+            .select()
+            .single();
+
+          if (assetError) {
+            console.error('Error creating asset:', assetError);
+            throw assetError;
+          }
+          
+          assetId = newAsset.id;
+        }
+
+        // Link asset to the current job using job_assets junction table
+        const { error: linkError } = await supabase
+          .schema('neta_ops')
+          .from('job_assets')
+          .insert({
+            job_id: id,
+            asset_id: assetId,
+            user_id: user.id
+          });
+
+        if (linkError) {
+          console.error('Error linking asset to job:', linkError);
+          throw linkError;
+        }
+
+        console.log('✅ Asset successfully linked to project via job_assets');
+      }
+      
+      // Refresh the assets list
+      await fetchJobAssets();
+      
+      // Close dropdown and show success message
+      setIsDropdownOpen(false);
+      toast.success(`Asset "${asset.name}" has been linked to this project.`);
+
+    } catch (error) {
+      console.error('Error linking asset to project:', error);
+      toast.error(`Failed to link asset: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
 
   const handleTabChange = (tabValue: string) => {
     setActiveTab(tabValue);
@@ -2974,7 +3240,9 @@ export default function JobDetail() {
             <div className="px-6 py-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{job.title}</h1>
+                  <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                    {job.title === 'Calibration Job' || job.title === 'calibration job' ? 'Project' : job.title}
+                  </h1>
                   <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Job #{job.job_number || 'Pending'}
                   </p>
@@ -3159,11 +3427,12 @@ export default function JobDetail() {
                             <div className="p-2">
                               <input
                                 type="text"
-                                placeholder="Search reports and meters..."
+                                placeholder="Search by asset ID, customer name, truck number, or report type..."
                                 value={reportSearchQuery}
                                 onChange={(e) => {
-                                  setReportSearchQuery(e.target.value);
-                                  setMeterReportSearchQuery(e.target.value);
+                                  const value = e.target.value;
+                                  setReportSearchQuery(value);
+                                  setMeterReportSearchQuery(value);
                                 }}
                                 className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md mb-2 bg-white dark:bg-dark-100 text-gray-900 dark:text-white"
                               />
@@ -3417,6 +3686,65 @@ export default function JobDetail() {
                                           </Link>
                                         ))}
                                     </>
+                                  )}
+                                </>
+                              )}
+
+                              {/* Existing Assets Section */}
+                              {existingAssets.length > 0 && (
+                                <>
+                                  <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 mt-2">
+                                    Existing Assets ({existingAssets.length})
+                                  </div>
+                                  {isSearchingAssets ? (
+                                    <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                                      Searching...
+                                    </div>
+                                  ) : (
+                                    existingAssets.map((asset) => (
+                                      <div 
+                                        key={asset.id}
+                                        className="flex items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                      >
+                                        <div className="flex items-center flex-1 min-w-0">
+                                          <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                          <div className="flex-1 min-w-0">
+                                            <div className="truncate">{asset.name}</div>
+                                            {asset.asset_id && (
+                                              <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                Asset ID: {asset.asset_id}
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center ml-2 space-x-2">
+                                          {asset.pass_fail_status && (
+                                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                              asset.pass_fail_status === 'PASS' 
+                                                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
+                                                : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
+                                            }`}>
+                                              {asset.pass_fail_status}
+                                            </span>
+                                          )}
+                                          <button
+                                            onClick={() => linkAssetToProject(asset)}
+                                            className="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                                            title="Link this asset to the current project"
+                                          >
+                                            Link
+                                          </button>
+                                          <Link 
+                                            to={asset.file_url.replace('report:', '')}
+                                            className="px-2 py-1 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors"
+                                            onClick={() => setIsDropdownOpen(false)}
+                                            title="View this asset"
+                                          >
+                                            View
+                                          </Link>
+                                        </div>
+                                      </div>
+                                    ))
                                   )}
                                 </>
                               )}

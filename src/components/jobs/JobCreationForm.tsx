@@ -357,7 +357,7 @@ export function JobCreationForm({ division, onJobCreated, compact = false, butto
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? 'Creating...' : 'Create Job'}
+                {isLoading ? 'Creating...' : 'Create'}
               </Button>
             </div>
           </form>

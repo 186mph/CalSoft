@@ -283,7 +283,7 @@ export default function JobList() {
       let result;
       
       if (currentSchema === 'lab_ops') {
-        const labJobData: Database['lab_ops']['Tables']['lab_jobs']['Insert'] & { equipment_types?: string[] | null } = {
+        const labJobData: Database['lab_ops']['Tables']['lab_jobs']['Insert'] = {
           title: formData.title,
           customer_id: formData.customer_id || null, 
           description: formData.description || undefined,
@@ -295,11 +295,12 @@ export default function JobList() {
           job_number: formData.job_number || null, 
           user_id: user.id,
           division: activeDivision,                
-          budget: finalBudget === undefined ? null : finalBudget, 
-          portal_type: 'lab',
-          equipment_types: formData.equipment_types && formData.equipment_types.length > 0 ? formData.equipment_types : null,
+          budget: finalBudget === undefined ? null : finalBudget
+          // Removed equipment_types and portal_type as they don't exist in lab_jobs table
         };
         payloadToLog = labJobData;
+        console.log('🔧 JobList: lab_jobs data being sent:', labJobData);
+        console.log('🔧 JobList: Fields in labJobData:', Object.keys(labJobData));
 
         result = await supabase
           .schema('lab_ops')
@@ -1024,7 +1025,7 @@ export default function JobList() {
                   type="submit"
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  Create Job
+                  Create
                 </button>
               </div>
             </form>

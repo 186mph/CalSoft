@@ -41,6 +41,7 @@ interface Job {
 }
 
 export default function CalibrationJobsPage() {
+  console.log('🔧 CalibrationJobsPage: Component rendered with updated text');
   const { user } = useAuth();
   const navigate = useNavigate();
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -500,7 +501,7 @@ export default function CalibrationJobsPage() {
             <div className="flex space-x-4">
               <CalibrationJobButton 
                 onJobCreated={handleJobCreated}
-                buttonText="New Calibration Job"
+                buttonText="New Project"
                 division="calibration"
               />
               <CalibrationJobButton 
@@ -517,7 +518,7 @@ export default function CalibrationJobsPage() {
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-[#339C5E] rounded-full"></div>
                 <span className="text-gray-600 dark:text-gray-400">
-                  <strong>Calibration Jobs:</strong> Equipment calibration and testing services
+                  <strong>Projects:</strong> Equipment calibration and testing services
                 </span>
               </div>
               <div className="flex items-center space-x-2">
@@ -556,7 +557,7 @@ export default function CalibrationJobsPage() {
                   setStatusFilter('all');
                 }}
             >
-              Calibration Jobs
+              Projects
             </button>
             <button 
               className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
@@ -635,7 +636,7 @@ export default function CalibrationJobsPage() {
       <Card className="bg-white dark:bg-dark-100 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm">
         <div className="border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {activeFilter === 'calibration' ? 'Calibration Jobs' : 'Armadillo Jobs'}
+            {activeFilter === 'calibration' ? 'Projects' : 'Armadillo Jobs'}
           </h2>
         </div>
         

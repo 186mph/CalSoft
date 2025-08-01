@@ -52,8 +52,8 @@ export const getUserNotificationPreferences = async (userId: string): Promise<No
       .single();
       
     if (error) {
-      // If table doesn't exist or other error, return default preferences
-      if (error.code === '42P01' || error.code === '42501') {
+      // If table doesn't exist or permission denied, return default preferences
+      if (error.code === '42P01' || error.code === '42501' || error.code === 'PGRST116') {
         console.warn('User preferences table not available, using defaults:', error.message);
         return DEFAULT_PREFERENCES;
       }
@@ -84,7 +84,7 @@ export const updateUserNotificationPreferences = async (
       
     if (error) {
       // If table doesn't exist or permission denied, just return success
-      if (error.code === '42P01' || error.code === '42501') {
+      if (error.code === '42P01' || error.code === '42501' || error.code === 'PGRST116') {
         console.warn('User preferences table not available, skipping update:', error.message);
         return { success: true };
       }
