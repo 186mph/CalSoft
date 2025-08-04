@@ -37,6 +37,7 @@ interface Job {
   division: string;
   notes?: string;
   equipment_types?: string[];
+  technicians?: string[];
   comment_count?: number;
 }
 
@@ -58,6 +59,11 @@ export default function CalibrationJobsPage() {
   const [isEquipmentDropdownOpen, setIsEquipmentDropdownOpen] = useState(false);
   const equipmentDropdownRef = useRef<HTMLDivElement>(null);
   const [updatingStatusJobId, setUpdatingStatusJobId] = useState<string | null>(null);
+
+  // Technician states
+  const [technicians, setTechnicians] = useState<Array<{id: string; email: string; name: string; user_metadata?: any}>>([]);
+  const [isTechnicianDropdownOpen, setIsTechnicianDropdownOpen] = useState(false);
+  const technicianDropdownRef = useRef<HTMLDivElement>(null);
 
   // Completion confirmation prompt state
   const [showCompletionPrompt, setShowCompletionPrompt] = useState(false);
@@ -117,16 +123,24 @@ export default function CalibrationJobsPage() {
       if (equipmentDropdownRef.current && !equipmentDropdownRef.current.contains(event.target as Node)) {
         setIsEquipmentDropdownOpen(false);
       }
+      if (technicianDropdownRef.current && !technicianDropdownRef.current.contains(event.target as Node)) {
+        setIsTechnicianDropdownOpen(false);
+      }
     }
     
-    if (isEquipmentDropdownOpen) {
+    if (isEquipmentDropdownOpen || isTechnicianDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isEquipmentDropdownOpen]);
+  }, [isEquipmentDropdownOpen, isTechnicianDropdownOpen]);
+
+  // Fetch technicians when component mounts or filter changes
+  useEffect(() => {
+    fetchTechnicians();
+  }, [activeFilter]);
   const fetchJobs = async (filter: 'calibration' | 'armadillo' = 'calibration') => {
     try {
       setLoading(true);
@@ -302,6 +316,123 @@ export default function CalibrationJobsPage() {
     return `${editFormData.equipment_types.length} types selected`;
   };
 
+  // Fetch technicians from auth.users or admin API
+  const fetchTechnicians = async () => {
+    try {
+      console.log('[CalibrationJobsPage] Fetching technicians...');
+      
+      // First try to get users with Lab Technician role from auth.users
+      const { data: userData, error: userError } = await supabase
+        .from('auth.users')
+        .select('id, email, raw_user_meta_data')
+        .eq('raw_user_meta_data->>role', 'Lab Technician')
+        .order('raw_user_meta_data->>name');
+      
+      if (userError) {
+        console.log('[CalibrationJobsPage] Error accessing auth.users table:', userError);
+        console.log('[CalibrationJobsPage] Attempting to use auth.admin.listUsers() instead...');
+        
+        // Try alternative approach with auth schema
+        const { data: userData2, error: userError2 } = await supabase.auth.admin.listUsers();
+        
+        if (userError2) {
+          console.error('[CalibrationJobsPage] Error fetching technicians with admin API:', userError2);
+          setTechnicians([]);
+          return;
+        }
+        
+        console.log('[CalibrationJobsPage] Admin API returned users:', userData2?.users?.length || 0);
+        
+        // Filter for Lab Technicians
+        const labTechUsers = userData2.users.filter(u => {
+          const isLabTech = u.user_metadata?.role === 'Lab Technician';
+          const inDivision = !activeFilter || u.user_metadata?.division === activeFilter;
+          return isLabTech && inDivision;
+        });
+        
+        console.log('[CalibrationJobsPage] Filtered Lab Technicians:', labTechUsers.length);
+        
+        // Format the data
+        const formattedUsers = labTechUsers.map(u => ({
+          id: u.id,
+          email: u.email || '',
+          name: u.user_metadata?.name || u.email || '',
+          user_metadata: u.user_metadata
+        }));
+        
+        setTechnicians(formattedUsers);
+      } else {
+        console.log('[CalibrationJobsPage] Successfully fetched users from auth.users:', userData?.length || 0);
+        
+        // Format the data
+        const formattedUsers = userData.map(u => ({
+          id: u.id,
+          email: u.email || '',
+          name: u.raw_user_meta_data?.name || u.email || '',
+          user_metadata: u.raw_user_meta_data
+        }));
+        
+        // Filter for division if specified
+        const filteredUsers = activeFilter 
+          ? formattedUsers.filter(u => u.user_metadata?.division === activeFilter)
+          : formattedUsers;
+          
+        console.log('[CalibrationJobsPage] Filtered Lab Technicians by division:', filteredUsers.length);
+        setTechnicians(filteredUsers);
+      }
+    } catch (err) {
+      console.error('[CalibrationJobsPage] Exception in fetchTechnicians:', err);
+      setTechnicians([]);
+    }
+  };
+
+  // Handle technician toggle
+  const handleTechnicianToggle = (technicianId: string) => {
+    if (!editFormData) return;
+    
+    const currentTechnicians = editFormData.technicians || [];
+    const updatedTechnicians = currentTechnicians.includes(technicianId)
+      ? currentTechnicians.filter(id => id !== technicianId)
+      : [...currentTechnicians, technicianId];
+    
+    setEditFormData(prev => prev ? { ...prev, technicians: updatedTechnicians } : null);
+  };
+
+  // Handle select all technicians
+  const handleSelectAllTechnicians = () => {
+    if (!editFormData) return;
+    
+    const allTechnicianIds = technicians.map(tech => tech.id);
+    const currentTechnicians = editFormData.technicians || [];
+    
+    const updatedTechnicians = currentTechnicians.length === allTechnicianIds.length
+      ? [] // If all are selected, deselect all
+      : allTechnicianIds; // Otherwise, select all
+    
+    setEditFormData(prev => prev ? { ...prev, technicians: updatedTechnicians } : null);
+  };
+
+  // Get technicians display text
+  const getTechniciansDisplay = () => {
+    if (!editFormData?.technicians || editFormData.technicians.length === 0) {
+      return 'Select technicians...';
+    }
+    
+    if (editFormData.technicians.length === technicians.length) {
+      return 'All technicians selected';
+    }
+    
+    const selectedTechnicians = technicians.filter(tech => 
+      editFormData.technicians?.includes(tech.id)
+    );
+    
+    if (selectedTechnicians.length <= 2) {
+      return selectedTechnicians.map(tech => tech.name || tech.email).join(', ');
+    }
+    
+    return `${selectedTechnicians.length} technicians selected`;
+  };
+
   // Handle edit form submission
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -322,6 +453,7 @@ export default function CalibrationJobsPage() {
           budget: editFormData.budget ? parseFloat(editFormData.budget.toString()) : null,
           notes: editFormData.notes || null,
           equipment_types: editFormData.equipment_types || null,
+          technicians: editFormData.technicians || null,
         })
         .eq('id', editFormData.id);
 
@@ -740,11 +872,11 @@ export default function CalibrationJobsPage() {
         )}
       </Card>
 
-      {/* Edit Job Dialog */}
+      {/* Edit Project Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Edit Job</DialogTitle>
+            <DialogTitle>Edit Project</DialogTitle>
           </DialogHeader>
           
           {editFormData && (
@@ -891,6 +1023,74 @@ export default function CalibrationJobsPage() {
                     )}
                   </div>
                 </div>
+
+                {/* Technicians field */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Technicians</label>
+                  <div className="relative" ref={technicianDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setIsTechnicianDropdownOpen(!isTechnicianDropdownOpen)}
+                      className="w-full px-3 py-2 text-left bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#339C5E] focus:border-[#339C5E] hover:border-[#339C5E] dark:text-white"
+                    >
+                      <span className={(editFormData?.technicians?.length || 0) === 0 ? "text-gray-500" : ""}>
+                        {getTechniciansDisplay()}
+                      </span>
+                      <ChevronDown className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 transition-transform ${isTechnicianDropdownOpen ? "rotate-180" : ""}`} />
+                    </button>
+                    
+                    {isTechnicianDropdownOpen && (
+                      <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                        {technicians.length === 0 ? (
+                          <div className="px-3 py-2 text-sm text-gray-500">
+                            No technicians available
+                          </div>
+                        ) : (
+                          <>
+                            {/* Select All option */}
+                            <label className="flex items-center px-3 py-2 hover:bg-[#339C5E] hover:text-white cursor-pointer transition-colors border-b border-gray-200 dark:border-gray-600">
+                              <input
+                                type="checkbox"
+                                checked={technicians.length > 0 && technicians.every(tech => editFormData?.technicians?.includes(tech.id))}
+                                onChange={handleSelectAllTechnicians}
+                                className="mr-2 text-[#339C5E] focus:ring-[#339C5E] border-gray-300 rounded"
+                              />
+                              <span className="text-sm font-medium">Select All</span>
+                            </label>
+                            
+                            {/* Individual technicians */}
+                            {technicians.map(technician => (
+                              <label
+                                key={technician.id}
+                                className="flex items-center px-3 py-2 hover:bg-[#339C5E] hover:text-white cursor-pointer transition-colors"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={editFormData?.technicians?.includes(technician.id) || false}
+                                  onChange={() => handleTechnicianToggle(technician.id)}
+                                  className="mr-2 text-[#339C5E] focus:ring-[#339C5E] border-gray-300 rounded"
+                                />
+                                <span className="text-sm">{technician.name || technician.email}</span>
+                              </label>
+                            ))}
+                          </>
+                        )}
+                        {(editFormData?.technicians?.length || 0) > 0 && (
+                          <div className="border-t border-gray-200 dark:border-gray-600 p-2">
+                            <button
+                              type="button"
+                              onClick={() => setEditFormData(prev => prev ? { ...prev, technicians: [] } : null)}
+                              className="text-xs text-gray-500 hover:text-[#339C5E] transition-colors"
+                            >
+                              Clear all selections
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium mb-1">Notes</label>
                   <Textarea

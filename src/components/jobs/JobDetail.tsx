@@ -41,6 +41,7 @@ interface Job {
   division?: string | null;
   notes?: string | null;
   equipment_types?: string[] | null;
+  technicians?: string[] | null;
   comment_count?: number;
   created_at?: string;
   updated_at?: string;
@@ -164,6 +165,11 @@ const JobDetail = React.memo(function JobDetail() {
   // Meter Report states
   const [meterReportSearchQuery, setMeterReportSearchQuery] = useState<string>('');
   const [existingMeterReports, setExistingMeterReports] = useState<Asset[]>([]);
+
+  // Technician states
+  const [technicians, setTechnicians] = useState<Array<{id: string; email: string; name: string; user_metadata?: any}>>([]);
+  const [isTechnicianDropdownOpen, setIsTechnicianDropdownOpen] = useState(false);
+  const technicianDropdownRef = useRef<HTMLDivElement>(null);
 
   // Default assets that are always available
   const defaultAssets: Asset[] = [
@@ -513,6 +519,7 @@ const JobDetail = React.memo(function JobDetail() {
           budget: editFormData.budget ? parseFloat(editFormData.budget.toString()) : null,
           notes: editFormData.notes || null,
           equipment_types: editFormData.equipment_types || null,
+          technicians: editFormData.technicians || null,
         })
         .eq('id', id);
 
@@ -632,10 +639,13 @@ const JobDetail = React.memo(function JobDetail() {
       if (equipmentDropdownRef.current && !equipmentDropdownRef.current.contains(event.target as Node)) {
         setIsEquipmentDropdownOpen(false);
       }
+      if (technicianDropdownRef.current && !technicianDropdownRef.current.contains(event.target as Node)) {
+        setIsTechnicianDropdownOpen(false);
+      }
     }
     
     // Add event listener only if any dropdown is open
-    if (isDropdownOpen || isEquipmentDropdownOpen) {
+    if (isDropdownOpen || isEquipmentDropdownOpen || isTechnicianDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     
@@ -643,7 +653,14 @@ const JobDetail = React.memo(function JobDetail() {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isDropdownOpen, isEquipmentDropdownOpen]);
+  }, [isDropdownOpen, isEquipmentDropdownOpen, isTechnicianDropdownOpen]);
+
+  // Fetch technicians when component mounts or job changes
+  useEffect(() => {
+    if (job) {
+      fetchTechnicians();
+    }
+  }, [job]);
 
   // Check for tab query parameter and update the active tab
   useEffect(() => {
@@ -1193,6 +1210,123 @@ const JobDetail = React.memo(function JobDetail() {
     }
   }
 
+  // Fetch technicians from auth.users or admin API
+  const fetchTechnicians = async () => {
+    try {
+      console.log('[JobDetail] Fetching technicians...');
+      
+      // First try to get users with Lab Technician role from auth.users
+      const { data: userData, error: userError } = await supabase
+        .from('auth.users')
+        .select('id, email, raw_user_meta_data')
+        .eq('raw_user_meta_data->>role', 'Lab Technician')
+        .order('raw_user_meta_data->>name');
+      
+      if (userError) {
+        console.log('[JobDetail] Error accessing auth.users table:', userError);
+        console.log('[JobDetail] Attempting to use auth.admin.listUsers() instead...');
+        
+        // Try alternative approach with auth schema
+        const { data: userData2, error: userError2 } = await supabase.auth.admin.listUsers();
+        
+        if (userError2) {
+          console.error('[JobDetail] Error fetching technicians with admin API:', userError2);
+          setTechnicians([]);
+          return;
+        }
+        
+        console.log('[JobDetail] Admin API returned users:', userData2?.users?.length || 0);
+        
+        // Filter for Lab Technicians
+        const labTechUsers = userData2.users.filter(u => {
+          const isLabTech = u.user_metadata?.role === 'Lab Technician';
+          const inDivision = !job?.division || u.user_metadata?.division === job.division;
+          return isLabTech && inDivision;
+        });
+        
+        console.log('[JobDetail] Filtered Lab Technicians:', labTechUsers.length);
+        
+        // Format the data
+        const formattedUsers = labTechUsers.map(u => ({
+          id: u.id,
+          email: u.email || '',
+          name: u.user_metadata?.name || u.email || '',
+          user_metadata: u.user_metadata
+        }));
+        
+        setTechnicians(formattedUsers);
+      } else {
+        console.log('[JobDetail] Successfully fetched users from auth.users:', userData?.length || 0);
+        
+        // Format the data
+        const formattedUsers = userData.map(u => ({
+          id: u.id,
+          email: u.email || '',
+          name: u.raw_user_meta_data?.name || u.email || '',
+          user_metadata: u.raw_user_meta_data
+        }));
+        
+        // Filter for division if specified
+        const filteredUsers = job?.division 
+          ? formattedUsers.filter(u => u.user_metadata?.division === job.division)
+          : formattedUsers;
+          
+        console.log('[JobDetail] Filtered Lab Technicians by division:', filteredUsers.length);
+        setTechnicians(filteredUsers);
+      }
+    } catch (err) {
+      console.error('[JobDetail] Exception in fetchTechnicians:', err);
+      setTechnicians([]);
+    }
+  };
+
+  // Handle technician toggle
+  const handleTechnicianToggle = (technicianId: string) => {
+    if (!editFormData) return;
+    
+    const currentTechnicians = editFormData.technicians || [];
+    const updatedTechnicians = currentTechnicians.includes(technicianId)
+      ? currentTechnicians.filter(id => id !== technicianId)
+      : [...currentTechnicians, technicianId];
+    
+    setEditFormData(prev => prev ? { ...prev, technicians: updatedTechnicians } : null);
+  };
+
+  // Handle select all technicians
+  const handleSelectAllTechnicians = () => {
+    if (!editFormData) return;
+    
+    const allTechnicianIds = technicians.map(tech => tech.id);
+    const currentTechnicians = editFormData.technicians || [];
+    
+    const updatedTechnicians = currentTechnicians.length === allTechnicianIds.length
+      ? [] // If all are selected, deselect all
+      : allTechnicianIds; // Otherwise, select all
+    
+    setEditFormData(prev => prev ? { ...prev, technicians: updatedTechnicians } : null);
+  };
+
+  // Get technicians display text
+  const getTechniciansDisplay = () => {
+    if (!editFormData?.technicians || editFormData.technicians.length === 0) {
+      return 'Select technicians...';
+    }
+    
+    if (editFormData.technicians.length === technicians.length) {
+      return 'All technicians selected';
+    }
+    
+    const selectedTechnicians = technicians.filter(tech => 
+      editFormData.technicians?.includes(tech.id)
+    );
+    
+    if (selectedTechnicians.length <= 2) {
+      return selectedTechnicians.map(tech => tech.name || tech.email).join(', ');
+    }
+    
+    return `${selectedTechnicians.length} technicians selected`;
+  };
+
   // Function to search for existing assets across all jobs and master assets
   const searchExistingAssets = async (searchTerm: string) => {
     if (!searchTerm.trim() || searchTerm.trim().length < 2) {
@@ -1680,90 +1814,64 @@ const JobDetail = React.memo(function JobDetail() {
 
       // For calibration division, handle differently
       if (job?.division?.toLowerCase() === 'calibration') {
-        // For calibration, we need to create a new report entry with the existing data
+        // For calibration, we need to LINK the existing asset to this job, not duplicate it
         if (asset.source_table && asset.source_table.includes('calibration_')) {
-          // This is an existing calibration report - we need to copy it to the current job
+          // This is an existing calibration report - we need to link it to the current job
           const reportType = asset.source_table.replace('calibration_', '').replace('_reports', '');
           
-          // Fetch the original report data
-          const { data: originalReport, error: fetchError } = await supabase
+          // Extract the original report ID from the asset ID
+          const originalReportId = asset.id.replace(`${asset.source_table}-`, '');
+          
+          // Check if this asset is already linked to this job
+          const { data: existingLink, error: checkError } = await supabase
             .schema('lab_ops')
-            .from(asset.source_table)
+            .from('lab_assets')
             .select('*')
-            .eq('id', asset.id.replace(`${asset.source_table}-`, ''))
+            .eq('job_id', id)
+            .eq('report_id', originalReportId)
             .single();
 
-          if (fetchError) {
-            console.error('Error fetching original report:', fetchError);
-            throw fetchError;
-          }
-
-          // Check if the original report has any actual data
-          const hasData = originalReport.report_info && 
-            Object.keys(originalReport.report_info).length > 0 &&
-            (originalReport.report_info.customer || 
-             originalReport.report_info.gloveData?.assetId ||
-             originalReport.report_info.bucketTruckData?.truckNumber);
-
-          if (!hasData) {
-            console.log('⚠️ Original report has no data, skipping copy');
-            toast.error('This report has no data to copy. Please select a report with actual information.');
+          if (existingLink) {
+            console.log('⚠️ Asset is already linked to this job');
+            toast.error('This asset is already linked to this project.');
             return;
           }
 
-          // Create a new report entry for the current job with the original data
-          const newReportData = {
-            ...originalReport,
-            id: undefined, // Let Supabase generate a new ID
+          // Create a lab_assets entry that links the existing report to this job
+          const assetData = {
+            name: asset.name,
+            file_url: asset.file_url,
             job_id: id,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            asset_id: asset.asset_id || '',
+            report_id: originalReportId,
+            created_at: new Date().toISOString()
           };
 
-          // Ensure we preserve all the original report_info data
-          if (originalReport.report_info) {
-            newReportData.report_info = {
-              ...originalReport.report_info,
-              // Keep the original status but update any job-specific fields if needed
-              status: originalReport.report_info.status || 'PASS'
-            };
-          }
-
-          const { data: newReport, error: insertError } = await supabase
+          const { data: labAssetResult, error: labAssetError } = await supabase
             .schema('lab_ops')
-            .from(asset.source_table)
-            .insert(newReportData)
+            .from('lab_assets')
+            .insert(assetData)
             .select()
             .single();
 
-          if (insertError) {
-            console.error('Error creating new report:', insertError);
-            throw insertError;
+          if (labAssetError) {
+            console.error('Error creating lab asset link:', labAssetError);
+            throw labAssetError;
           }
 
-          console.log('✅ Calibration report successfully copied to current job');
+          console.log('✅ Asset successfully linked to project:', labAssetResult);
           
-          // Debug: Log the copied data
-          console.log('🔧 Original report data:', originalReport);
-          console.log('🔧 New report data:', newReport);
-          console.log('🔧 Report info being copied:', originalReport.report_info);
-          
-          // Debug: Check if the report_info has the expected structure
-          if (originalReport.report_info) {
-            console.log('🔧 Report info structure check:');
-            console.log('  - Has gloveData:', !!originalReport.report_info.gloveData);
-            console.log('  - Has customer:', !!originalReport.report_info.customer);
-            console.log('  - Has assetId:', !!originalReport.report_info.assetId);
-            console.log('  - Has testEquipment:', !!originalReport.report_info.testEquipment);
-            console.log('  - Full report_info keys:', Object.keys(originalReport.report_info));
-          }
+          // Debug: Log the linked asset data
+          console.log('🔧 Asset linked successfully');
+          console.log('🔧 Original report ID:', originalReportId);
+          console.log('🔧 New lab asset entry:', labAssetResult);
           
           // Refresh the assets list
           await fetchJobAssets();
           
           // Close dropdown and show success message
           setIsDropdownOpen(false);
-          toast.success(`Asset "${asset.name}" has been linked to this project with all data copied.`);
+          toast.success(`Asset "${asset.name}" has been linked to this project.`);
           
           return;
         } else if (asset.is_master) {
@@ -4013,7 +4121,7 @@ const JobDetail = React.memo(function JobDetail() {
             }`}
           >
             <Pencil className="h-5 w-5 min-w-[20px] flex-shrink-0" />
-            Edit Job
+            Edit Project
           </Button>
         </div>
       </div>
@@ -4993,11 +5101,11 @@ const JobDetail = React.memo(function JobDetail() {
         </DialogContent>
       </Dialog>
       
-      {/* Edit Job Dialog */}
+      {/* Edit Project Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Edit Job</DialogTitle>
+            <DialogTitle>Edit Project</DialogTitle>
           </DialogHeader>
           
           {editFormData && (
@@ -5174,6 +5282,77 @@ const JobDetail = React.memo(function JobDetail() {
                   </div>
                 </div>
                 )}
+
+                {/* Technicians field */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Technicians</label>
+                  <div className="relative" ref={technicianDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setIsTechnicianDropdownOpen(!isTechnicianDropdownOpen)}
+                      className={`w-full px-3 py-2 text-left bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 hover:border-[#339C5E] dark:text-white ${
+                        job?.division?.toLowerCase() === 'calibration' 
+                          ? 'focus:ring-[#339C5E] focus:border-[#339C5E]'
+                          : 'focus:ring-[#f26722] focus:border-[#f26722]'
+                      }`}
+                    >
+                      <span className={(editFormData?.technicians?.length || 0) === 0 ? 'text-gray-500' : ''}>
+                        {getTechniciansDisplay()}
+                      </span>
+                      <ChevronDown className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 transition-transform ${isTechnicianDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {isTechnicianDropdownOpen && (
+                      <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-150 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                        {technicians.length === 0 ? (
+                          <div className="px-3 py-2 text-sm text-gray-500">
+                            No technicians available
+                          </div>
+                        ) : (
+                          <>
+                            {/* Select All option */}
+                            <label className="flex items-center px-3 py-2 hover:bg-[#339C5E] hover:text-white cursor-pointer transition-colors border-b border-gray-200 dark:border-gray-600">
+                              <input
+                                type="checkbox"
+                                checked={technicians.length > 0 && technicians.every(tech => editFormData?.technicians?.includes(tech.id))}
+                                onChange={handleSelectAllTechnicians}
+                                className="mr-2 text-[#339C5E] focus:ring-[#339C5E] border-gray-300 rounded"
+                              />
+                              <span className="text-sm font-medium">Select All</span>
+                            </label>
+                            
+                            {/* Individual technicians */}
+                            {technicians.map(technician => (
+                              <label
+                                key={technician.id}
+                                className="flex items-center px-3 py-2 hover:bg-[#339C5E] hover:text-white cursor-pointer transition-colors"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={editFormData?.technicians?.includes(technician.id) || false}
+                                  onChange={() => handleTechnicianToggle(technician.id)}
+                                  className="mr-2 text-[#339C5E] focus:ring-[#339C5E] border-gray-300 rounded"
+                                />
+                                <span className="text-sm">{technician.name || technician.email}</span>
+                              </label>
+                            ))}
+                          </>
+                        )}
+                        {(editFormData?.technicians?.length || 0) > 0 && (
+                          <div className="border-t border-gray-200 dark:border-gray-600 p-2">
+                            <button
+                              type="button"
+                              onClick={() => setEditFormData(prev => prev ? { ...prev, technicians: [] } : null)}
+                              className="text-xs text-gray-500 hover:text-[#339C5E] transition-colors"
+                            >
+                              Clear all selections
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
 
                 {/* Only show budget field for non-calibration/armadillo jobs */}
                 {!(job?.division?.toLowerCase() === 'calibration' || job?.division?.toLowerCase() === 'armadillo') && (

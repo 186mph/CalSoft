@@ -1834,17 +1834,77 @@ export default function CalibrationBucketTruckReport() {
 
       if (reportData) {
         console.log('Loaded report data:', reportData);
+        
+        // Ensure we have a complete report_info structure
+        const reportInfo = reportData.report_info || {};
+        
+        // Set form data with proper structure preservation
         setFormData(prev => ({
           ...prev,
-          ...reportData.report_info,
-          status: reportData.report_info.status || reportData.status || 'PASS'
+          // Job Information
+          customer: reportInfo.customer || '',
+          address: reportInfo.address || '',
+          date: reportInfo.date || '',
+          technicians: reportInfo.technicians || '',
+          jobNumber: reportInfo.jobNumber || '',
+          userName: reportInfo.userName || '',
+          customerId: reportInfo.customerId || '',
+          customerIdForAsset: reportInfo.customerIdForAsset || '',
+          
+          // Bucket Truck Information - ensure all fields are preserved
+          bucketTruckData: {
+            assetId: reportInfo.bucketTruckData?.assetId || '',
+            serialNumber: reportInfo.bucketTruckData?.serialNumber || '',
+            truckNumber: reportInfo.bucketTruckData?.truckNumber || '',
+            year: reportInfo.bucketTruckData?.year || '',
+            model: reportInfo.bucketTruckData?.model || '',
+            numberOfPlatforms: reportInfo.bucketTruckData?.numberOfPlatforms || '',
+            platformHeight: reportInfo.bucketTruckData?.platformHeight || '',
+            manufacturer: reportInfo.bucketTruckData?.manufacturer || '',
+            materialHandling: reportInfo.bucketTruckData?.materialHandling || '',
+            designVoltage: reportInfo.bucketTruckData?.designVoltage || '',
+            qualificationVoltage: reportInfo.bucketTruckData?.qualificationVoltage || '',
+            lowerBoomReading: reportInfo.bucketTruckData?.lowerBoomReading || '',
+            upperBoomReading: reportInfo.bucketTruckData?.upperBoomReading || '',
+            linerType: reportInfo.bucketTruckData?.linerType || '',
+            linerReason: reportInfo.bucketTruckData?.linerReason || '',
+            linerPassFailStatus: reportInfo.bucketTruckData?.linerPassFailStatus || 'PASS',
+            passFailStatus: reportInfo.bucketTruckData?.passFailStatus || 'PASS'
+          },
+          
+          // DOT Inspection
+          dotInspection: reportInfo.dotInspection || {
+            motorCarrierOperator: '',
+            address: '',
+            cityStateZip: '',
+            inspectorName: '',
+            vehicleType: '',
+            vehicleTypeOther: '',
+            vehicleIdentification: [],
+            inspectorQualified: false,
+            components: {},
+            additionalConditions: '',
+            certified: false
+          },
+          
+          // Test Equipment
+          testEquipment: {
+            name: reportInfo.testEquipment?.name || '',
+            serialNumber: reportInfo.testEquipment?.serialNumber || '',
+            ampId: reportInfo.testEquipment?.ampId || ''
+          },
+          
+          // Comments
+          comments: reportInfo.comments || '',
+          status: reportInfo.status || reportData.status || 'PASS'
         }));
         
         // Set the status from the loaded data
-        const loadedStatus = reportData.report_info.status || reportData.status || 'PASS';
-        const loadedLinerStatus = reportData.report_info.bucketTruckData?.linerPassFailStatus || 'PASS';
+        const loadedStatus = reportInfo.status || reportData.status || 'PASS';
+        const loadedLinerStatus = reportInfo.bucketTruckData?.linerPassFailStatus || 'PASS';
         console.log('Setting status to:', loadedStatus);
         console.log('Setting liner status to:', loadedLinerStatus);
+        console.log('Loaded bucket truck data:', reportInfo.bucketTruckData);
         setStatus(loadedStatus as 'PASS' | 'FAIL');
         setLinerStatus(loadedLinerStatus as 'PASS' | 'FAIL');
         
