@@ -89,6 +89,7 @@ interface FormData {
     lowerBoomReading: string;
     upperBoomReading: string;
     linerType: string;
+    linerReason: string;
     linerPassFailStatus: string;
     passFailStatus: string;
   };
@@ -231,6 +232,7 @@ export default function CalibrationBucketTruckReport() {
       lowerBoomReading: '',
       upperBoomReading: '',
       linerType: '',
+      linerReason: '',
       linerPassFailStatus: 'PASS',
       passFailStatus: 'PASS'
     },
@@ -324,13 +326,18 @@ export default function CalibrationBucketTruckReport() {
   };
 
   const handleBucketTruckDataChange = (field: keyof FormData['bucketTruckData'], value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      bucketTruckData: {
-        ...prev.bucketTruckData,
-        [field]: value
-      }
-    }));
+    console.log('handleBucketTruckDataChange called:', { field, value });
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        bucketTruckData: {
+          ...prev.bucketTruckData,
+          [field]: value
+        }
+      };
+      console.log('New formData after change:', newData.bucketTruckData);
+      return newData;
+    });
   };
 
   const handleTestEquipmentChange = (field: keyof FormData['testEquipment'], value: string) => {
@@ -1883,6 +1890,12 @@ export default function CalibrationBucketTruckReport() {
       return null;
     }
 
+    // Validate that Reason is provided when NA is selected for liner type
+    if (formData.bucketTruckData.linerType === 'NA' && !formData.bucketTruckData.linerReason.trim()) {
+      toast.error('Please provide a reason when selecting NA for Liner Type');
+      return null;
+    }
+
     setLoading(true);
 
     try {
@@ -2088,7 +2101,7 @@ export default function CalibrationBucketTruckReport() {
             <div style="margin-bottom: 8px;">${formData.bucketTruckData.lowerBoomReading}</div>
             
             <div style="margin-bottom: 6px;"><strong>Liner Type:</strong></div>
-            <div style="margin-bottom: 8px;">${formData.bucketTruckData.linerType}</div>
+            <div style="margin-bottom: 8px;">${formData.bucketTruckData.linerType}${formData.bucketTruckData.linerType === 'NA' && formData.bucketTruckData.linerReason ? ` - ${formData.bucketTruckData.linerReason}` : ''}</div>
           </div>
         </div>
 
@@ -2295,9 +2308,11 @@ export default function CalibrationBucketTruckReport() {
       reportId, 
       loading, 
       jobId,
-      hasUser: !!user?.id 
+      hasUser: !!user?.id,
+      linerType: formData.bucketTruckData.linerType,
+      linerTypeCondition: formData.bucketTruckData.linerType === 'NA'
     });
-  }, [isEditing, urlReportId, reportId, loading, jobId, user]);
+  }, [isEditing, urlReportId, reportId, loading, jobId, user, formData.bucketTruckData.linerType]);
 
   // Ensure new reports start in edit mode
   useEffect(() => {
@@ -2789,6 +2804,124 @@ export default function CalibrationBucketTruckReport() {
     initializeNewReport();
   }, []); // Run only once when component mounts
 
+  // Add auto-save state
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
+  const [lastSavedData, setLastSavedData] = useState<string>('');
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Auto-save functionality
+  const autoSave = async (data: FormData) => {
+    if (!autoSaveEnabled || !isEditing || !jobId || !user?.id) return;
+    
+    // Skip auto-save if this is a new report and we don't have essential data
+    if (!reportId && (!data.bucketTruckData.assetId || !data.customer)) return;
+    
+    // Prevent excessive saves by checking if data actually changed
+    const currentDataString = JSON.stringify(data);
+    if (currentDataString === lastSavedData) return;
+    
+    try {
+      setIsAutoSaving(true);
+      console.log('Auto-saving bucket truck report...');
+      
+      // Use the existing handleSave logic but without user feedback
+      const reportData = {
+        job_id: jobId,
+        report_info: data,
+        status: data.status,
+        user_id: user.id
+      };
+
+      let result;
+      if (reportId) {
+        // Update existing report
+        result = await supabase
+          .schema(SCHEMA)
+          .from(CALIBRATION_BUCKET_TRUCK_TABLE)
+          .update(reportData)
+          .eq('id', reportId)
+          .select()
+          .single();
+      } else {
+        // Create new report
+        result = await supabase
+          .schema(SCHEMA)
+          .from(CALIBRATION_BUCKET_TRUCK_TABLE)
+          .insert(reportData)
+          .select()
+          .single();
+
+        if (result.data) {
+          setReportId(result.data.id);
+          
+          // Create asset entry for the new report
+          const assetData = {
+            name: `Bucket Truck Report - ${data.bucketTruckData.assetId || 'Unnamed'}`,
+            file_url: `report:/jobs/${jobId}/calibration-bucket-truck/${result.data.id}`,
+            user_id: user.id
+          };
+
+          const { data: assetResult } = await supabase
+            .schema(SCHEMA)
+            .from(ASSETS_TABLE)
+            .insert(assetData)
+            .select()
+            .single();
+
+          if (assetResult) {
+            // Link asset to job
+            await supabase
+              .schema(SCHEMA)
+              .from('job_assets')
+              .insert({
+                job_id: jobId,
+                asset_id: assetResult.id,
+                user_id: user.id
+              });
+          }
+        }
+      }
+
+      if (result.error) throw result.error;
+      
+      setLastSavedData(currentDataString);
+      console.log('Auto-save completed successfully');
+      
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+      // Don't show error toast for auto-save failures to avoid spam
+    } finally {
+      setIsAutoSaving(false);
+    }
+  };
+
+  // Debounced auto-save effect
+  useEffect(() => {
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      autoSave(formData);
+    }, 2000); // Auto-save after 2 seconds of no changes
+
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [formData, reportId, jobId, user?.id, isEditing, autoSaveEnabled]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, []);
+
   if (loading) return <div className="p-4">Loading Report Data...</div>;
 
   return (
@@ -2808,17 +2941,31 @@ export default function CalibrationBucketTruckReport() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {urlReportId ? 'Edit Bucket Truck Report' : 'New Bucket Truck Report'}
           </h1>
+          {/* Auto-save indicator */}
+          {autoSaveEnabled && isEditing && (
+            <div className="flex items-center gap-2 ml-4">
+              {isAutoSaving ? (
+                <div className="flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400">
+                  <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  Auto-saving...
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  Auto-saved
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <div className="flex items-center space-x-4">
           <button
             onClick={async () => {
               setStatus('PASS');
               updatePassFailStatus('PASS');
-              const savedReportId = await handleSave();
-              // Add test history entry after successful save
-              if (savedReportId) {
-                await addTestHistoryEntry('PASS', undefined, savedReportId);
-              }
+              // Auto-save will handle the saving automatically
             }}
             className={`px-4 py-2 rounded-md text-white font-medium ${
               status === 'PASS' ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 hover:bg-gray-500'
@@ -2830,11 +2977,7 @@ export default function CalibrationBucketTruckReport() {
             onClick={async () => {
               setStatus('FAIL');
               updatePassFailStatus('FAIL');
-              const savedReportId = await handleSave();
-              // Add test history entry after successful save
-              if (savedReportId) {
-                await addTestHistoryEntry('FAIL', undefined, savedReportId);
-              }
+              // Auto-save will handle the saving automatically
             }}
             className={`px-4 py-2 rounded-md text-white font-medium ${
               status === 'FAIL' ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-400 hover:bg-gray-500'
@@ -2879,6 +3022,7 @@ export default function CalibrationBucketTruckReport() {
       <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Truck Information</h2>
         <div className="grid grid-cols-2 gap-4">
+          {/* Left Column */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Asset ID</label>
             <input 
@@ -2892,6 +3036,19 @@ export default function CalibrationBucketTruckReport() {
               }`}
             />
           </div>
+          {/* Right Column */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Platform Height</label>
+            <input 
+              type="text" 
+              value={formData.bucketTruckData.platformHeight}
+              onChange={(e) => handleBucketTruckDataChange('platformHeight', e.target.value)}
+              disabled={!isEditing}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+            />
+          </div>
+          
+          {/* Left Column */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Truck #</label>
             <input 
@@ -2902,6 +3059,19 @@ export default function CalibrationBucketTruckReport() {
               className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             />
           </div>
+          {/* Right Column */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300"># of Platforms</label>
+            <input 
+              type="text" 
+              value={formData.bucketTruckData.numberOfPlatforms}
+              onChange={(e) => handleBucketTruckDataChange('numberOfPlatforms', e.target.value)}
+              disabled={!isEditing}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+            />
+          </div>
+          
+          {/* Left Column */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer</label>
             <select
@@ -2916,46 +3086,7 @@ export default function CalibrationBucketTruckReport() {
               ))}
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Model</label>
-            <input 
-              type="text" 
-              value={formData.bucketTruckData.model}
-              onChange={(e) => handleBucketTruckDataChange('model', e.target.value)}
-              disabled={!isEditing}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
-            <input 
-              type="text" 
-              value={formData.bucketTruckData.serialNumber}
-              onChange={(e) => handleBucketTruckDataChange('serialNumber', e.target.value)}
-              disabled={!isEditing}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300"># of Platforms</label>
-            <input 
-              type="text" 
-              value={formData.bucketTruckData.numberOfPlatforms}
-              onChange={(e) => handleBucketTruckDataChange('numberOfPlatforms', e.target.value)}
-              disabled={!isEditing}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Platform Height</label>
-            <input 
-              type="text" 
-              value={formData.bucketTruckData.platformHeight}
-              onChange={(e) => handleBucketTruckDataChange('platformHeight', e.target.value)}
-              disabled={!isEditing}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            />
-          </div>
+          {/* Right Column */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Material Handling</label>
             <select
@@ -2970,6 +3101,19 @@ export default function CalibrationBucketTruckReport() {
               ))}
             </select>
           </div>
+          
+          {/* Left Column */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Model</label>
+            <input 
+              type="text" 
+              value={formData.bucketTruckData.model}
+              onChange={(e) => handleBucketTruckDataChange('model', e.target.value)}
+              disabled={!isEditing}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+            />
+          </div>
+          {/* Right Column */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Qualification Voltage</label>
             <select
@@ -2984,6 +3128,19 @@ export default function CalibrationBucketTruckReport() {
               ))}
             </select>
           </div>
+          
+          {/* Left Column */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
+            <input 
+              type="text" 
+              value={formData.bucketTruckData.serialNumber}
+              onChange={(e) => handleBucketTruckDataChange('serialNumber', e.target.value)}
+              disabled={!isEditing}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+            />
+          </div>
+          {/* Right Column */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Design Voltage</label>
             <select
@@ -2998,6 +3155,8 @@ export default function CalibrationBucketTruckReport() {
               ))}
             </select>
           </div>
+          
+          {/* Left Column */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Year</label>
             <input 
@@ -3046,7 +3205,16 @@ export default function CalibrationBucketTruckReport() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Liner Type</label>
             <select
               value={formData.bucketTruckData.linerType}
-              onChange={(e) => handleBucketTruckDataChange('linerType', e.target.value)}
+              onChange={(e) => {
+                console.log('Liner Type changed to:', e.target.value);
+                console.log('About to call handleBucketTruckDataChange...');
+                try {
+                  handleBucketTruckDataChange('linerType', e.target.value);
+                  console.log('handleBucketTruckDataChange called successfully');
+                } catch (error) {
+                  console.error('Error calling handleBucketTruckDataChange:', error);
+                }
+              }}
               disabled={!isEditing}
               className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             >
@@ -3094,6 +3262,24 @@ export default function CalibrationBucketTruckReport() {
             </div>
           </div>
         </div>
+        
+        {/* Conditional Reason field when NA is selected */}
+        {(formData.bucketTruckData.linerType === 'NA' || formData.bucketTruckData.linerType === 'na' || formData.bucketTruckData.linerType?.toUpperCase() === 'NA') && (
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Reason <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.bucketTruckData.linerReason}
+              onChange={(e) => handleBucketTruckDataChange('linerReason', e.target.value)}
+              disabled={!isEditing}
+              required
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+              placeholder="Please provide a reason for NA selection"
+            />
+          </div>
+        )}
       </div>
 
       {/* DOT Inspection */}

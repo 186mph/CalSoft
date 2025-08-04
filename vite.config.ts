@@ -22,7 +22,14 @@ export default defineConfig({
     strictPort: true, // Don't try other ports
     hmr: {
       protocol: 'ws',
-      host: 'localhost'
+      host: 'localhost',
+      port: 5176, // Separate port for HMR
+      overlay: true // Show errors in browser overlay
+    },
+    watch: {
+      usePolling: true, // Use polling for file watching in WSL
+      interval: 1000, // Poll every 1 second
+      followSymlinks: false
     }
   },
   optimizeDeps: {
@@ -31,6 +38,21 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src")
+    }
+  }
+});
+
+  },
+  // Add build optimizations
+  build: {
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu']
+        }
+      }
     }
   }
 });

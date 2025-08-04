@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { ArrowLeft, Users, ChevronDown, Plus, Paperclip, X, FileEdit, Pencil, Upload, FileText, Package, Trash2, Printer, Eye, Download, Calendar, User, MapPin, Clipboard } from 'lucide-react';
 import { supabase, isConnectionError } from '../../lib/supabase';
@@ -78,6 +78,8 @@ interface Asset {
   pass_fail_status?: 'PASS' | 'FAIL' | null;
   job_id?: string | null;  // Job ID if asset is linked to a specific job
   source_table?: string;  // Source table for the asset
+  is_master?: boolean;  // Whether this is a master asset
+  original_job_id?: string;  // Original job ID for retesting
 }
 
 interface RelatedOpportunity {
@@ -99,8 +101,8 @@ const reportRoutes = {
   '2-Large Dry Type Xfmr. Visual, Mechanical, Insulation Resistance Test MTS': 'large-dry-type-xfmr-mts-report',
 };
 
-export default function JobDetail() {
-  console.log('🔧 JobDetail: Component rendered - job title will show "Project" instead of "Calibration Job"');
+const JobDetail = React.memo(function JobDetail() {
+
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -155,8 +157,9 @@ export default function JobDetail() {
   const [reportSearchQuery, setReportSearchQuery] = useState<string>('');
   const [assets, setAssets] = useState<{id: any; assets: any;}[]>([]);
   const [existingAssets, setExistingAssets] = useState<Asset[]>([]);
+  
+
   const [isSearchingAssets, setIsSearchingAssets] = useState(false);
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>('');
 
   // Meter Report states
   const [meterReportSearchQuery, setMeterReportSearchQuery] = useState<string>('');
@@ -618,21 +621,7 @@ export default function JobDetail() {
     }
   }, [job]);
 
-  // Debounced search effect
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchQuery(reportSearchQuery);
-    }, 300);
 
-    return () => clearTimeout(timer);
-  }, [reportSearchQuery]);
-
-  // Effect to trigger search when debounced query changes
-  useEffect(() => {
-    if (debouncedSearchQuery !== reportSearchQuery) {
-      searchExistingAssets(debouncedSearchQuery);
-    }
-  }, [debouncedSearchQuery]);
 
   // Handle clicking outside the dropdown
   useEffect(() => {
@@ -735,11 +724,20 @@ export default function JobDetail() {
         
         // Get the simplified report type for searching
         const getSimplifiedReportType = (asset: Asset) => {
+          console.log('🔧 getSimplifiedReportType called with asset:', asset);
+          console.log('🔧 Asset file_url:', asset.file_url);
+          console.log('🔧 Does file_url start with report:?', asset.file_url.startsWith('report:'));
+          
           if (asset.file_url.startsWith('report:')) {
+            // Extract report type from URL
+            // URL format: report:/jobs/jobId/reportSlug/reportId
             const urlParts = asset.file_url.split('/');
-            const reportSlug = urlParts[3];
+            const reportSlug = urlParts[3]; // reportSlug is at index 3, not 2
+            
+            console.log('🔧 URL parts:', urlParts, 'Report slug:', reportSlug);
             
             if (reportSlug) {
+              // Clean query parameters from reportSlug if present
               const cleanReportSlug = reportSlug.split('?')[0];
               
               const reportTypeMap: { [key: string]: string } = {
@@ -750,6 +748,8 @@ export default function JobDetail() {
                 'calibration-hotstick': 'Hotstick',
                 'calibration-ground-cable': 'Ground Cable',
                 'calibration-bucket-truck': 'Bucket Truck',
+                'calibration-digger': 'Digger',
+                'meter-template': 'Meter',
                 'panelboard-report': 'Panelboard',
                 'low-voltage-switch-multi-device-test': 'LV Switch',
                 'low-voltage-circuit-breaker-electronic-trip-ats-report': 'LV Circuit Breaker',
@@ -758,9 +758,14 @@ export default function JobDetail() {
                 'large-dry-type-transformer-ats-report': 'Large Transformer'
               };
               
-              return reportTypeMap[cleanReportSlug] || 'Report';
+              const reportType = reportTypeMap[cleanReportSlug] || 'Report';
+              console.log('🔧 Determined report type:', reportType);
+              return reportType;
             }
           }
+          
+          // For non-report documents, extract a simplified name from the asset name
+          console.log(' Returning Document for non-report asset');
           return 'Document';
         };
 
@@ -779,11 +784,20 @@ export default function JobDetail() {
     if (reportTypeFilter !== 'all') {
       filtered = filtered.filter(asset => {
         const getSimplifiedReportType = (asset: Asset) => {
+          console.log('🔧 getSimplifiedReportType called with asset:', asset);
+          console.log('🔧 Asset file_url:', asset.file_url);
+          console.log('🔧 Does file_url start with report:?', asset.file_url.startsWith('report:'));
+          
           if (asset.file_url.startsWith('report:')) {
+            // Extract report type from URL
+            // URL format: report:/jobs/jobId/reportSlug/reportId
             const urlParts = asset.file_url.split('/');
-            const reportSlug = urlParts[3];
+            const reportSlug = urlParts[3]; // reportSlug is at index 3, not 2
+            
+            console.log('🔧 URL parts:', urlParts, 'Report slug:', reportSlug);
             
             if (reportSlug) {
+              // Clean query parameters from reportSlug if present
               const cleanReportSlug = reportSlug.split('?')[0];
               
               const reportTypeMap: { [key: string]: string } = {
@@ -795,6 +809,7 @@ export default function JobDetail() {
                 'calibration-ground-cable': 'Ground Cable',
                 'calibration-bucket-truck': 'Bucket Truck',
                 'calibration-digger': 'Digger',
+                'meter-template': 'Meter',
                 'panelboard-report': 'Panelboard',
                 'low-voltage-switch-multi-device-test': 'LV Switch',
                 'low-voltage-circuit-breaker-electronic-trip-ats-report': 'LV Circuit Breaker',
@@ -803,9 +818,14 @@ export default function JobDetail() {
                 'large-dry-type-transformer-ats-report': 'Large Transformer'
               };
               
-              return reportTypeMap[cleanReportSlug] || 'Report';
+              const reportType = reportTypeMap[cleanReportSlug] || 'Report';
+              console.log('🔧 Determined report type:', reportType);
+              return reportType;
             }
           }
+          
+          // For non-report documents, extract a simplified name from the asset name
+          console.log('🔧 Returning Document for non-report asset');
           return 'Document';
         };
 
@@ -894,14 +914,11 @@ export default function JobDetail() {
       // Use the isLabJob state that was set in fetchJobDetails
       const isCalibration = isLabJob;
       
-      console.log(`Fetching assets for job ${id} (division: ${isCalibration ? 'Lab/Calibration' : 'Regular NETA'})`);
-      
       // Select the appropriate schema and table based on job division
       let assetsData: any[] = [];
       
       if (isCalibration) {
         // For calibration jobs, fetch directly from lab_assets
-        console.log('Fetching from lab_ops.lab_assets table...');
         const { data, error } = await supabase
           .schema('lab_ops')
           .from('lab_assets')
@@ -915,7 +932,6 @@ export default function JobDetail() {
         }
         
         assetsData = data || [];
-        console.log(`Retrieved ${assetsData.length} calibration assets:`, assetsData);
       } else {
         // For other divisions, use job_assets with nested assets
         const { data, error } = await supabase
@@ -933,7 +949,6 @@ export default function JobDetail() {
         }
         
         assetsData = data || [];
-        console.log(`Retrieved ${assetsData.length} regular job assets`);
       }
       
       // Transform the assets based on division
@@ -942,13 +957,14 @@ export default function JobDetail() {
       if (isCalibration) {
         // Lab_ops assets are already in the right format
         for (const asset of assetsData) {
-          transformedAssets.push({
+          const transformedAsset = {
             id: asset.id,
             name: asset.name,
             file_url: asset.file_url,
             created_at: asset.created_at,
             asset_id: asset.asset_id // Include the asset_id for calibration assets
-          });
+          };
+          transformedAssets.push(transformedAsset);
         }
       } else {
         // Transform neta_ops nested assets
@@ -965,7 +981,7 @@ export default function JobDetail() {
         }
       }
       
-      console.log('Transformed assets:', transformedAssets);
+
       
       // Further process the assets to add userAssetId
       const enhancedAssets: EnhancedAsset[] = await Promise.all(
@@ -975,30 +991,61 @@ export default function JobDetail() {
             // For calibration assets, use asset_id if available
             if (asset.asset_id) {
               userAssetId = asset.asset_id;
-              console.log(`Using asset_id from asset record: ${userAssetId}`);
             }
             
-            // For calibration gloves reports, try to extract assetId from report
-            if (asset.file_url && asset.file_url.includes('calibration-gloves') && !userAssetId) {
-              const reportIdMatch = asset.file_url.match(/calibration-gloves\/([^/?]+)/);
-              const reportId = reportIdMatch ? reportIdMatch[1] : null;
+            // For all calibration reports, try to extract assetId from the report
+            if (asset.file_url && asset.file_url.startsWith('report:') && !userAssetId) {
+              // Extract report type and ID from URL
+              const urlParts = asset.file_url.split('/');
+              const reportSlug = urlParts[3];
+              const reportId = urlParts[4];
               
-              if (reportId) {
-                console.log(`Extracting Asset ID from report ${reportId}`);
+              if (reportSlug && reportId) {
+                console.log(`Extracting Asset ID from ${reportSlug} report ${reportId}`);
                 try {
-                  const { data: reportData, error: reportError } = await supabase
-                    .schema('lab_ops')
-                    .from('calibration_gloves_reports')
-                    .select('report_info')
-                    .eq('id', reportId)
-                    .single();
-                    
-                  if (!reportError && reportData?.report_info?.gloveData?.assetId) {
-                    userAssetId = reportData.report_info.gloveData.assetId;
-                    console.log(`Found Asset ID in report: ${userAssetId}`);
+                  // Map report slug to table name
+                  const reportTableMap: { [key: string]: string } = {
+                    'calibration-gloves': 'calibration_gloves_reports',
+                    'calibration-sleeve': 'calibration_sleeve_reports',
+                    'calibration-blanket': 'calibration_blanket_reports',
+                    'calibration-line-hose': 'calibration_line_hose_reports',
+                    'calibration-hotstick': 'calibration_hotstick_reports',
+                    'calibration-ground-cable': 'calibration_ground_cable_reports',
+                    'calibration-bucket-truck': 'calibration_bucket_truck_reports',
+                    'calibration-digger': 'calibration_digger_reports'
+                  };
+                  
+                  const tableName = reportTableMap[reportSlug];
+                  if (tableName) {
+                    const { data: reportData, error: reportError } = await supabase
+                      .schema('lab_ops')
+                      .from(tableName)
+                      .select('report_info')
+                      .eq('id', reportId)
+                      .single();
+                      
+                    if (!reportError && reportData?.report_info) {
+                      // Try different possible paths for assetId
+                      const possiblePaths = [
+                        'assetId',
+                        'gloveData.assetId',
+                        'bucketTruckData.assetId',
+                        'bucketTruckData.truckNumber',
+                        'bucketTruckData.serialNumber'
+                      ];
+                      
+                      for (const path of possiblePaths) {
+                        const value = path.split('.').reduce((obj, key) => obj?.[key], reportData.report_info);
+                        if (value) {
+                          userAssetId = value;
+                          console.log(`Found Asset ID in ${reportSlug} report: ${userAssetId}`);
+                          break;
+                        }
+                      }
+                    }
                   }
                 } catch (error) {
-                  console.error('Error fetching glove report data:', error);
+                  console.error(`Error fetching ${reportSlug} report data:`, error);
                 }
               }
             }
@@ -1011,13 +1058,17 @@ export default function JobDetail() {
         })
       );
       
-      console.log('Enhanced assets:', enhancedAssets);
+
       
       // Fetch pass/fail status for calibration assets
       const assetsWithStatus = await fetchPassFailStatusForJobAssets(enhancedAssets);
       
+      console.log('Assets with status:', assetsWithStatus);
+      
       setJobAssets(assetsWithStatus);
       setFilteredJobAssets(assetsWithStatus);
+      
+      console.log('🔧 Job assets state set:', assetsWithStatus.length, 'assets');
       
     } catch (error) {
       console.error('Error fetching job assets:', error);
@@ -1144,26 +1195,61 @@ export default function JobDetail() {
 
   // Function to search for existing assets across all jobs and master assets
   const searchExistingAssets = async (searchTerm: string) => {
-    if (!searchTerm.trim() || searchTerm.length < 2) {
+    if (!searchTerm.trim() || searchTerm.trim().length < 2) {
       setExistingAssets([]);
       return;
     }
 
-    setIsSearchingAssets(true);
     try {
-      let allAssets: Asset[] = [];
+      const allAssets: Asset[] = [];
 
       if (job?.division?.toLowerCase() === 'calibration') {
-        // Search calibration assets from lab_ops schema
+        // First, search for calibration master assets in lab_ops.lab_assets
+        try {
+          const { data: masterAssets, error: masterError } = await supabase
+            .schema('lab_ops')
+            .from('lab_assets')
+            .select(`
+              id,
+              name,
+              asset_id,
+              created_at
+            `)
+            .or(`name.ilike.%${searchTerm}%,asset_id.ilike.%${searchTerm}%`)
+            .limit(10);
+
+          if (!masterError && masterAssets) {
+            console.log(`🔍 Found ${masterAssets.length} calibration master assets`);
+            const calibrationMasterAssets = masterAssets.map(item => ({
+              id: item.id,
+              name: `🔧 ${item.name} (Asset ID: ${item.asset_id || 'N/A'})`,
+              file_url: `calibration:/master-assets/${item.id}`,
+              created_at: item.created_at,
+              pass_fail_status: null,
+              job_id: null,
+              source_table: 'lab_assets',
+              is_master: true,
+              asset_id: item.asset_id
+            }));
+            allAssets.push(...calibrationMasterAssets);
+          } else {
+            console.log(`🔍 Error searching calibration master assets:`, masterError);
+          }
+        } catch (error) {
+          console.log(`🔍 Error searching calibration master assets:`, error);
+        }
+
+        // Then search calibration reports from lab_ops schema (if accessible)
         const calibrationTables = [
           'calibration_gloves_reports',
-          'calibration_sleeve_reports', 
-          'calibration_blanket_reports',
-          'calibration_line_hose_reports',
           'calibration_hotstick_reports',
           'calibration_ground_cable_reports',
+          'calibration_sleeve_reports',
+          'calibration_blanket_reports',
+          'calibration_line_hose_reports',
           'calibration_bucket_truck_reports',
-          'calibration_digger_reports'
+          'calibration_digger_reports',
+          'calibration_meter_reports'
         ];
 
         for (const table of calibrationTables) {
@@ -1173,30 +1259,76 @@ export default function JobDetail() {
               .from(table)
               .select(`
                 id,
+                job_id,
                 report_info,
-                created_at,
-                job_id
+                created_at
               `)
-              .or(`report_info->customer.ilike.%${searchTerm}%,report_info->bucketTruckData->truckNumber.ilike.%${searchTerm}%,report_info->bucketTruckData->serialNumber.ilike.%${searchTerm}%,report_info->bucketTruckData->manufacturer.ilike.%${searchTerm}%,report_info->assetId.ilike.%${searchTerm}%`)
+              .or(`report_info->>'customer'.ilike.%${searchTerm}%,report_info->'bucketTruckData'->>'truckNumber'.ilike.%${searchTerm}%,report_info->'bucketTruckData'->>'serialNumber'.ilike.%${searchTerm}%,report_info->'bucketTruckData'->>'manufacturer'.ilike.%${searchTerm}%,report_info->>'assetId'.ilike.%${searchTerm}%`)
               .limit(10);
 
             if (!error && data) {
-              const assets = data.map(item => ({
-                id: `${table}-${item.id}`,
-                name: `${getReportTypeName(table)} - ${item.report_info?.customer || 'Unknown Customer'} - ${item.report_info?.bucketTruckData?.truckNumber || item.report_info?.bucketTruckData?.serialNumber || item.report_info?.assetId || 'Unknown Asset'}`,
-                file_url: `report:/jobs/${item.job_id}/${getReportRoute(table)}/${item.id}`,
-                created_at: item.created_at,
-                pass_fail_status: item.report_info?.status || null,
-                job_id: item.job_id,
-                asset_id: item.report_info?.assetId || null,
-                source_table: table
-              }));
-              allAssets.push(...assets);
+              console.log(`🔍 Found ${data.length} assets in ${table}`);
+              const tableAssets = data
+                .filter(item => {
+                  // Filter out reports that are already linked to the current job
+                  if (item.job_id === id) {
+                    return false;
+                  }
+                  
+                  // Extract asset ID from report_info
+                  const assetId = item.report_info?.assetId || 
+                                 item.report_info?.gloveData?.assetId || 
+                                 item.report_info?.bucketTruckData?.assetId ||
+                                 item.report_info?.bucketTruckData?.truckNumber ||
+                                 item.report_info?.bucketTruckData?.serialNumber;
+                  
+                  // Check if we already have a master asset with this asset ID
+                  const hasMasterAsset = allAssets.some(asset => 
+                    asset.is_master && asset.asset_id === assetId
+                  );
+                  
+                  // Only include if we don't have a master asset with this ID
+                  return !hasMasterAsset;
+                })
+                .map(item => {
+                  const assetId = item.report_info?.assetId || 
+                                 item.report_info?.gloveData?.assetId || 
+                                 item.report_info?.bucketTruckData?.assetId ||
+                                 item.report_info?.bucketTruckData?.truckNumber ||
+                                 item.report_info?.bucketTruckData?.serialNumber;
+                  
+                  return {
+                    id: `${table}-${item.id}`,
+                    name: `${getReportTypeName(table)} Report - ${assetId || 'Unknown Asset'}`,
+                    file_url: `report:/jobs/${item.job_id}/${getReportRoute(table)}/${item.id}`,
+                    created_at: item.created_at,
+                    pass_fail_status: item.report_info?.status || null,
+                    job_id: item.job_id,
+                    source_table: table,
+                    is_master: false,
+                    asset_id: assetId,
+                    original_job_id: item.job_id
+                  };
+                });
+              allAssets.push(...tableAssets);
+            } else {
+              // Only log permission errors once, not for every table
+              if ((error as any)?.code === '42501') {
+                console.log(`🔍 Permission denied for ${table} (expected for calibration division)`);
+              } else {
+                console.log(`🔍 Error searching ${table}:`, error);
+              }
             }
           } catch (error) {
-            console.error(`Error searching ${table}:`, error);
+            // Only log unexpected errors
+            if ((error as any)?.code !== '42501') {
+              console.error(`Error searching ${table}:`, error);
+            }
           }
         }
+
+        // For calibration division, we only want calibration-specific assets
+        // No need to search neta_ops assets as they are for other divisions
       } else {
         // Search other division assets (MTS/ATS reports) from neta_ops schema
         const { data, error } = await supabase
@@ -1209,55 +1341,29 @@ export default function JobDetail() {
             created_at
           `)
           .or(`name.ilike.%${searchTerm}%,file_url.ilike.%${searchTerm}%`)
-          .limit(20);
+          .limit(10);
 
         if (!error && data) {
-          allAssets = data.map(item => ({
+          console.log(`🔍 Found ${data.length} neta_ops assets`);
+          const netaAssets = data.map(item => ({
             ...item,
             pass_fail_status: null,
             job_id: null,
             asset_id: item.id,
-            source_table: 'assets'
+            source_table: 'neta_ops_assets',
+            is_master: false
           }));
+          allAssets.push(...netaAssets);
+        } else {
+          console.log(`🔍 Error searching neta_ops assets:`, error);
         }
       }
 
-      // Also search master assets from common schema if available
-      try {
-        const { data: masterAssets, error: masterError } = await supabase
-          .schema('common')
-          .from('assets')
-          .select(`
-            id,
-            name,
-            file_url,
-            created_at
-          `)
-          .or(`name.ilike.%${searchTerm}%,file_url.ilike.%${searchTerm}%`)
-          .limit(10);
-
-        if (!masterError && masterAssets) {
-          const masterAssetList = masterAssets.map(item => ({
-            id: `master-${item.id}`,
-            name: `Master Asset - ${item.name}`,
-            file_url: item.file_url,
-            created_at: item.created_at,
-            pass_fail_status: null,
-            job_id: null,
-            asset_id: item.id,
-            source_table: 'master_assets'
-          }));
-          allAssets.push(...masterAssetList);
-        }
-      } catch (error) {
-        console.error('Error searching master assets:', error);
-      }
-
+      console.log(`🔍 Final assets found: ${allAssets.length}`);
       setExistingAssets(allAssets);
     } catch (error) {
       console.error('Error searching existing assets:', error);
-    } finally {
-      setIsSearchingAssets(false);
+      setExistingAssets([]);
     }
   };
 
@@ -1291,7 +1397,278 @@ export default function JobDetail() {
     return routeMap[table] || 'report';
   };
 
+  // Function to retest an existing asset (create new report based on existing one)
+  const retestAsset = async (asset: Asset) => {
+    if (!id || !user?.id) {
+      console.error('Missing job ID or user ID');
+      return;
+    }
+
+    try {
+      console.log('🔧 Retesting asset:', asset);
+
+      // Determine the report type from the source table
+      const reportType = asset.source_table?.replace('calibration_', '').replace('_reports', '');
+      
+      if (!reportType) {
+        toast.error('Could not determine report type for retesting');
+        return;
+      }
+
+      // Navigate to the appropriate report creation page for retesting
+      const reportRoute = getReportRoute(asset.source_table || '');
+      const retestUrl = `/jobs/${id}/${reportRoute}?retest=true&originalAssetId=${asset.id}&originalJobId=${asset.original_job_id || asset.job_id}`;
+      
+      console.log('🔧 Navigating to retest URL:', retestUrl);
+      
+      // Close dropdown and navigate
+      setIsDropdownOpen(false);
+      navigate(retestUrl);
+
+    } catch (error) {
+      console.error('Error initiating retest:', error);
+      toast.error(`Failed to initiate retest: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
   // Function to link an existing asset to the current project
+  const testAsset = async (asset: Asset) => {
+    if (!id || !user?.id) {
+      console.error('Missing job ID or user ID');
+      return;
+    }
+
+    try {
+
+
+      // For calibration division, handle testing
+      if (job?.division?.toLowerCase() === 'calibration') {
+        // For calibration, we need to create a new report entry with the existing data and set it to PASS
+        if (asset.source_table && asset.source_table.includes('calibration_')) {
+          // This is an existing calibration report - we need to copy it to the current job and set to PASS
+          const reportType = asset.source_table.replace('calibration_', '').replace('_reports', '');
+          
+          // Fetch the original report data
+          const { data: originalReport, error: fetchError } = await supabase
+            .schema('lab_ops')
+            .from(asset.source_table)
+            .select('*')
+            .eq('id', asset.id.replace(`${asset.source_table}-`, ''))
+            .single();
+
+          if (fetchError) {
+            console.error('Error fetching original report:', fetchError);
+            throw fetchError;
+          }
+
+          // Check if the original report has any actual data
+          const hasData = originalReport.report_info && 
+            Object.keys(originalReport.report_info).length > 0 &&
+            (originalReport.report_info.customer || 
+             originalReport.report_info.gloveData?.assetId ||
+             originalReport.report_info.bucketTruckData?.truckNumber);
+
+          if (!hasData) {
+            console.log('⚠️ Original report has no data, skipping copy');
+            toast.error('This report has no data to copy. Please select a report with actual information.');
+            return;
+          }
+
+          // Create a new report entry for the current job with the original data and PASS status
+          const newReportData = {
+            ...originalReport,
+            id: undefined, // Let Supabase generate a new ID
+            job_id: id,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            status: 'PASS', // Set to PASS by default for retested assets
+            report_info: {
+              ...originalReport.report_info,
+              status: 'PASS' // Set to PASS by default for retested assets
+            }
+          };
+
+          const { data: newReport, error: insertError } = await supabase
+            .schema('lab_ops')
+            .from(asset.source_table)
+            .insert(newReportData)
+            .select()
+            .single();
+
+          if (insertError) {
+            console.error('Error creating new report:', insertError);
+            throw insertError;
+          }
+
+          console.log('✅ Calibration report successfully tested and copied to current job with PASS status');
+          
+          // Create a lab_assets entry so it appears in the asset list
+          const assetId = originalReport.report_info?.assetId || originalReport.report_info?.gloveData?.assetId || originalReport.report_info?.bucketTruckData?.assetId || originalReport.report_info?.bucketTruckData?.truckNumber || originalReport.report_info?.bucketTruckData?.serialNumber || 'Unknown';
+          const labAssetData = {
+            name: `${getReportTypeName(asset.source_table)} Report - ${assetId}`,
+            file_url: `report:/jobs/${id}/${getReportRoute(asset.source_table)}/${newReport.id}`,
+            job_id: id,
+            asset_id: assetId,
+            report_id: newReport.id,
+            created_at: new Date().toISOString()
+          };
+
+          console.log('🔧 Creating lab asset entry with data:', labAssetData);
+          console.log('🔧 File URL being created:', labAssetData.file_url);
+
+          const { data: labAssetResult, error: labAssetError } = await supabase
+            .schema('lab_ops')
+            .from('lab_assets')
+            .insert(labAssetData)
+            .select()
+            .single();
+
+          if (labAssetError) {
+            console.error('Error creating lab asset entry:', labAssetError);
+            // Don't throw error here as the main operation succeeded
+          } else {
+            console.log('✅ Lab asset entry created successfully:', labAssetResult);
+          }
+          
+                           // Record the testing in asset testing history (optional - don't fail if table doesn't exist)
+                 try {
+                   const historyData = {
+                     asset_id: newReport.id,
+                     job_id: id,
+                     test_date: new Date().toISOString(),
+                     test_type: 'calibration_retest',
+                     test_performed_by: user.id,
+                     pass_fail_status: 'PASS',
+                     notes: `Asset retested from original job ${asset.original_job_id || 'unknown'}`,
+                     condition_rating: 8, // Default good condition for retested assets
+                     test_standards: 'Calibration retest',
+                     created_by: user.id
+                   };
+
+                   const { error: historyError } = await supabase
+                     .schema('lab_ops')
+                     .from('asset_testing_history')
+                     .insert(historyData);
+
+                   if (historyError) {
+                     console.log('Note: Could not record testing history (table may not exist):', historyError);
+                   }
+                 } catch (error) {
+                   console.log('Note: Testing history recording failed (table may not exist):', error);
+                 }
+          
+          // Refresh the assets list
+          await fetchJobAssets();
+          
+          // Close dropdown and show success message
+          setIsDropdownOpen(false);
+          toast.success(`Asset "${asset.name}" has been tested and added to this project with PASS status.`);
+          
+          return;
+        } else if (asset.is_master) {
+          // This is a master asset - we need to create a new report entry first
+          // Extract asset ID from the master asset name
+          const assetId = asset.asset_id || asset.name.split('Asset ID: ')[1]?.split(')')[0] || 'Unknown';
+          
+          // Create a new report entry for this master asset
+          // We'll create it in the calibration_gloves_reports table as a default
+          const newReportData = {
+            job_id: id,
+            report_info: {
+              assetId: assetId,
+              customer: 'Master Asset',
+              status: 'PASS'
+            },
+            status: 'PASS',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+
+          const { data: newReport, error: insertError } = await supabase
+            .schema('lab_ops')
+            .from('calibration_gloves_reports')
+            .insert(newReportData)
+            .select()
+            .single();
+
+          if (insertError) {
+            console.error('Error creating new report for master asset:', insertError);
+            throw insertError;
+          }
+
+          console.log('✅ New report created for master asset:', newReport);
+
+          // Create a lab_assets entry that points to the new report
+          const assetData = {
+            name: `Glove Report - ${assetId}`,
+            file_url: `report:/jobs/${id}/calibration-gloves/${newReport.id}`,
+            job_id: id,
+            asset_id: assetId,
+            report_id: newReport.id,
+            created_at: new Date().toISOString()
+          };
+
+          const { data: labAssetResult, error: labAssetError } = await supabase
+            .schema('lab_ops')
+            .from('lab_assets')
+            .insert(assetData)
+            .select()
+            .single();
+
+          if (labAssetError) {
+            console.error('Error creating lab asset entry:', labAssetError);
+            throw labAssetError;
+          }
+
+          console.log('✅ Lab asset entry created successfully:', labAssetResult);
+          
+                           // Record the testing in asset testing history (optional - don't fail if table doesn't exist)
+                 try {
+                   const historyData = {
+                     asset_id: newReport.id,
+                     job_id: id,
+                     test_date: new Date().toISOString(),
+                     test_type: 'master_asset_link',
+                     test_performed_by: user.id,
+                     pass_fail_status: 'PASS',
+                     notes: `Master asset linked to project`,
+                     condition_rating: 8, // Default good condition for master assets
+                     test_standards: 'Master asset link',
+                     created_by: user.id
+                   };
+
+                   const { error: historyError } = await supabase
+                     .schema('lab_ops')
+                     .from('asset_testing_history')
+                     .insert(historyData);
+
+                   if (historyError) {
+                     console.log('Note: Could not record testing history (table may not exist):', historyError);
+                   }
+                 } catch (error) {
+                   console.log('Note: Testing history recording failed (table may not exist):', error);
+                 }
+          
+          // Refresh the assets list
+          await fetchJobAssets();
+          
+          // Close dropdown and show success message
+          setIsDropdownOpen(false);
+          toast.success(`Asset "${asset.name}" has been tested and linked to this project.`);
+          
+          return;
+        }
+      } else {
+        // For non-calibration divisions, use the existing linkAssetToProject logic
+        await linkAssetToProject(asset);
+      }
+
+    } catch (error) {
+      console.error('Error testing asset:', error);
+      toast.error(`Failed to test asset: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
   const linkAssetToProject = async (asset: Asset) => {
     if (!id || !user?.id) {
       console.error('Missing job ID or user ID');
@@ -1301,32 +1678,129 @@ export default function JobDetail() {
     try {
       console.log('🔧 Linking asset to project:', asset);
 
-      // Determine the correct schema based on job division
-      const schema = job?.division?.toLowerCase() === 'calibration' ? 'lab_ops' : 'neta_ops';
-      
-      if (schema === 'lab_ops') {
-        // For lab_ops, create a new lab_assets entry linked to this job
-        const assetData = {
-          name: asset.name,
-          file_url: asset.file_url,
-          job_id: id,
-          created_at: new Date().toISOString()
-        };
+      // For calibration division, handle differently
+      if (job?.division?.toLowerCase() === 'calibration') {
+        // For calibration, we need to create a new report entry with the existing data
+        if (asset.source_table && asset.source_table.includes('calibration_')) {
+          // This is an existing calibration report - we need to copy it to the current job
+          const reportType = asset.source_table.replace('calibration_', '').replace('_reports', '');
+          
+          // Fetch the original report data
+          const { data: originalReport, error: fetchError } = await supabase
+            .schema('lab_ops')
+            .from(asset.source_table)
+            .select('*')
+            .eq('id', asset.id.replace(`${asset.source_table}-`, ''))
+            .single();
 
-        const { data: newAsset, error: assetError } = await supabase
-          .schema('lab_ops')
-          .from('lab_assets')
-          .insert(assetData)
-          .select()
-          .single();
+          if (fetchError) {
+            console.error('Error fetching original report:', fetchError);
+            throw fetchError;
+          }
 
-        if (assetError) {
-          console.error('Error creating lab asset:', assetError);
-          throw assetError;
+          // Check if the original report has any actual data
+          const hasData = originalReport.report_info && 
+            Object.keys(originalReport.report_info).length > 0 &&
+            (originalReport.report_info.customer || 
+             originalReport.report_info.gloveData?.assetId ||
+             originalReport.report_info.bucketTruckData?.truckNumber);
+
+          if (!hasData) {
+            console.log('⚠️ Original report has no data, skipping copy');
+            toast.error('This report has no data to copy. Please select a report with actual information.');
+            return;
+          }
+
+          // Create a new report entry for the current job with the original data
+          const newReportData = {
+            ...originalReport,
+            id: undefined, // Let Supabase generate a new ID
+            job_id: id,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+
+          // Ensure we preserve all the original report_info data
+          if (originalReport.report_info) {
+            newReportData.report_info = {
+              ...originalReport.report_info,
+              // Keep the original status but update any job-specific fields if needed
+              status: originalReport.report_info.status || 'PASS'
+            };
+          }
+
+          const { data: newReport, error: insertError } = await supabase
+            .schema('lab_ops')
+            .from(asset.source_table)
+            .insert(newReportData)
+            .select()
+            .single();
+
+          if (insertError) {
+            console.error('Error creating new report:', insertError);
+            throw insertError;
+          }
+
+          console.log('✅ Calibration report successfully copied to current job');
+          
+          // Debug: Log the copied data
+          console.log('🔧 Original report data:', originalReport);
+          console.log('🔧 New report data:', newReport);
+          console.log('🔧 Report info being copied:', originalReport.report_info);
+          
+          // Debug: Check if the report_info has the expected structure
+          if (originalReport.report_info) {
+            console.log('🔧 Report info structure check:');
+            console.log('  - Has gloveData:', !!originalReport.report_info.gloveData);
+            console.log('  - Has customer:', !!originalReport.report_info.customer);
+            console.log('  - Has assetId:', !!originalReport.report_info.assetId);
+            console.log('  - Has testEquipment:', !!originalReport.report_info.testEquipment);
+            console.log('  - Full report_info keys:', Object.keys(originalReport.report_info));
+          }
+          
+          // Refresh the assets list
+          await fetchJobAssets();
+          
+          // Close dropdown and show success message
+          setIsDropdownOpen(false);
+          toast.success(`Asset "${asset.name}" has been linked to this project with all data copied.`);
+          
+          return;
+        } else if (asset.is_master) {
+          // This is a master asset - create a new lab_assets entry
+          const assetData = {
+            name: asset.name,
+            file_url: asset.file_url,
+            job_id: id,
+            asset_id: asset.asset_id || null,
+            created_at: new Date().toISOString()
+          };
+
+          const { data: newAsset, error: assetError } = await supabase
+            .schema('lab_ops')
+            .from('lab_assets')
+            .insert(assetData)
+            .select()
+            .single();
+
+          if (assetError) {
+            console.error('Error creating lab asset:', assetError);
+            throw assetError;
+          }
+
+          console.log('✅ Master asset successfully linked to project');
+          
+          // Refresh the assets list
+          await fetchJobAssets();
+          
+          // Close dropdown and show success message
+          setIsDropdownOpen(false);
+          toast.success(`Asset "${asset.name}" has been linked to this project.`);
+          
+          return;
         }
-
-        console.log('✅ Lab asset successfully linked to project');
       } else {
+        // For non-calibration divisions, use the existing logic
         // For neta_ops, use the job_assets junction table for many-to-many relationship
         // First, check if asset already exists in neta_ops.assets
         let assetId = asset.asset_id;
@@ -1371,14 +1845,14 @@ export default function JobDetail() {
         }
 
         console.log('✅ Asset successfully linked to project via job_assets');
+        
+        // Refresh the assets list
+        await fetchJobAssets();
+        
+        // Close dropdown and show success message
+        setIsDropdownOpen(false);
+        toast.success(`Asset "${asset.name}" has been linked to this project.`);
       }
-      
-      // Refresh the assets list
-      await fetchJobAssets();
-      
-      // Close dropdown and show success message
-      setIsDropdownOpen(false);
-      toast.success(`Asset "${asset.name}" has been linked to this project.`);
 
     } catch (error) {
       console.error('Error linking asset to project:', error);
@@ -1645,8 +2119,14 @@ export default function JobDetail() {
   };
 
   const getReportEditPath = (asset: Asset) => {
+    console.log('🔧 getReportEditPath called with asset:', asset);
+    console.log('🔧 Asset file_url:', asset.file_url);
+    
     const urlContent = asset.file_url.split(':/')[1];
+    console.log('🔧 URL content after split:', urlContent);
+    
     const pathSegments = urlContent.split('/');
+    console.log('🔧 Path segments:', pathSegments);
 
     if (pathSegments[0] !== 'jobs' || !pathSegments[1] || !pathSegments[2]) {
       console.error('Unexpected asset.file_url format for report path:', asset.file_url, 'Expected format like "report:/jobs/JOB_ID/report-slug..."');
@@ -1656,6 +2136,13 @@ export default function JobDetail() {
     const jobIdSegment = pathSegments[1]; // This is the job ID from the asset's URL
     let reportNameSlug = pathSegments[2];
     const reportIdFromUrl = pathSegments[3]; // This might be an actual ID or undefined
+
+    // Only log in development and when there are actual issues
+    if (process.env.NODE_ENV === 'development' && !reportIdFromUrl) {
+      console.log('🔧 Job ID segment:', jobIdSegment);
+      console.log('🔧 Report name slug:', reportNameSlug);
+      console.log('🔧 Report ID from URL:', reportIdFromUrl);
+    }
 
     // Clean query parameters from reportNameSlug if it's the last significant path part before query
     if (reportNameSlug.includes('?')) {
@@ -1727,15 +2214,21 @@ export default function JobDetail() {
     if (isTemplate) {
       // For templates (new reports), navigate to the path without a reportId segment.
       // The jobIdSegment here is the current job's ID passed via the template literal in defaultAssets
-      return `/jobs/${jobIdSegment}/${mappedReportName}`;
+      const path = `/jobs/${jobIdSegment}/${mappedReportName}`;
+      console.log('🔧 Template path:', path);
+      return path;
     } else if (reportIdFromUrl) {
       // For existing reports that have an ID in their URL structure.
-      return `/jobs/${jobIdSegment}/${mappedReportName}/${reportIdFromUrl}`;
+      const path = `/jobs/${jobIdSegment}/${mappedReportName}/${reportIdFromUrl}`;
+      console.log('🔧 Existing report path:', path);
+      return path;
     } else {
       // Fallback for existing assets that might have a malformed URL or if it's a template missed by the above check.
       // This primarily targets new reports from templates.
       console.warn('Asset is not a template and has no reportId in URL, defaulting to new report path:', asset.file_url);
-      return `/jobs/${jobIdSegment}/${mappedReportName}`;
+      const path = `/jobs/${jobIdSegment}/${mappedReportName}`;
+      console.log('🔧 Fallback path:', path);
+      return path;
     }
   };
 
@@ -1993,6 +2486,308 @@ export default function JobDetail() {
       console.error('Error generating combined PDF:', error);
       toast.dismiss();
       toast.error('Failed to generate combined PDF');
+    }
+  };
+
+  // Function to generate a packing slip for the project
+  const generatePackingSlip = async () => {
+    if (!job || !jobAssets.length) {
+      toast.error('No assets to include in packing slip');
+      return;
+    }
+
+    try {
+      console.log('[JobDetail] Generating packing slip...');
+
+      // Count report types
+      const reportCounts: { [key: string]: number } = {};
+      
+      console.log('[JobDetail] jobAssets for packing slip:', jobAssets);
+      console.log('[JobDetail] jobAssets length:', jobAssets.length);
+      
+      jobAssets.forEach((asset, index) => {
+        console.log(`[JobDetail] Processing asset ${index + 1}:`, {
+          id: asset.id,
+          name: asset.name,
+          file_url: asset.file_url,
+          startsWithReport: asset.file_url.startsWith('report:')
+        });
+        
+        if (asset.file_url.startsWith('report:')) {
+          // Extract report type from URL
+          const urlParts = asset.file_url.split('/');
+          console.log('[JobDetail] URL parts:', urlParts);
+          
+          const reportSlug = urlParts[3];
+          console.log('[JobDetail] Report slug:', reportSlug);
+          
+          if (reportSlug) {
+            const cleanReportSlug = reportSlug.split('?')[0];
+            console.log('[JobDetail] Clean report slug:', cleanReportSlug);
+            
+            // Map report slugs to readable names
+            const reportTypeMap: { [key: string]: string } = {
+              'calibration-gloves': 'pairs of Gloves',
+              'calibration-sleeve': 'Sleeves',
+              'calibration-blanket': 'Blankets',
+              'calibration-line-hose': 'Line Hoses',
+              'calibration-hotstick': 'Hotsticks',
+              'calibration-ground-cable': 'Ground Cables',
+              'calibration-bucket-truck': 'Bucket Truck Reports',
+              'calibration-digger': 'Digger Reports',
+              'meter-template': 'Meter Reports',
+              'panelboard-report': 'Panelboard Reports',
+              'low-voltage-switch-multi-device-test': 'LV Switch Reports',
+              'low-voltage-circuit-breaker-electronic-trip-ats-report': 'LV Circuit Breaker Reports',
+              'automatic-transfer-switch-ats-report': 'ATS Reports',
+              'large-dry-type-transformer-mts-report': 'Large Transformer Reports',
+              'large-dry-type-transformer-ats-report': 'Large Transformer Reports'
+            };
+            
+            const reportType = reportTypeMap[cleanReportSlug] || 'Document';
+            reportCounts[reportType] = (reportCounts[reportType] || 0) + 1;
+            console.log('[JobDetail] Added report type:', reportType, 'Count:', reportCounts[reportType]);
+          }
+        } else {
+          // For non-report documents
+          reportCounts['Document'] = (reportCounts['Document'] || 0) + 1;
+          console.log('[JobDetail] Added Document, Count:', reportCounts['Document']);
+        }
+      });
+      
+      console.log('[JobDetail] Final reportCounts:', reportCounts);
+      console.log('[JobDetail] Object.entries(reportCounts):', Object.entries(reportCounts));
+
+      // If no report counts were found, create a simple list of all assets
+      if (Object.keys(reportCounts).length === 0) {
+        console.log('[JobDetail] No report counts found, creating simple asset list');
+        jobAssets.forEach((asset, index) => {
+          const assetName = asset.name || asset.id || 'Unknown Asset';
+          reportCounts[assetName] = 1;
+        });
+        console.log('[JobDetail] Created simple asset list:', reportCounts);
+      }
+
+      // Create packing slip HTML
+      const packingSlipHTML = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Packing Slip - ${job.job_number || job.id}</title>
+          <style>
+            body { 
+              font-family: Arial, sans-serif; 
+              margin: 0; 
+              padding: 20px; 
+              background-color: #ffffff;
+            }
+            .packing-slip {
+              max-width: 800px;
+              margin: 0 auto;
+              background-color: #ffffff;
+              border: 2px solid #000;
+              padding: 30px;
+            }
+            .header {
+              text-align: center;
+              border-bottom: 3px solid #000;
+              padding-bottom: 20px;
+              margin-bottom: 30px;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 28px;
+              font-weight: bold;
+              color: #000;
+            }
+            .header p {
+              margin: 5px 0;
+              font-size: 14px;
+              color: #666;
+            }
+            .job-info {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 30px;
+              padding: 15px;
+              background-color: #f8f9fa;
+              border: 1px solid #dee2e6;
+              border-radius: 5px;
+            }
+            .job-info-left, .job-info-right {
+              flex: 1;
+            }
+            .job-info h3 {
+              margin: 0 0 10px 0;
+              font-size: 16px;
+              font-weight: bold;
+              color: #000;
+            }
+            .job-info p {
+              margin: 5px 0;
+              font-size: 14px;
+              color: #333;
+            }
+            .items-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 30px;
+            }
+            .items-table th {
+              background-color: #f8f9fa;
+              border: 1px solid #dee2e6;
+              padding: 12px;
+              text-align: left;
+              font-weight: bold;
+              font-size: 14px;
+              color: #000;
+            }
+            .items-table td {
+              border: 1px solid #dee2e6;
+              padding: 12px;
+              font-size: 14px;
+              color: #333;
+            }
+            .items-table tr:nth-child(even) {
+              background-color: #f8f9fa;
+            }
+            .total-row {
+              background-color: #e9ecef !important;
+              font-weight: bold;
+            }
+            .footer {
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 1px solid #dee2e6;
+              text-align: center;
+              font-size: 12px;
+              color: #666;
+            }
+            .signature-section {
+              margin-top: 40px;
+              display: flex;
+              justify-content: space-between;
+            }
+            .signature-box {
+              width: 45%;
+              border-top: 1px solid #000;
+              padding-top: 10px;
+              text-align: center;
+            }
+            .signature-box p {
+              margin: 5px 0;
+              font-size: 12px;
+              color: #666;
+            }
+            @media print {
+              body { margin: 0; }
+              .packing-slip { border: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="packing-slip">
+            <div class="header">
+              <h1>PACKING SLIP</h1>
+              <p>Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+            </div>
+            
+            <div class="job-info">
+              <div class="job-info-left">
+                <h3>Project Information</h3>
+                <p><strong>Project Number:</strong> ${job.job_number || 'N/A'}</p>
+                <p><strong>Customer:</strong> ${job.customers?.name || 'N/A'}</p>
+                <p><strong>Company:</strong> ${job.customers?.company_name || 'N/A'}</p>
+                <p><strong>Status:</strong> ${job.status}</p>
+              </div>
+              <div class="job-info-right">
+                <h3>Contact Information</h3>
+                <p><strong>Address:</strong> ${job.customers?.address || 'N/A'}</p>
+                <p><strong>Created:</strong> ${job.created_at ? new Date(job.created_at).toLocaleDateString() : 'N/A'}</p>
+                <p><strong>Total Items:</strong> ${jobAssets.length}</p>
+              </div>
+            </div>
+            
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th style="width: 10%;">#</th>
+                  <th style="width: 60%;">Item Description</th>
+                  <th style="width: 15%;">Quantity</th>
+                  <th style="width: 15%;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${Object.entries(reportCounts).length > 0 ? 
+                  Object.entries(reportCounts).map(([reportType, count], index) => `
+                    <tr>
+                      <td>${index + 1}</td>
+                      <td>${count} ${reportType}</td>
+                      <td>${count}</td>
+                      <td>Included</td>
+                    </tr>
+                  `).join('') : 
+                  '<tr><td colspan="4" style="text-align: center; color: #666;">No reports found in this project</td></tr>'
+                }
+                <tr class="total-row">
+                  <td colspan="2"><strong>Total Items</strong></td>
+                  <td><strong>${Object.values(reportCounts).reduce((sum, count) => sum + count, 0)}</strong></td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <div class="signature-section">
+              <div class="signature-box">
+                <p>Prepared By</p>
+                <p>_____________________</p>
+                <p>Date: ${new Date().toLocaleDateString()}</p>
+              </div>
+              <div class="signature-box">
+                <p>Received By</p>
+                <p>_____________________</p>
+                <p>Date: _______________</p>
+              </div>
+            </div>
+            
+            <div class="footer">
+              <p>This packing slip lists all reports and documents included in Project ${job.job_number || job.id}</p>
+              <p>Please verify all items are present before signing</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      console.log('[JobDetail] Generated packing slip HTML');
+
+      // Create a temporary container and generate PDF
+      const container = document.createElement('div');
+      container.innerHTML = packingSlipHTML;
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.top = '0';
+      document.body.appendChild(container);
+
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: `packing_slip_${job.job_number || job.id}_${new Date().toISOString().split('T')[0]}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      console.log('[JobDetail] Starting packing slip PDF generation...');
+      await html2pdf().set(opt).from(container).save();
+      
+      console.log('[JobDetail] Packing slip PDF generation completed');
+      document.body.removeChild(container);
+      toast.success(`Successfully generated packing slip with ${Object.keys(reportCounts).length} item types`);
+
+    } catch (error) {
+      console.error('[JobDetail] Error in generatePackingSlip:', error);
+      toast.error('Failed to generate packing slip');
     }
   };
 
@@ -3247,7 +4042,8 @@ export default function JobDetail() {
                     Job #{job.job_number || 'Pending'}
                   </p>
                 </div>
-                                <div className="flex items-center space-x-4">
+                
+                <div className="flex items-center space-x-4">
                   <select
                     value={job.status}
                     onChange={handleStatusChange}
@@ -3268,7 +4064,7 @@ export default function JobDetail() {
                   }`}>
                     {job.priority} priority
                   </Badge>
-                    </div>
+                </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
@@ -3390,13 +4186,33 @@ export default function JobDetail() {
                       <div className="flex space-x-2 relative" ref={dropdownRef}>
                         {/* Original Add Asset button - hide for Calibration Division */}
                         {(!job?.division || job.division.toLowerCase() !== 'calibration') && (
-                          <Button 
-                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className="flex items-center gap-2"
-                          >
-                            <Plus className="h-5 w-5 min-w-[20px] flex-shrink-0" />
-                            Add Asset
-                          </Button>
+                          <>
+                            <Button 
+                              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                              className="flex items-center gap-2"
+                            >
+                              <Plus className="h-5 w-5 min-w-[20px] flex-shrink-0" />
+                              Add Asset
+                            </Button>
+                            
+                            <Button 
+                              onClick={() => window.open('https://www.ups.com/ship/single-page?tx=76889995418588601&loc=en_US', '_blank')}
+                              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white min-w-[120px] justify-center"
+                              title="Open UPS shipping label in new tab"
+                            >
+                              <Package className="h-5 w-5 min-w-[20px] flex-shrink-0" />
+                              Print Label
+                            </Button>
+                            
+                            <Button 
+                              onClick={generatePackingSlip}
+                              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white min-w-[120px] justify-center"
+                              title="Generate a packing slip listing all reports in this project"
+                            >
+                              <Package className="h-5 w-5 min-w-[20px] flex-shrink-0" />
+                              Packing Slip
+                            </Button>
+                          </>
                         )}
                         
                         {/* Combined Add Asset button for Calibration Division */}
@@ -3411,12 +4227,30 @@ export default function JobDetail() {
                             </Button>
                             
                             <Button 
+                              onClick={() => window.open('https://www.ups.com/ship/single-page?tx=76889995418588601&loc=en_US', '_blank')}
+                              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+                              title="Open UPS shipping label in new tab"
+                            >
+                              <Package className="h-5 w-5 min-w-[20px] flex-shrink-0" />
+                              Print Label
+                            </Button>
+                            
+                            <Button 
                               onClick={handlePrintAll}
                               className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
                               title="Generate a combined PDF of all calibration reports in this job"
                             >
                               <Printer className="h-5 w-5 min-w-[20px] flex-shrink-0" />
                               Print All
+                            </Button>
+                            
+                            <Button 
+                              onClick={generatePackingSlip}
+                              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+                              title="Generate a packing slip listing all reports in this project"
+                            >
+                              <Package className="h-5 w-5 min-w-[20px] flex-shrink-0" />
+                              Packing Slip
                             </Button>
                           </>
                         )}
@@ -3427,12 +4261,21 @@ export default function JobDetail() {
                             <div className="p-2">
                               <input
                                 type="text"
-                                placeholder="Search by asset ID, customer name, truck number, or report type..."
+                                placeholder="🔍 Search master assets, existing reports, asset IDs, customer names..."
                                 value={reportSearchQuery}
                                 onChange={(e) => {
                                   const value = e.target.value;
                                   setReportSearchQuery(value);
                                   setMeterReportSearchQuery(value);
+                                  
+                                  // For calibration division, search immediately as user types
+                                  if (job?.division?.toLowerCase() === 'calibration') {
+                                    if (value.trim().length >= 2) {
+                                      searchExistingAssets(value);
+                                    } else {
+                                      setExistingAssets([]);
+                                    }
+                                  }
                                 }}
                                 className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md mb-2 bg-white dark:bg-dark-100 text-gray-900 dark:text-white"
                               />
@@ -3694,7 +4537,7 @@ export default function JobDetail() {
                               {existingAssets.length > 0 && (
                                 <>
                                   <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 mt-2">
-                                    Existing Assets ({existingAssets.length})
+                                    🎯 Master Assets & Existing Reports ({existingAssets.length})
                                   </div>
                                   {isSearchingAssets ? (
                                     <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
@@ -3715,6 +4558,11 @@ export default function JobDetail() {
                                                 Asset ID: {asset.asset_id}
                                               </div>
                                             )}
+                                            {asset.original_job_id && asset.original_job_id !== id && (
+                                              <div className="text-xs text-orange-600 dark:text-orange-400 truncate">
+                                                From Job: {asset.original_job_id}
+                                              </div>
+                                            )}
                                           </div>
                                         </div>
                                         <div className="flex items-center ml-2 space-x-2">
@@ -3727,21 +4575,37 @@ export default function JobDetail() {
                                               {asset.pass_fail_status}
                                             </span>
                                           )}
-                                          <button
-                                            onClick={() => linkAssetToProject(asset)}
-                                            className="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
-                                            title="Link this asset to the current project"
-                                          >
-                                            Link
-                                          </button>
-                                          <Link 
-                                            to={asset.file_url.replace('report:', '')}
-                                            className="px-2 py-1 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors"
-                                            onClick={() => setIsDropdownOpen(false)}
-                                            title="View this asset"
-                                          >
-                                            View
-                                          </Link>
+                                          
+                                          {/* Combined Test button for calibration division */}
+                                          {job?.division?.toLowerCase() === 'calibration' ? (
+                                            <button
+                                              onClick={() => testAsset(asset)}
+                                              className="px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors"
+                                              title={asset.is_master ? "Test and link this master asset to the current project" : "Test this asset and copy it to the current project with PASS status"}
+                                            >
+                                              Test
+                                            </button>
+                                          ) : (
+                                            <>
+                                              <button
+                                                onClick={() => linkAssetToProject(asset)}
+                                                className="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                                                title={asset.is_master ? "Link this master asset to the current project" : "Link this asset to the current project"}
+                                              >
+                                                {asset.is_master ? 'Link' : 'Link'}
+                                              </button>
+                                              
+                                              {/* View button for non-calibration divisions */}
+                                              <Link 
+                                                to={asset.file_url.replace('report:', '')}
+                                                className="px-2 py-1 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors"
+                                                onClick={() => setIsDropdownOpen(false)}
+                                                title="View this asset"
+                                              >
+                                                View
+                                              </Link>
+                                            </>
+                                          )}
                                         </div>
                                       </div>
                                     ))
@@ -3923,7 +4787,8 @@ export default function JobDetail() {
                                         'large-dry-type-transformer-ats-report': 'Large Transformer'
                                       };
                                       
-                                      return reportTypeMap[cleanReportSlug] || 'Report';
+                                      const reportType = reportTypeMap[cleanReportSlug] || 'Report';
+                                      return reportType;
                                     }
                                   }
                                   
@@ -4433,4 +5298,6 @@ export default function JobDetail() {
       </Dialog>
     </div>
   );
-}
+});
+
+export default JobDetail;

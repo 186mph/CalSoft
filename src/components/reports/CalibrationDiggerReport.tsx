@@ -2848,6 +2848,7 @@ export default function CalibrationBucketTruckReport() {
       <div className="bg-white dark:bg-dark-150 rounded-lg shadow p-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white border-b dark:border-gray-700 pb-2">Truck Information</h2>
         <div className="grid grid-cols-2 gap-4">
+          {/* Left Column */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Asset ID</label>
             <input 
@@ -2861,6 +2862,19 @@ export default function CalibrationBucketTruckReport() {
               }`}
             />
           </div>
+          {/* Right Column */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Platform Height</label>
+            <input 
+              type="text" 
+              value={formData.bucketTruckData.platformHeight}
+              onChange={(e) => handleBucketTruckDataChange('platformHeight', e.target.value)}
+              disabled={!isEditing}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+            />
+          </div>
+          
+          {/* Left Column */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Truck #</label>
             <input 
@@ -2871,6 +2885,19 @@ export default function CalibrationBucketTruckReport() {
               className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
             />
           </div>
+          {/* Right Column */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300"># of Platforms</label>
+            <input 
+              type="text" 
+              value={formData.bucketTruckData.numberOfPlatforms}
+              onChange={(e) => handleBucketTruckDataChange('numberOfPlatforms', e.target.value)}
+              disabled={!isEditing}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+            />
+          </div>
+          
+          {/* Left Column */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer</label>
             <select
@@ -2885,46 +2912,7 @@ export default function CalibrationBucketTruckReport() {
               ))}
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Model</label>
-            <input 
-              type="text" 
-              value={formData.bucketTruckData.model}
-              onChange={(e) => handleBucketTruckDataChange('model', e.target.value)}
-              disabled={!isEditing}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
-            <input 
-              type="text" 
-              value={formData.bucketTruckData.serialNumber}
-              onChange={(e) => handleBucketTruckDataChange('serialNumber', e.target.value)}
-              disabled={!isEditing}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300"># of Platforms</label>
-            <input 
-              type="text" 
-              value={formData.bucketTruckData.numberOfPlatforms}
-              onChange={(e) => handleBucketTruckDataChange('numberOfPlatforms', e.target.value)}
-              disabled={!isEditing}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Platform Height</label>
-            <input 
-              type="text" 
-              value={formData.bucketTruckData.platformHeight}
-              onChange={(e) => handleBucketTruckDataChange('platformHeight', e.target.value)}
-              disabled={!isEditing}
-              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
-            />
-          </div>
+          {/* Right Column */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Material Handling</label>
             <select
@@ -2939,6 +2927,19 @@ export default function CalibrationBucketTruckReport() {
               ))}
             </select>
           </div>
+          
+          {/* Left Column */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Model</label>
+            <input 
+              type="text" 
+              value={formData.bucketTruckData.model}
+              onChange={(e) => handleBucketTruckDataChange('model', e.target.value)}
+              disabled={!isEditing}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+            />
+          </div>
+          {/* Right Column */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Qualification Voltage</label>
             <select
@@ -2953,6 +2954,19 @@ export default function CalibrationBucketTruckReport() {
               ))}
             </select>
           </div>
+          
+          {/* Left Column */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
+            <input 
+              type="text" 
+              value={formData.bucketTruckData.serialNumber}
+              onChange={(e) => handleBucketTruckDataChange('serialNumber', e.target.value)}
+              disabled={!isEditing}
+              className={`mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 shadow-sm focus:border-accent-color focus:ring-accent-color text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-100 dark:bg-dark-200' : ''}`}
+            />
+          </div>
+          {/* Right Column */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Design Voltage</label>
             <select
@@ -2967,6 +2981,8 @@ export default function CalibrationBucketTruckReport() {
               ))}
             </select>
           </div>
+          
+          {/* Left Column */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Year</label>
             <input 

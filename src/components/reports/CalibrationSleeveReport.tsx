@@ -105,7 +105,7 @@ export default function CalibrationSleeveReport() {
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
-  const [isEditing, setIsEditing] = useState(!urlReportId);
+  const [isEditing, setIsEditing] = useState(true); // Always start in edit mode
   const [reportId, setReportId] = useState<string | null>(urlReportId || null);
   const [error, setError] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
@@ -164,6 +164,12 @@ export default function CalibrationSleeveReport() {
   const [testHistory, setTestHistory] = useState<TestHistoryEntry[]>([]);
   const [loadingTestHistory, setLoadingTestHistory] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Auto-save state
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [lastSavedData, setLastSavedData] = useState<string>('');
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const autoSaveEnabled = true;
 
   const handleChange = (section: keyof FormData | null, field: string, value: any) => {
     setFormData(prev => {
@@ -203,6 +209,114 @@ export default function CalibrationSleeveReport() {
     handleChange(null, 'status', status);
     handleSleeveDataChange('passFailStatus', status);
   };
+
+  // Auto-save function
+  const autoSave = async (data: FormData) => {
+    if (!autoSaveEnabled || !isEditing || !jobId || !user?.id) return;
+    
+    // Skip auto-save if this is a new report and we don't have essential data
+    if (!reportId && (!data.sleeveData.assetId || !data.customer)) return;
+    
+    // Prevent excessive saves by checking if data actually changed
+    const currentDataString = JSON.stringify(data);
+    if (currentDataString === lastSavedData) return;
+    
+    try {
+      setIsAutoSaving(true);
+      console.log('Auto-saving sleeve report...');
+      
+      // Use the existing handleSave logic but without user feedback
+      const reportData = {
+        job_id: jobId,
+        report_info: data,
+        status: data.status,
+        user_id: user.id
+      };
+
+      let result;
+      if (reportId) {
+        // Update existing report
+        result = await supabase
+          .schema(SCHEMA)
+          .from(CALIBRATION_SLEEVE_TABLE)
+          .update(reportData)
+          .eq('id', reportId)
+          .select()
+          .single();
+      } else {
+        // Create new report
+        result = await supabase
+          .schema(SCHEMA)
+          .from(CALIBRATION_SLEEVE_TABLE)
+          .insert(reportData)
+          .select()
+          .single();
+
+        if (result.data) {
+          setReportId(result.data.id);
+          
+          // Create asset record only for new reports
+          const assetName = `Sleeve Report - ${data.sleeveData.manufacturer || ''} - ${new Date().toLocaleDateString()}`;
+          const assetUrl = `report:/jobs/${jobId}/calibration-sleeve/${result.data.id}`;
+
+          console.log('Auto-save: Creating asset record with name:', assetName);
+          console.log('Auto-save: Asset URL:', assetUrl);
+
+          try {
+            // Use the same asset creation function as handleSave
+            const assetResult = await createCalibrationAsset(
+              jobId,
+              data.customerId,  // UUID for database relations
+              assetName,
+              assetUrl,
+              user.id,
+              data.customerIdForAsset || '1',  // Pass the numeric ID for asset generation
+              // Pass the bucket truck report ID if created from within one
+              returnToReport && returnToReport !== 'new' && returnToReportType === 'bucket-truck' 
+                ? returnToReport 
+                : undefined
+            );
+
+            if (!assetResult) {
+              console.error('Auto-save: Failed to create asset, but report was saved');
+            } else {
+              console.log('Auto-save: Asset created successfully:', assetResult);
+            }
+          } catch (assetError) {
+            console.error('Auto-save: Error creating asset:', assetError);
+          }
+        }
+      }
+
+      if (result.error) throw result.error;
+      
+      setLastSavedData(currentDataString);
+      console.log('Auto-save completed successfully');
+      
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+      // Don't show error toast for auto-save failures to avoid spam
+    } finally {
+      setIsAutoSaving(false);
+    }
+  };
+
+  // Debounced auto-save effect
+  useEffect(() => {
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      autoSave(formData);
+    }, 1000); // Auto-save after 1 second of no changes
+
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [formData, isEditing, jobId, user?.id, reportId]);
 
   const loadJobInfo = async () => {
     if (!jobId) return;
@@ -359,7 +473,8 @@ export default function CalibrationSleeveReport() {
         const loadedStatus = reportData.report_info.status || reportData.status || 'PASS';
         console.log('Setting status to:', loadedStatus);
         setStatus(loadedStatus as 'PASS' | 'FAIL');
-        setIsEditing(false);
+        // Keep editing enabled - reports are always editable
+        setIsEditing(true);
       }
     } catch (error) {
       const err = error as SupabaseError;
@@ -857,14 +972,20 @@ export default function CalibrationSleeveReport() {
           </h1>
         </div>
         <div className="flex items-center space-x-4">
+          {/* Auto-save indicator */}
+          {isAutoSaving && (
+            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 dark:border-gray-400 mr-2"></div>
+              Auto-saving...
+            </div>
+          )}
           <button
             onClick={async () => {
               setStatus('PASS');
               updatePassFailStatus('PASS');
-              const savedReportId = await handleSave();
-              // Add test history entry after successful save
-              if (savedReportId) {
-                await addTestHistoryEntry('PASS', undefined, savedReportId);
+              // Auto-save will handle the saving, just add test history entry
+              if (reportId) {
+                await addTestHistoryEntry('PASS', undefined, reportId);
               }
             }}
             className={`px-4 py-2 rounded-md text-white font-medium ${
@@ -877,10 +998,9 @@ export default function CalibrationSleeveReport() {
             onClick={async () => {
               setStatus('FAIL');
               updatePassFailStatus('FAIL');
-              const savedReportId = await handleSave();
-              // Add test history entry after successful save
-              if (savedReportId) {
-                await addTestHistoryEntry('FAIL', undefined, savedReportId);
+              // Auto-save will handle the saving, just add test history entry
+              if (reportId) {
+                await addTestHistoryEntry('FAIL', undefined, reportId);
               }
             }}
             className={`px-4 py-2 rounded-md text-white font-medium ${
@@ -898,28 +1018,7 @@ export default function CalibrationSleeveReport() {
             </svg>
             Print PDF
           </button>
-          {reportId && !isEditing ? (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-4 py-2 text-sm text-white bg-[#339C5E] hover:bg-[#2d8a52] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#339C5E]"
-            >
-              Edit Report
-            </button>
-          ) : (
-            <button 
-              onClick={async () => {
-                const savedId = await handleSave();
-                if (savedId) {
-                  setReportId(savedId);
-                  setIsEditMode(false);
-                }
-              }} 
-              disabled={!isEditing}
-              className="px-4 py-2 text-sm text-white bg-[#339C5E] hover:bg-[#2d8a52] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#339C5E]"
-            >
-              {loading ? 'Saving...' : reportId ? 'Update Report' : 'Save Report'}
-            </button>
-          )}
+
         </div>
       </div>
 
