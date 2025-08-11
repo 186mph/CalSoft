@@ -283,7 +283,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   location.pathname === dashboardPath
               )} ${getCalibrationOverrides()}`}
             >
-              <FileText className="mr-2 h-4 w-4" />
+              {!isCalibration && <FileText className="mr-2 h-4 w-4" />}
               {dashboardLabel}
             </Button>
           </Link>
@@ -295,7 +295,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 variant="ghost" 
                 className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.endsWith('/jobs'))} ${getCalibrationOverrides()}`}
               >
-                <BriefcaseIcon className="mr-2 h-4 w-4" />
+                {!isCalibration && <BriefcaseIcon className="mr-2 h-4 w-4" />}
                 {jobsLabel}
               </Button>
             </Link>
@@ -307,7 +307,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               variant="ghost" 
               className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.endsWith('/customers'))} ${getCalibrationOverrides()}`}
             >
-              <Building className="mr-2 h-4 w-4" />
+              {!isCalibration && <Building className="mr-2 h-4 w-4" />}
               Customers
             </Button>
           </Link>
@@ -316,7 +316,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               variant="ghost" 
               className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.endsWith('/contacts'))} ${getCalibrationOverrides()}`}
             >
-              <Users className="mr-2 h-4 w-4" />
+              {!isCalibration && <Users className="mr-2 h-4 w-4" />}
               Contacts
             </Button>
           </Link>
@@ -329,7 +329,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   variant="ghost" 
                   className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.endsWith('/jobs'))} ${getCalibrationOverrides()}`}
                 >
-                  <BriefcaseIcon className="mr-2 h-4 w-4" />
+                  {!isCalibration && <BriefcaseIcon className="mr-2 h-4 w-4" />}
                   {jobsLabel}
                 </Button>
               </Link>
@@ -338,7 +338,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   variant="ghost" 
                   className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.endsWith('/scheduling'))} ${getCalibrationOverrides()}`}
                 >
-                  <Calendar className="mr-2 h-4 w-4" />
+                  {!isCalibration && <Calendar className="mr-2 h-4 w-4" />}
                   Scheduling
                 </Button>
               </Link>
@@ -352,7 +352,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 variant="ghost" 
                 className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.endsWith('/all-assets'))} ${getCalibrationOverrides()}`}
               >
-                <ClipboardList className="mr-2 h-4 w-4" />
+                {!isCalibration && <ClipboardList className="mr-2 h-4 w-4" />}
                 All Assets
               </Button>
             </Link>
@@ -365,7 +365,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 variant="ghost" 
                 className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.endsWith('/deleted-assets'))} ${getCalibrationOverrides()}`}
               >
-                <Trash2 className="mr-2 h-4 w-4" />
+                {!isCalibration && <Trash2 className="mr-2 h-4 w-4" />}
                 Archived
               </Button>
             </Link>
@@ -377,7 +377,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               variant="ghost"
               className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.startsWith('/resources'))} ${getCalibrationOverrides()}`}
             >
-              <FileText className="mr-2 h-4 w-4" />
+              {!isCalibration && <FileText className="mr-2 h-4 w-4" />}
               Resources
             </Button>
           </Link>

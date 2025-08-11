@@ -190,7 +190,7 @@ export default function CalibrationBucketTruckReport() {
   };
 
   const [loading, setLoading] = useState(false);
-  const [isEditing, setIsEditing] = useState(!urlReportId);
+  const [isEditing, setIsEditing] = useState(true);
   const [reportId, setReportId] = useState<string | null>(urlReportId || null);
   
   // Asset management state
@@ -404,7 +404,7 @@ export default function CalibrationBucketTruckReport() {
   };
 
   const handleSaveDOTInspection = async () => {
-    if (!jobId || !user?.id || !isEditing) return;
+    if (!jobId || !user?.id) return;
 
     try {
       // Save DOT Inspection data to the bucket truck report
@@ -490,7 +490,7 @@ export default function CalibrationBucketTruckReport() {
   };
 
   const handlePrintDOTInspection = async () => {
-    if (!isEditing) return;
+    // was gated by edit mode; always allow in autosave mode
     
     try {
       const dotInspectionHTML = generateDOTInspectionHTML();
@@ -515,7 +515,7 @@ export default function CalibrationBucketTruckReport() {
   };
 
   const handlePrintDOTInspectionExact = async () => {
-    if (!isEditing) return;
+    // always active in autosave mode
     
     try {
       const exactDOTHTML = generateExactDOTInspectionHTML();
@@ -540,7 +540,7 @@ export default function CalibrationBucketTruckReport() {
   };
 
   const handlePrintOriginalImageForm = async () => {
-    if (!isEditing) return;
+    // always active in autosave mode
     
     try {
       const originalImageHTML = generateOriginalImageHTML();
@@ -564,121 +564,58 @@ export default function CalibrationBucketTruckReport() {
     }
   };
 
-  const handlePrintExactHTML = async () => {
-    if (!isEditing) return;
-    
+  // New from-scratch DOT PDF based on our React/HTML template that maps directly to formData.dotInspection
+  const handlePrintNewDotPDF = async () => {
     try {
-      // Fetch the exact HTML from the dot-inspec.html file
-      const response = await fetch('/dot-inspec.html');
-      if (!response.ok) {
-        throw new Error('Failed to fetch DOT form template');
-      }
-      let html = await response.text();
-      
-      // Populate the HTML with form data from DOT Inspection section
-      
-      // Text fields at the top
-      html = html.replace(/MOTOR CARRIER OPERATOR<\/div>[\s\S]*?<div class="ff1"[^>]*>([^<]*)<\/div>/g, 
-        (match, originalText) => {
-          return match.replace(originalText, formData.dotInspection.motorCarrierOperator || '');
-        });
-      
-      html = html.replace(/ADDRESS<\/div>[\s\S]*?<div class="ff1"[^>]*>([^<]*)<\/div>/g, 
-        (match, originalText) => {
-          return match.replace(originalText, formData.dotInspection.address || '');
-        });
-      
-      html = html.replace(/CITY, STATE, ZIP CODE<\/div>[\s\S]*?<div class="ff1"[^>]*>([^<]*)<\/div>/g, 
-        (match, originalText) => {
-          return match.replace(originalText, formData.dotInspection.cityStateZip || '');
-        });
-      
-      html = html.replace(/INSPECTOR'S NAME<\/div>[\s\S]*?<div class="ff1"[^>]*>([^<]*)<\/div>/g, 
-        (match, originalText) => {
-          return match.replace(originalText, formData.dotInspection.inspectorName || '');
-        });
-      
-      html = html.replace(/VEHICLE TYPE<\/div>[\s\S]*?<div class="ff1"[^>]*>([^<]*)<\/div>/g, 
-        (match, originalText) => {
-          return match.replace(originalText, formData.dotInspection.vehicleType || '');
-        });
-      
-      // Vehicle Identification checkboxes (LIC. PLATE NO., VIN, OTHER)
-      if (formData.dotInspection.vehicleIdentification?.includes('LIC. PLATE NO.')) {
-        html = html.replace(/<div class="[^\"]*"[^>]*>LIC\. PLATE NO\.<\/div>/g, 
-          '<div class="ff1" style="left:200px;top:295px;width:12px;height:12px;border:1px solid black;background:black;color:white;text-align:center;line-height:12px;">X</div>');
-      }
-      if (formData.dotInspection.vehicleIdentification?.includes('VIN')) {
-        html = html.replace(/<div class="[^\"]*"[^>]*>VIN<\/div>/g, 
-          '<div class="ff1" style="left:280px;top:295px;width:12px;height:12px;border:1px solid black;background:black;color:white;text-align:center;line-height:12px;">X</div>');
-      }
-      if (formData.dotInspection.vehicleIdentification?.includes('OTHER')) {
-        html = html.replace(/<div class="[^\"]*"[^>]*>OTHER<\/div>/g, 
-          '<div class="ff1" style="left:360px;top:295px;width:12px;height:12px;border:1px solid black;background:black;color:white;text-align:center;line-height:12px;">X</div>');
-      }
-      
-      
-      // Inspector Qualification checkbox
-      if (formData.dotInspection.inspectorQualified) {
-        html = html.replace(/<div class="[^"]*"[^>]*>This inspector meets the qualification requirements in Section 396\.19<\/div>/g, 
-          '<div class="ff1" style="left:200px;top:335px;width:12px;height:12px;border:1px solid black;background:black;color:white;text-align:center;line-height:12px;">X</div>');
-      }
-      
-      // Vehicle Components - overlay checkboxes based on form data (absolute positions)
-      const componentOverlays: string[] = [];
-      dotInspectionItems.forEach((section, sectionIndex) => {
-        section.items.forEach((_, itemIndex) => {
-          const componentKey = `${sectionIndex}-${itemIndex}`;
-          const component = formData.dotInspection.components[componentKey];
-          const top = 400 + sectionIndex * 120 + itemIndex * 20;
-          if (component?.status === 'OK') {
-            componentOverlays.push(`<div class="t ff1" style="position:absolute; left:400px; top:${top}px; width:12px; height:12px; border:1px solid black; background:black; color:white; text-align:center; line-height:12px;">X</div>`);
-          } else if (component?.status === 'NEEDS_REPAIR') {
-            componentOverlays.push(`<div class="t ff1" style="position:absolute; left:460px; top:${top}px; width:12px; height:12px; border:1px solid black; background:black; color:white; text-align:center; line-height:12px;">X</div>`);
-          }
-        });
-      });
-      if (componentOverlays.length) {
-        const biImgRegex = /(<img class=\"bi[^>]*\/>)/;
-        html = html.replace(biImgRegex, `$1${componentOverlays.join('')}`);
-      }
-      
-      // Additional Conditions
-      if (formData.dotInspection.additionalConditions) {
-        html = html.replace(/<div class="ff1"[^>]*>ADDITIONAL CONDITIONS<\/div>[\s\S]*?<div class="ff1"[^>]*>([^<]*)<\/div>/g, 
-          (match, originalText) => {
-            return match.replace(originalText, formData.dotInspection.additionalConditions);
-          });
-      }
-      
-      // Certification checkbox
-      if (formData.dotInspection.certified) {
-        const certOverlay = '<div class="t ff1" style="position:absolute; left:30px; top:1020px; width:12px; height:12px; border:1px solid black; background:black; color:white; text-align:center; line-height:12px;">X</div>';
-        const biImgRegex = /(<img class=\"bi[^>]*\/>)/;
-        html = html.replace(biImgRegex, `$1${certOverlay}`);
-      }
-      
-      // Create a new window and load the populated HTML
-      const printWindow = window.open('', '_blank', 'width=800,height=600');
-      if (!printWindow) {
-        throw new Error('Failed to open print window');
-      }
-      
-      // Write the populated HTML to the new window
-      printWindow.document.write(html);
-      printWindow.document.close();
-      
-      // Wait for the content to load, then print
-      printWindow.onload = () => {
-        setTimeout(() => {
-          printWindow.print();
-          printWindow.close();
-        }, 1000);
+      const html = generateDOTInspectionHTML();
+      const element = document.createElement('div');
+      element.innerHTML = html;
+      document.body.appendChild(element);
+
+      const opt = {
+        margin: 0.25,
+        filename: `DOT_New_${formData.bucketTruckData.truckNumber || 'Report'}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
       };
-      
+
+      await html2pdf().set(opt).from(element).save();
+      document.body.removeChild(element);
     } catch (error) {
-      console.error('Error printing exact HTML:', error);
-      alert('Error printing exact HTML DOT form');
+      console.error('Error generating new DOT PDF:', error);
+      alert('Error generating new DOT PDF');
+    }
+  };
+
+  const handlePrintExactHTML = async () => {
+    try {
+      const dataForDot = {
+        motorCarrierOperator: formData.dotInspection.motorCarrierOperator || '',
+        address: formData.dotInspection.address || '',
+        cityStateZip: formData.dotInspection.cityStateZip || '',
+        inspectorName: formData.dotInspection.inspectorName || '',
+        vehicleType: formData.dotInspection.vehicleType || '',
+        vehicleIdentification: formData.dotInspection.vehicleIdentification || [],
+        inspectorQualified: !!formData.dotInspection.inspectorQualified,
+        components: formData.dotInspection.components || {},
+        additionalConditions: formData.dotInspection.additionalConditions || '',
+        certified: !!formData.dotInspection.certified,
+      };
+  
+      try { localStorage.setItem('dot_inspec_data', JSON.stringify(dataForDot)); } catch {}
+  
+      const url = `/dot-inspec.html?data=${encodeURIComponent(JSON.stringify(dataForDot))}`;
+      const w = window.open(url, '_blank', 'width=900,height=1200');
+      if (w) {
+        try { w.name = encodeURIComponent(JSON.stringify(dataForDot)); } catch {}
+        setTimeout(() => { try { w.focus(); w.print(); } catch {} }, 1200);
+      } else {
+        alert('Please allow popups to print the DOT form');
+      }
+    } catch (error) {
+      console.error('Error opening DOT form:', error);
+      alert('Error opening DOT form');
     }
   };
 
@@ -1886,9 +1823,9 @@ export default function CalibrationBucketTruckReport() {
         setStatus(loadedStatus as 'PASS' | 'FAIL');
         setLinerStatus(loadedLinerStatus as 'PASS' | 'FAIL');
         
-        // Only set editing to false for existing reports
-        setIsEditing(false);
-        console.log('Existing report loaded - setting isEditing to false');
+        // Keep editing enabled for existing reports
+        setIsEditing(true);
+        console.log('Existing report loaded - keeping isEditing true');
       }
     } catch (error) {
       const err = error as SupabaseError;
@@ -2857,7 +2794,7 @@ export default function CalibrationBucketTruckReport() {
 
   // Auto-save functionality
   const autoSave = async (data: FormData) => {
-    if (!autoSaveEnabled || !isEditing || !jobId || !user?.id) return;
+    if (!autoSaveEnabled || !jobId || !user?.id) return;
     
     // Skip auto-save if this is a new report and we don't have essential data
     if (!reportId && (!data.bucketTruckData.assetId || !data.customer)) return;
@@ -3039,27 +2976,16 @@ export default function CalibrationBucketTruckReport() {
             </svg>
             Print PDF
           </button>
-          {urlReportId && !isEditing ? (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-4 py-2 text-sm text-white bg-[#339C5E] hover:bg-[#2d8a52] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#339C5E]"
-            >
-              Edit Report
-            </button>
-          ) : (
-            <>
-              <button
-                onClick={() => navigate(`/jobs/${jobId}/calibration-bucket-truck`)}
-                className={`${accentClasses.bg} ${accentClasses.bgHover} text-white font-medium px-3 py-2 rounded-md flex items-center justify-center`}
-                title="Create New Bucket Truck Report"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                </svg>
-              </button>
-
-            </>
-          )}
+          {/* Always show create-new button; remove Edit Report button */}
+          <button
+            onClick={() => navigate(`/jobs/${jobId}/calibration-bucket-truck`)}
+            className={`${accentClasses.bg} ${accentClasses.bgHover} text-white font-medium px-3 py-2 rounded-md flex items-center justify-center`}
+            title="Create New Bucket Truck Report"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -3335,17 +3261,30 @@ export default function CalibrationBucketTruckReport() {
             <button
               onClick={handleSaveDOTInspection}
               disabled={!isEditing}
-              className={`px-4 py-2 text-sm text-white bg-[#f26722] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] ${!isEditing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#e55611]'}`}
+              className={`px-4 py-2 text-sm text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${!isEditing ? 'bg-green-400 opacity-50 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 focus:ring-green-500'}`}
             >
               Save DOT Inspection
+            </button>
+            <button
+              onClick={handlePrintNewDotPDF}
+              disabled={!isEditing}
+              className={`px-4 py-2 text-sm text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                !isEditing
+                  ? 'bg-green-400 cursor-not-allowed'
+                  : 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
+              }`}
+              title={!isEditing ? 'Must be in editing mode to print' : 'Print new DOT PDF (from-scratch layout)'}
+            >
+              <Printer className="h-4 w-4 inline mr-2" />
+              Print New DOT PDF
             </button>
             <button
               onClick={handlePrintExactHTML}
               disabled={!isEditing}
               className={`px-4 py-2 text-sm text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 !isEditing
-                  ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500'
+                  ? 'bg-green-400 cursor-not-allowed' 
+                  : 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
               }`}
               title={!isEditing ? 'Must be in editing mode to print' : 'Print DOT Inspection (exact template)'}
             >

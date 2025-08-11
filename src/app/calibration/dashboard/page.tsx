@@ -23,7 +23,6 @@ export default function CalibrationDashboard() {
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-bold border-b pb-3">Calibration Division Dashboard</h1>
       
       {/* Add JobCreationForm for NETA Technician jobs */}
       <JobCreationForm division="calibration" />
