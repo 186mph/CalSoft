@@ -560,7 +560,7 @@ export default function CalibrationJobsPage() {
       <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold">
-            Jobs
+            Projects
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             {loading ? 'Loading...' : `${jobs.length} ${jobs.length === 1 ? 'job' : 'jobs'} found${statusFilter !== 'all' ? ` (${statusFilter} status)` : ''}`}
@@ -598,10 +598,10 @@ export default function CalibrationJobsPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
-                Create New Job
+                Create New Project
               </h2>
               <p className="text-base text-gray-600 dark:text-gray-400">
-                Start a new calibration or armadillo job for lab operations. Jobs will be automatically assigned unique job numbers.
+                Start a new calibration or armadillo project for lab operations. Projects will be automatically assigned unique project numbers.
               </p>
             </div>
             <div className="flex space-x-4">
@@ -612,7 +612,7 @@ export default function CalibrationJobsPage() {
               />
               <CalibrationJobButton 
                 onJobCreated={handleJobCreated}
-                buttonText="New Armadillo Job"
+                buttonText="New Armadillo Project"
                 division="armadillo"
               />
             </div>
@@ -630,7 +630,7 @@ export default function CalibrationJobsPage() {
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-gray-600 rounded-full"></div>
                 <span className="text-gray-600 dark:text-gray-400">
-                  <strong>Armadillo Jobs:</strong> Specialized armadillo division services
+                  <strong>Armadillo Projects:</strong> Specialized armadillo division services
                 </span>
               </div>
             </div>
@@ -647,7 +647,7 @@ export default function CalibrationJobsPage() {
             onClick={() => setRefreshTrigger(prev => prev + 1)}
           >
             <Clock className="h-4 w-4 mr-2" />
-            Refresh Jobs
+            Refresh Projects
           </button>
           
             {/* Division Tab Interface */}
