@@ -170,13 +170,14 @@ import CalibrationDiggerReport from './components/reports/CalibrationDiggerRepor
 import MeterTemplateReport from './components/reports/MeterTemplateReport';
 
 // Import Calibration Jobs Page
-import CalibrationJobsPage from './app/calibration/jobs/page';
+const CalibrationJobsPage = React.lazy(() => import('./app/calibration/jobs/page'));
+const ResourcesLazy = React.lazy(() => import('./app/resources/page'));
 
 // Import Calibration All Assets Page
-import CalibrationAllAssetsPage from './app/calibration/all-assets/page';
+const CalibrationAllAssetsPage = React.lazy(() => import('./app/calibration/all-assets/page'));
 
 // Import Calibration Deleted Assets Page
-import CalibrationDeletedAssetsPage from './app/calibration/deleted-assets/page';
+const CalibrationDeletedAssetsPage = React.lazy(() => import('./app/calibration/deleted-assets/page'));
 
 // --- Define Division Context --- Start
 interface DivisionContextType {
@@ -353,7 +354,7 @@ function App() {
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <DivisionProvider>
             <ChatWindowProvider>
-              <Router>
+              <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                 <ScrollToTop />
                 <Routes>
                   {/* === Core Routes === */}
@@ -372,6 +373,7 @@ function App() {
 
                   {/* === Office Administration Portal Route === */}
                   <Route path="/office" element={<RequireAuth><Layout><OfficeAdministrationPortal /></Layout></RequireAuth>} />
+                  <Route path="/resources" element={<RequireAuth><Layout><React.Suspense fallback={null}><ResourcesLazy /></React.Suspense></Layout></RequireAuth>} />
 
                   {/* === Lab Portal Routes === */}
                   <Route path="/lab" element={<RequireAuth><Layout><LabDashboard /></Layout></RequireAuth>} />
@@ -421,9 +423,9 @@ function App() {
                   <Route path="/scavenger/dashboard" element={<RequireAuth><Layout><ScavengerDashboard /></Layout></RequireAuth>} />
                   
                   {/* === Specific Division Job Routes (must come before generic routes) === */}
-                  <Route path="/calibration/jobs" element={<RequireAuth><Layout><CalibrationJobsPage /></Layout></RequireAuth>} />
-                  <Route path="/calibration/all-assets" element={<RequireAuth><Layout><CalibrationAllAssetsPage /></Layout></RequireAuth>} />
-                  <Route path="/calibration/deleted-assets" element={<RequireAuth><Layout><CalibrationDeletedAssetsPage /></Layout></RequireAuth>} />
+                  <Route path="/calibration/jobs" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><CalibrationJobsPage /></Suspense></Layout></RequireAuth>} />
+                  <Route path="/calibration/all-assets" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><CalibrationAllAssetsPage /></Suspense></Layout></RequireAuth>} />
+                  <Route path="/calibration/deleted-assets" element={<RequireAuth><Layout><Suspense fallback={<div>Loading...</div>}><CalibrationDeletedAssetsPage /></Suspense></Layout></RequireAuth>} />
                   
                   {/* Generic dashboard as fallback */}
                   <Route path="/:division/dashboard" element={<RequireAuth><Layout><Dashboard /></Layout></RequireAuth>} />

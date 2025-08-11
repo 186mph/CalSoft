@@ -99,81 +99,45 @@ export function TechnicianProfileManagement({ portalType, division }: Technician
       setIsLoading(true);
       try {
         console.log('Fetching technicians for division:', division);
-        // Get all users with technician role in this portal
-        const { data: userData, error: userError } = await supabase
-          .from('auth.users')
-          .select('id, email, raw_user_meta_data')
-          .eq('raw_user_meta_data->>role', 'NETA Technician')
-          .order('raw_user_meta_data->>name');
-        
-        if (userError) {
-          console.error("Error accessing auth.users table:", userError);
-          console.log("Attempting to use auth.admin.listUsers() instead...");
-          
-          // Try alternative approach with auth schema
-          const { data: userData2, error: userError2 } = await supabase.auth.admin.listUsers();
-          
-          if (userError2) {
-            console.error("Error fetching technicians with admin API:", userError2);
-            setError("Failed to load technicians list. This may be due to missing permissions.");
-            return;
-          }
-          
-          console.log("Admin API returned users:", userData2?.users?.length || 0);
-          
-          // Filter for technicians
-          const techUsers = userData2.users.filter(u => {
-            const isTech = u.user_metadata?.role === 'NETA Technician';
-            const inDivision = !division || u.user_metadata?.division === division;
-            return isTech && inDivision;
-          });
-          
-          console.log("Filtered technicians:", techUsers.length);
-          setTechnicians(techUsers as User[]);
-          
-          // Set current user as selected if they're a technician
-          const currentUserAsTech = techUsers.find(tech => tech.id === user?.id);
-          if (currentUserAsTech) {
-            setSelectedTechnician(currentUserAsTech.id);
-            setTechnicianData(currentUserAsTech as User);
-            setSkillForm(prev => ({ ...prev, userId: currentUserAsTech.id }));
-          } else if (techUsers.length > 0) {
-            setSelectedTechnician(techUsers[0].id);
-            setTechnicianData(techUsers[0] as User);
-            setSkillForm(prev => ({ ...prev, userId: techUsers[0].id }));
-          }
-        } else {
-          console.log("Successfully fetched users from auth.users:", userData?.length || 0);
-          
-          // Format the data to match User type
-          const formattedUsers = userData.map(u => ({
-            id: u.id,
-            email: u.email,
-            user_metadata: u.raw_user_meta_data,
-            app_metadata: {},
-            aud: '',
-            created_at: ''
-          })) as User[];
-          
-          // Filter for division if specified
-          const filteredUsers = division 
-            ? formattedUsers.filter(u => u.user_metadata?.division === division)
-            : formattedUsers;
-            
-          console.log("Filtered users by division:", filteredUsers.length);
-          setTechnicians(filteredUsers);
-          
-          // Set current user as selected if they're a technician
-          const currentUserAsTech = filteredUsers.find(tech => tech.id === user?.id);
-          if (currentUserAsTech) {
-            setSelectedTechnician(currentUserAsTech.id);
-            setTechnicianData(currentUserAsTech);
-            setSkillForm(prev => ({ ...prev, userId: currentUserAsTech.id }));
-          } else if (filteredUsers.length > 0) {
-            setSelectedTechnician(filteredUsers[0].id);
-            setTechnicianData(filteredUsers[0]);
-            setSkillForm(prev => ({ ...prev, userId: filteredUsers[0].id }));
-          }
+        // Client-safe: use common.profiles instead of auth tables/admin endpoints
+        const { data, error } = await supabase
+          .schema('common')
+          .from('profiles')
+          .select('id, email, name, division, role')
+          .eq('role', 'NETA Technician')
+          .order('name', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching technicians from profiles:', error);
+          setError('Failed to load technicians list.');
+          return;
+        }
+
+        const formattedUsers: User[] = (data || []).map((u: any) => ({
+          id: u.id,
+          email: u.email,
+          user_metadata: { name: u.name, division: u.division, role: u.role },
+          app_metadata: {},
+          aud: '',
+          created_at: ''
+        }));
+
+        const filteredUsers = division
+          ? formattedUsers.filter(u => u.user_metadata?.division === division)
+          : formattedUsers;
+
+        console.log('Filtered users by division:', filteredUsers.length);
+        setTechnicians(filteredUsers);
+
+        const currentUserAsTech = filteredUsers.find(tech => tech.id === user?.id);
+        if (currentUserAsTech) {
+          setSelectedTechnician(currentUserAsTech.id);
+          setTechnicianData(currentUserAsTech);
+          setSkillForm(prev => ({ ...prev, userId: currentUserAsTech.id }));
+        } else if (filteredUsers.length > 0) {
+          setSelectedTechnician(filteredUsers[0].id);
+          setTechnicianData(filteredUsers[0]);
+          setSkillForm(prev => ({ ...prev, userId: filteredUsers[0].id }));
         }
       } catch (err) {
         console.error("Exception in fetchTechnicians:", err);

@@ -45,7 +45,6 @@ interface EnhancedAsset extends Asset {
 // Interface for form data structure
 interface DOTInspectionComponent {
   status?: 'OK' | 'NEEDS_REPAIR';
-  repairedDate?: string;
 }
 
 interface DOTInspection {
@@ -165,13 +164,15 @@ export default function CalibrationBucketTruckReport() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Debug URL parameters
-  console.log('URL Parameters Debug:', { 
-    jobId, 
-    urlReportId, 
-    pathname: location.pathname,
-    search: location.search 
-  });
+  // Debug URL parameters (chatty in dev)
+  if (import.meta.env.DEV && false) {
+    console.log('URL Parameters Debug:', { 
+      jobId, 
+      urlReportId, 
+      pathname: location.pathname,
+      search: location.search 
+    });
+  }
 
   // Check URL parameters for return navigation
   const searchParams = new URLSearchParams(location.search);
@@ -352,6 +353,7 @@ export default function CalibrationBucketTruckReport() {
 
   // Update Pass/Fail status in the Bucket Truck Data when overall status changes
   const updatePassFailStatus = (newStatus: string) => {
+    if (status === newStatus) return;
     setStatus(newStatus as 'PASS' | 'FAIL');
     handleChange(null, 'status', newStatus);
     handleBucketTruckDataChange('passFailStatus', newStatus);
@@ -359,6 +361,7 @@ export default function CalibrationBucketTruckReport() {
 
   // Update Liner Pass/Fail status
   const updateLinerStatus = (newLinerStatus: string) => {
+    if (linerStatus === newLinerStatus) return;
     setLinerStatus(newLinerStatus as 'PASS' | 'FAIL');
     handleBucketTruckDataChange('linerPassFailStatus', newLinerStatus);
   };
@@ -374,21 +377,17 @@ export default function CalibrationBucketTruckReport() {
     }));
   };
 
-  const handleDOTComponentChange = (sectionIndex: number, itemIndex: number, field: 'OK' | 'NEEDS_REPAIR' | 'repairedDate', value: any) => {
+  const handleDOTComponentChange = (sectionIndex: number, itemIndex: number, field: 'OK' | 'NEEDS_REPAIR', value: any) => {
     setFormData(prev => {
       const key = `${sectionIndex}-${itemIndex}`;
       const currentComponent = prev.dotInspection.components[key] || {};
       
       let updatedComponent;
-      if (field === 'repairedDate') {
-        updatedComponent = { ...currentComponent, repairedDate: value };
+      // For OK or NEEDS_REPAIR, we need to handle mutual exclusivity
+      if (value) {
+        updatedComponent = { ...currentComponent, status: field };
       } else {
-        // For OK or NEEDS_REPAIR, we need to handle mutual exclusivity
-        if (value) {
-          updatedComponent = { ...currentComponent, status: field };
-        } else {
-          updatedComponent = { ...currentComponent, status: undefined };
-        }
+        updatedComponent = { ...currentComponent, status: undefined };
       }
 
       return {
@@ -604,62 +603,45 @@ export default function CalibrationBucketTruckReport() {
           return match.replace(originalText, formData.dotInspection.vehicleType || '');
         });
       
-      // Vehicle Identification checkboxes
-      if (formData.dotInspection.vehicleIdentification?.includes('Truck')) {
-        html = html.replace(/<div class="ff1"[^>]*>TRUCK<\/div>/g, 
+      // Vehicle Identification checkboxes (LIC. PLATE NO., VIN, OTHER)
+      if (formData.dotInspection.vehicleIdentification?.includes('LIC. PLATE NO.')) {
+        html = html.replace(/<div class="[^\"]*"[^>]*>LIC\. PLATE NO\.<\/div>/g, 
           '<div class="ff1" style="left:200px;top:295px;width:12px;height:12px;border:1px solid black;background:black;color:white;text-align:center;line-height:12px;">X</div>');
       }
-      if (formData.dotInspection.vehicleIdentification?.includes('Tractor')) {
-        html = html.replace(/<div class="ff1"[^>]*>TRACTOR<\/div>/g, 
+      if (formData.dotInspection.vehicleIdentification?.includes('VIN')) {
+        html = html.replace(/<div class="[^\"]*"[^>]*>VIN<\/div>/g, 
           '<div class="ff1" style="left:280px;top:295px;width:12px;height:12px;border:1px solid black;background:black;color:white;text-align:center;line-height:12px;">X</div>');
       }
-      if (formData.dotInspection.vehicleIdentification?.includes('Trailer')) {
-        html = html.replace(/<div class="ff1"[^>]*>TRAILER<\/div>/g, 
+      if (formData.dotInspection.vehicleIdentification?.includes('OTHER')) {
+        html = html.replace(/<div class="[^\"]*"[^>]*>OTHER<\/div>/g, 
           '<div class="ff1" style="left:360px;top:295px;width:12px;height:12px;border:1px solid black;background:black;color:white;text-align:center;line-height:12px;">X</div>');
       }
-      if (formData.dotInspection.vehicleIdentification?.includes('Bus')) {
-        html = html.replace(/<div class="ff1"[^>]*>BUS<\/div>/g, 
-          '<div class="ff1" style="left:440px;top:295px;width:12px;height:12px;border:1px solid black;background:black;color:white;text-align:center;line-height:12px;">X</div>');
-      }
-      if (formData.dotInspection.vehicleIdentification?.includes('Other')) {
-        html = html.replace(/<div class="ff1"[^>]*>OTHER<\/div>/g, 
-          '<div class="ff1" style="left:520px;top:295px;width:12px;height:12px;border:1px solid black;background:black;color:white;text-align:center;line-height:12px;">X</div>');
-      }
+      
       
       // Inspector Qualification checkbox
       if (formData.dotInspection.inspectorQualified) {
-        html = html.replace(/<div class="ff1"[^>]*>This inspector meets the qualification requirements in Section 396.19<\/div>/g, 
+        html = html.replace(/<div class="[^"]*"[^>]*>This inspector meets the qualification requirements in Section 396\.19<\/div>/g, 
           '<div class="ff1" style="left:200px;top:335px;width:12px;height:12px;border:1px solid black;background:black;color:white;text-align:center;line-height:12px;">X</div>');
       }
       
-      // Vehicle Components - populate checkboxes based on form data
+      // Vehicle Components - overlay checkboxes based on form data (absolute positions)
+      const componentOverlays: string[] = [];
       dotInspectionItems.forEach((section, sectionIndex) => {
-        section.items.forEach((item, itemIndex) => {
+        section.items.forEach((_, itemIndex) => {
           const componentKey = `${sectionIndex}-${itemIndex}`;
           const component = formData.dotInspection.components[componentKey];
-          
+          const top = 400 + sectionIndex * 120 + itemIndex * 20;
           if (component?.status === 'OK') {
-            // Find and mark OK checkbox for this item
-            const itemRegex = new RegExp(`<div class="ff1"[^>]*>${item.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}<\/div>`, 'g');
-            html = html.replace(itemRegex, (match) => {
-              return match + '<div class="ff1" style="left:400px;top:' + (400 + sectionIndex * 120 + itemIndex * 20) + 'px;width:12px;height:12px;border:1px solid black;background:black;color:white;text-align:center;line-height:12px;">X</div>';
-            });
+            componentOverlays.push(`<div class="t ff1" style="position:absolute; left:400px; top:${top}px; width:12px; height:12px; border:1px solid black; background:black; color:white; text-align:center; line-height:12px;">X</div>`);
           } else if (component?.status === 'NEEDS_REPAIR') {
-            // Find and mark NEEDS REPAIR checkbox for this item
-            const itemRegex = new RegExp(`<div class="ff1"[^>]*>${item.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}<\/div>`, 'g');
-            html = html.replace(itemRegex, (match) => {
-              return match + '<div class="ff1" style="left:460px;top:' + (400 + sectionIndex * 120 + itemIndex * 20) + 'px;width:12px;height:12px;border:1px solid black;background:black;color:white;text-align:center;line-height:12px;">X</div>';
-            });
-            
-            // Add repair date if provided
-            if (component.repairedDate) {
-              html = html.replace(itemRegex, (match) => {
-                return match + '<div class="ff1" style="left:540px;top:' + (400 + sectionIndex * 120 + itemIndex * 20) + 'px;width:80px;height:16px;border-bottom:1px solid black;">' + component.repairedDate + '</div>';
-              });
-            }
+            componentOverlays.push(`<div class="t ff1" style="position:absolute; left:460px; top:${top}px; width:12px; height:12px; border:1px solid black; background:black; color:white; text-align:center; line-height:12px;">X</div>`);
           }
         });
       });
+      if (componentOverlays.length) {
+        const biImgRegex = /(<img class=\"bi[^>]*\/>)/;
+        html = html.replace(biImgRegex, `$1${componentOverlays.join('')}`);
+      }
       
       // Additional Conditions
       if (formData.dotInspection.additionalConditions) {
@@ -671,8 +653,9 @@ export default function CalibrationBucketTruckReport() {
       
       // Certification checkbox
       if (formData.dotInspection.certified) {
-        html = html.replace(/<div class="ff1"[^>]*>I certify that this inspection was performed in accordance with DOT standards and regulations.<\/div>/g, 
-          '<div class="ff1" style="left:30px;top:1020px;width:12px;height:12px;border:1px solid black;background:black;color:white;text-align:center;line-height:12px;">X</div>');
+        const certOverlay = '<div class="t ff1" style="position:absolute; left:30px; top:1020px; width:12px; height:12px; border:1px solid black; background:black; color:white; text-align:center; line-height:12px;">X</div>';
+        const biImgRegex = /(<img class=\"bi[^>]*\/>)/;
+        html = html.replace(biImgRegex, `$1${certOverlay}`);
       }
       
       // Create a new window and load the populated HTML
@@ -1145,13 +1128,12 @@ export default function CalibrationBucketTruckReport() {
                 <th class="component-cell">Component</th>
                 <th class="checkbox-cell">OK</th>
                 <th class="checkbox-cell">Needs Repair</th>
-                <th class="date-cell">Repaired Date</th>
               </tr>
             </thead>
             <tbody>
               ${dotInspectionItems.map((section, sectionIndex) => `
                 <tr class="section-header">
-                  <td colspan="4">${section.title}</td>
+                  <td colspan="3">${section.title}</td>
                 </tr>
                 ${section.items.map((item, itemIndex) => {
                   const key = `${sectionIndex}-${itemIndex}`;
@@ -1165,7 +1147,6 @@ export default function CalibrationBucketTruckReport() {
                       <td class="checkbox-cell">
                         <span class="checkbox ${component.status === 'NEEDS_REPAIR' ? 'checked' : ''}"></span>
                       </td>
-                      <td class="date-cell">${component.repairedDate || ''}</td>
                     </tr>
                   `;
                 }).join('')}
@@ -1528,13 +1509,12 @@ export default function CalibrationBucketTruckReport() {
                 <th class="component-cell">Component</th>
                 <th class="checkbox-cell">OK</th>
                 <th class="checkbox-cell">NEEDS REPAIR</th>
-                <th class="date-cell">REPAIRED DATE</th>
               </tr>
             </thead>
             <tbody>
               ${dotInspectionItems.map((section, sectionIndex) => `
                 <tr class="section-header">
-                  <td colspan="4">${section.title}</td>
+                  <td colspan="3">${section.title}</td>
                 </tr>
                 ${section.items.map((item, itemIndex) => {
                   const key = `${sectionIndex}-${itemIndex}`;
@@ -1548,7 +1528,6 @@ export default function CalibrationBucketTruckReport() {
                       <td class="checkbox-cell">
                         <span class="checkbox ${component.status === 'NEEDS_REPAIR' ? 'checked' : ''}"></span>
                       </td>
-                      <td class="date-cell">${component.repairedDate || ''}</td>
                     </tr>
                   `;
                 }).join('')}
@@ -1663,7 +1642,6 @@ export default function CalibrationBucketTruckReport() {
                 <div class="form-text" style="top: ${yPos}px; left: 420px; font-size: 9pt;">OK</div>
                 <div class="checkbox ${component?.status === 'NEEDS_REPAIR' ? 'checked' : ''}" style="top: ${yPos}px; left: 460px;"></div>
                 <div class="form-text" style="top: ${yPos}px; left: 480px; font-size: 9pt;">NEEDS REPAIR</div>
-                <div class="form-field" style="top: ${yPos}px; left: 540px; width: 80px; font-size: 8pt;">${component?.repairedDate || ''}</div>
               `;
             }).join('')}
           `).join('')}
@@ -2348,30 +2326,32 @@ export default function CalibrationBucketTruckReport() {
   };
 
   useEffect(() => { 
+    let isCancelled = false;
     const fetchData = async () => { 
-      await loadJobInfo(); 
-      await loadReport(); 
-      
-      // Load test history if report exists
-      if (reportId) {
+      // Run in parallel for faster load
+      await Promise.all([loadJobInfo(), loadReport()]);
+      if (!isCancelled && reportId) {
         await loadTestHistory(reportId);
       }
     }; 
-    fetchData(); 
+    fetchData();
+    return () => { isCancelled = true; };
   }, [jobId, reportId]);
 
   // Debug state values
   useEffect(() => {
-    console.log('State Debug:', { 
-      isEditing, 
-      urlReportId, 
-      reportId, 
-      loading, 
-      jobId,
-      hasUser: !!user?.id,
-      linerType: formData.bucketTruckData.linerType,
-      linerTypeCondition: formData.bucketTruckData.linerType === 'NA'
-    });
+    if (import.meta.env.DEV && false) {
+      console.log('State Debug:', { 
+        isEditing, 
+        urlReportId, 
+        reportId, 
+        loading, 
+        jobId,
+        hasUser: !!user?.id,
+        linerType: formData.bucketTruckData.linerType,
+        linerTypeCondition: formData.bucketTruckData.linerType === 'NA'
+      });
+    }
   }, [isEditing, urlReportId, reportId, loading, jobId, user, formData.bucketTruckData.linerType]);
 
   // Ensure new reports start in edit mode
@@ -2384,13 +2364,17 @@ export default function CalibrationBucketTruckReport() {
 
   // Sync the top-level status with the passFailStatus in form data
   useEffect(() => {
-    handleBucketTruckDataChange('passFailStatus', status);
-  }, [status]);
+    if (formData.bucketTruckData.passFailStatus !== status) {
+      handleBucketTruckDataChange('passFailStatus', status);
+    }
+  }, [status, formData.bucketTruckData.passFailStatus]);
 
   // Sync the liner status with the linerPassFailStatus in form data
   useEffect(() => {
-    handleBucketTruckDataChange('linerPassFailStatus', linerStatus);
-  }, [linerStatus]);
+    if (formData.bucketTruckData.linerPassFailStatus !== linerStatus) {
+      handleBucketTruckDataChange('linerPassFailStatus', linerStatus);
+    }
+  }, [linerStatus, formData.bucketTruckData.linerPassFailStatus]);
 
   // Sync status state variables when form data changes (for loaded reports)
   useEffect(() => {
@@ -2404,10 +2388,11 @@ export default function CalibrationBucketTruckReport() {
 
   // Sync URL parameter with state when URL changes
   useEffect(() => {
-    setReportId(urlReportId || null);
-    
+    if (reportId !== (urlReportId || null)) {
+      setReportId(urlReportId || null);
+    }
     // Don't clear the Asset ID for new reports - let the generation logic handle it
-  }, [urlReportId]);
+  }, [urlReportId, reportId]);
 
   // Add an effect to generate the Asset ID on load for new reports
   useEffect(() => {
@@ -3362,10 +3347,10 @@ export default function CalibrationBucketTruckReport() {
                   ? 'bg-gray-400 cursor-not-allowed' 
                   : 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500'
               }`}
-              title={!isEditing ? 'Must be in editing mode to print' : 'Print Exact HTML from dot-inspec.html'}
+              title={!isEditing ? 'Must be in editing mode to print' : 'Print DOT Inspection (exact template)'}
             >
               <Printer className="h-4 w-4 inline mr-2" />
-              Print Exact HTML
+              Print DOT PDF
             </button>
           </div>
         </div>
@@ -3502,14 +3487,13 @@ export default function CalibrationBucketTruckReport() {
                   <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Component</th>
                   <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300">OK</th>
                   <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300">Needs Repair</th>
-                  <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300">Repaired Date</th>
                 </tr>
               </thead>
               <tbody>
                 {dotInspectionItems.map((section, sectionIndex) => (
                   <React.Fragment key={sectionIndex}>
                     <tr className="bg-gray-100 dark:bg-gray-800">
-                      <td colSpan={4} className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-medium text-gray-900 dark:text-white">
+                      <td colSpan={3} className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-medium text-gray-900 dark:text-white">
                         {section.title}
                       </td>
                     </tr>
@@ -3534,15 +3518,6 @@ export default function CalibrationBucketTruckReport() {
                             onChange={(e) => handleDOTComponentChange(sectionIndex, itemIndex, 'NEEDS_REPAIR', e.target.checked)}
                             disabled={!isEditing}
                             className="rounded border-gray-300 text-red-600 focus:ring-red-500"
-                          />
-                        </td>
-                        <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
-                          <input
-                            type="date"
-                            value={formData.dotInspection?.components?.[`${sectionIndex}-${itemIndex}`]?.repairedDate || ''}
-                            onChange={(e) => handleDOTComponentChange(sectionIndex, itemIndex, 'repairedDate', e.target.value)}
-                            disabled={!isEditing}
-                            className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-dark-100 text-gray-900 dark:text-white"
                           />
                         </td>
                       </tr>

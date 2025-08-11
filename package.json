@@ -9,6 +9,7 @@
     "dev:clean": "rm -rf node_modules/.vite && vite",
     "dev:fast": "vite --force --port 3000",
     "dev:reset": "rm -rf node_modules/.vite && npm run dev:fast",
+    "hmr:check": "./scripts/hmr-troubleshoot.sh",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",

@@ -149,6 +149,19 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     (division === 'engineering' ? 'Engineering Portal' : 
     (division ? `${formatDashboardName(division)} Dashboard` : 'NETA Tech Dashboard'));
 
+  const isCalibration = division === 'calibration';
+
+  const getUserFullName = (): string => {
+    const meta: any = user?.user_metadata || {};
+    const first = meta.firstName || meta.first_name || '';
+    const last = meta.lastName || meta.last_name || '';
+    const combined = `${first} ${last}`.trim();
+    if (combined) return combined;
+    if (meta.name) return String(meta.name);
+    if (user?.email) return String(user.email).split('@')[0];
+    return 'User';
+  };
+
   // Render the appropriate menu items based on whether we're in the HR portal
   const renderMenuItems = () => {
     // Get division-aware classes for hover and active states
@@ -251,8 +264,16 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       const currentDashboardPath = (isOfficeAdmin || isOfficePortal) ? officeDashboardPath : dashboardPath;
       
       // Default menu items for non-HR portals
+      // Special ordering and labels for Calibration division
+      const dashboardLabel = (isOfficeAdmin || isOfficePortal)
+        ? 'Office Dashboard'
+        : (isCalibration ? 'Home' : dashboardDisplayName);
+
+      const jobsLabel = isCalibration ? 'Projects' : 'Jobs';
+
       return (
         <>
+          {/* Dashboard / Home */}
           <Link to={currentDashboardPath}>
             <Button
               variant="ghost"
@@ -263,9 +284,24 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               )} ${getCalibrationOverrides()}`}
             >
               <FileText className="mr-2 h-4 w-4" />
-              {isOfficeAdmin || isOfficePortal ? 'Office Dashboard' : dashboardDisplayName}
+              {dashboardLabel}
             </Button>
           </Link>
+
+          {/* For Calibration, place Projects immediately under Home */}
+          {!hideJobsAndScheduling && isCalibration && (
+            <Link to={'/calibration/jobs'}>
+              <Button 
+                variant="ghost" 
+                className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.endsWith('/jobs'))} ${getCalibrationOverrides()}`}
+              >
+                <BriefcaseIcon className="mr-2 h-4 w-4" />
+                {jobsLabel}
+              </Button>
+            </Link>
+          )}
+
+          {/* Customers and Contacts */}
           <Link to={`${basePath}/customers`}>
             <Button 
               variant="ghost" 
@@ -284,36 +320,33 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               Contacts
             </Button>
           </Link>
-          
-          {/* Only show Jobs and Scheduling tabs if NOT Office Admin and NOT in Office Portal */}
-          {!hideJobsAndScheduling && (
+
+          {/* Jobs / Scheduling for non-calibration */}
+          {!hideJobsAndScheduling && !isCalibration && (
             <>
-              <Link to={division === 'calibration' ? '/calibration/jobs' : `${basePath}/jobs`}>
+              <Link to={`${basePath}/jobs`}>
                 <Button 
                   variant="ghost" 
                   className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.endsWith('/jobs'))} ${getCalibrationOverrides()}`}
                 >
                   <BriefcaseIcon className="mr-2 h-4 w-4" />
-                  Jobs
+                  {jobsLabel}
                 </Button>
               </Link>
-              {/* Hide Scheduling tab for Calibration Division */}
-              {division !== 'calibration' && (
-                <Link to={`${basePath}/scheduling`}>
-                  <Button 
-                    variant="ghost" 
-                    className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.endsWith('/scheduling'))} ${getCalibrationOverrides()}`}
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Scheduling
-                  </Button>
-                </Link>
-              )}
+              <Link to={`${basePath}/scheduling`}>
+                <Button 
+                  variant="ghost" 
+                  className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.endsWith('/scheduling'))} ${getCalibrationOverrides()}`}
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Scheduling
+                </Button>
+              </Link>
             </>
           )}
-          
+
           {/* All Assets tab - only for Calibration Division */}
-          {division === 'calibration' && (
+          {isCalibration && (
             <Link to="/calibration/all-assets">
               <Button 
                 variant="ghost" 
@@ -326,7 +359,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           )}
           
           {/* Archived Assets tab - only for Calibration Division and Admin users */}
-          {division === 'calibration' && user?.user_metadata?.role === 'Admin' && (
+          {isCalibration && user?.user_metadata?.role === 'Admin' && (
             <Link to="/calibration/deleted-assets">
               <Button 
                 variant="ghost" 
@@ -337,6 +370,17 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               </Button>
             </Link>
           )}
+
+          {/* Resources - visible to all divisions */}
+          <Link to="/resources">
+            <Button
+              variant="ghost"
+              className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 ${hoverClasses} !justify-start ${getActiveClasses(location.pathname.startsWith('/resources'))} ${getCalibrationOverrides()}`}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Resources
+            </Button>
+          </Link>
         </>
       );
     }
@@ -359,7 +403,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </Link>
         </div>
         <div className="flex flex-col gap-1 p-4 flex-grow">
-          <h2 className="px-2 text-xs font-semibold text-muted-foreground dark:text-dark-500">DASHBOARD MENU</h2>
+          {/* Hide label for Calibration division */}
+          {division !== 'calibration' && (
+            <h2 className="px-2 text-xs font-semibold text-muted-foreground dark:text-dark-500">DASHBOARD MENU</h2>
+          )}
           <div className="flex flex-col gap-1">
             {renderMenuItems()}
           </div>
@@ -372,7 +419,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="w-full px-4 sm:px-6 lg:px-8">
             <div className="flex h-20 items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold">{formatDivisionName(division)}</h2>
+                {isCalibration ? (
+                  <h2 className="text-lg font-semibold">{`Hello, ${getUserFullName()}!`}</h2>
+                ) : (
+                  <h2 className="text-lg font-semibold">{formatDivisionName(division)}</h2>
+                )}
               </div>
               <div className="flex items-center">
                 <div className="mr-2">

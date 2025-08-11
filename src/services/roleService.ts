@@ -55,20 +55,7 @@ const DEFAULT_ADMIN_PERMISSIONS: Partial<RolePermissions> = {
  */
 export async function getCustomRoles(): Promise<CustomRole[]> {
   try {
-    // Try to use the admin function first
-    try {
-      const { data, error } = await supabase.rpc('admin_get_custom_roles');
-      
-      if (!error && data) {
-        console.log('Successfully fetched custom roles via RPC');
-        return data;
-      }
-    } catch (rpcError) {
-      console.warn('RPC admin_get_custom_roles not available:', rpcError);
-      // Continue to fallback
-    }
-    
-    // Fallback: try to query the table directly
+    // Prefer querying the table first to avoid RPC 404/406 noise during startup
     try {
       const { data: directData, error: directError } = await supabase
         .schema('common')
@@ -81,7 +68,18 @@ export async function getCustomRoles(): Promise<CustomRole[]> {
       }
     } catch (tableError) {
       console.warn('Unable to fetch from custom_roles table:', tableError);
-      // Continue to fallback
+      // Continue to RPC fallback
+    }
+
+    // RPC fallback
+    try {
+      const { data, error } = await supabase.rpc('admin_get_custom_roles');
+      if (!error && data) {
+        console.log('Successfully fetched custom roles via RPC');
+        return data;
+      }
+    } catch (rpcError) {
+      console.warn('RPC admin_get_custom_roles not available:', rpcError);
     }
     
     // Fallback: Create a default admin role since we can't access the database roles

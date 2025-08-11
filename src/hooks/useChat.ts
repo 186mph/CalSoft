@@ -123,65 +123,6 @@ export function useChat() {
       setLoading(true);
       setError(null);
       
-      // DEBUG: List all profiles
-      console.log("DEBUG: Listing all profiles to find Jack Lyons");
-      const { data: allProfiles, error: profilesError } = await supabase
-        .schema('common')
-        .from('profiles')
-        .select('id, full_name, email, avatar_url')
-        .limit(20);
-      
-      console.log("All profiles:", allProfiles, profilesError?.message);
-      
-      // DEBUG: Try to find specific user by name
-      const { data: jackUsers, error: jackError } = await supabase
-        .schema('common')
-        .from('profiles')
-        .select('*')
-        .ilike('full_name', '%jack%')
-        .limit(5);
-        
-      console.log("Users with name 'Jack':", jackUsers, jackError?.message);
-      
-      // DEBUG: Find all participants in the current room
-      console.log("DEBUG: Finding all participants in room:", roomId);
-      
-      try {
-        // This query gets distinct user_ids from chat_messages in this room
-        const { data: participants, error: participantsError } = await supabase
-          .schema('common')
-          .from('chat_messages')
-          .select('user_id')
-          .eq('room_id', roomId)
-          .limit(20);
-        
-        console.log("Room participants:", participants, participantsError?.message);
-        
-        // For each participant, try to get their details directly
-        if (participants && participants.length > 0) {
-          for (const participant of participants) {
-            const userId = participant.user_id;
-            
-            // Try profiles table first
-            const { data: profileData, error: profileError } = await supabase
-              .schema('common').from('profiles')
-              .select('id, full_name, email, avatar_url')
-              .eq('id', userId)
-              .single();
-            
-            console.log(`Profile data for user ${userId}:`, profileData, profileError?.message);
-            
-            // Try direct RPC call
-            const { data: userData, error: userError } = await supabase
-              .rpc('get_user_metadata', { p_user_id: userId });
-            
-            console.log(`User metadata for user ${userId}:`, userData, userError?.message);
-          }
-        }
-      } catch (err) {
-        console.error("Error in participant lookup:", err);
-      }
-      
       // Mark as read before fetching messages
       await supabase.schema('common').rpc('mark_room_messages_read', { p_room_id: roomId });
       
@@ -194,148 +135,59 @@ export function useChat() {
       
       if (messageError) throw messageError;
       
-      // If we have messages, fetch user data
+      // If we have messages, fetch user data efficiently
       if (messageData && messageData.length > 0) {
-        // First, add basic placeholders for all messages to show something immediately
-        const basicMessages = messageData.map(message => ({
-          ...message,
-          user: {
-            email: user && message.user_id === user.id ? (user.email || '') : '',
-            name: user && message.user_id === user.id 
-              ? (user.user_metadata?.name || user.user_metadata?.full_name || user.user_metadata?.username || user.email || 'You') 
-              : 'Loading...',
-            profileImage: user && message.user_id === user.id 
-              ? (user.user_metadata?.profileImage || user.user_metadata?.avatar_url || null) 
-              : null
+        // Get unique user IDs from messages
+        const uniqueUserIds = [...new Set(messageData.map(msg => msg.user_id))];
+        
+        // Fetch all user profiles in one query
+        const { data: userProfiles, error: profilesError } = await supabase
+          .schema('common')
+          .from('profiles')
+          .select('id, full_name, email, avatar_url')
+          .in('id', uniqueUserIds);
+        
+        // Create a map for quick lookup
+        const userProfileMap = new Map();
+        if (userProfiles) {
+          userProfiles.forEach(profile => {
+            userProfileMap.set(profile.id, profile);
+          });
+        }
+        
+        // Process messages with user data
+        const processedMessages = messageData.map(message => {
+          const userProfile = userProfileMap.get(message.user_id);
+          
+          // For current user, use the user context data
+          if (user && message.user_id === user.id) {
+            return {
+              ...message,
+              user: {
+                email: user.email || '',
+                name: user.user_metadata?.name || user.user_metadata?.full_name || user.user_metadata?.username || user.email || 'You',
+                profileImage: user.user_metadata?.profileImage || user.user_metadata?.avatar_url || null
+              }
+            };
           }
-        }));
-        
-        // Show these basic messages right away for THIS SPECIFIC room only
-        updateRoomMessages(roomId, () => basicMessages);
-        
-        // Then process each message to get full user details
-        const processedMessages = await Promise.all(
-          messageData.map(async (message) => {
-            // For current user, use the user context data
-            if (user && message.user_id === user.id) {
-              return {
-                ...message,
-                user: {
-                  email: user.email || '',
-                  name: user.user_metadata?.name || user.user_metadata?.full_name || user.user_metadata?.username || user.email || 'You',
-                  profileImage: user.user_metadata?.profileImage || user.user_metadata?.avatar_url || null
-                }
-              };
-            } 
-            
-            // For other users, get their details from the database
-            try {
-              console.log(`Fetching user details for user_id: ${message.user_id}`);
-              
-              // First attempt: try profiles table directly - this seems most likely to work
-              const { data: profileData, error: profileError } = await supabase
-                .schema('common').from('profiles')
-                .select('id, full_name, email, avatar_url')
-                .eq('id', message.user_id)
-                .single();
-              
-              console.log('Profiles table result:', { data: profileData, error: profileError?.message });
-                
-              if (!profileError && profileData) {
-                console.log('Got user details from profiles for', message.user_id, ':', profileData);
-                const name = profileData.full_name || profileData.email || `User ${message.user_id.substring(0, 6)}`;
-                return {
-                  ...message,
-                  user: {
-                    email: profileData.email || 'unknown',
-                    name: name,
-                    profileImage: profileData.avatar_url || getFallbackPhotoFromName(name)
-                  }
-                };
-              }
-              
-              // Second attempt: Try RPC method
-              const { data: rpcUserDetails, error: rpcError } = await supabase
-                .schema('common').rpc('get_user_details', { user_id: message.user_id });
-              
-              console.log('RPC get_user_details result:', { data: rpcUserDetails, error: rpcError?.message });
-                  
-              if (!rpcError && rpcUserDetails && rpcUserDetails.length > 0) {
-                console.log('Got user details from RPC for', message.user_id, ':', rpcUserDetails[0]);
-                const name = rpcUserDetails[0].name || rpcUserDetails[0].email || `User ${message.user_id.substring(0, 6)}`;
-                return {
-                  ...message,
-                  user: {
-                    email: rpcUserDetails[0].email || '',
-                    name: name,
-                    profileImage: rpcUserDetails[0].profile_image || getFallbackPhotoFromName(name)
-                  }
-                };
-              }
-
-              // Third attempt: Try to use a raw query to get user info
-              const { data: rawUserData, error: rawError } = await supabase
-                .schema('common').rpc('get_user_metadata', { p_user_id: message.user_id });
-              
-              console.log('get_user_metadata result:', { data: rawUserData, error: rawError?.message });
-              
-              if (!rawError && rawUserData) {
-                console.log('Got user metadata from custom RPC for', message.user_id, ':', rawUserData);
-                const name = rawUserData.name || rawUserData.full_name || rawUserData.email || `User ${message.user_id.substring(0, 6)}`;
-                return {
-                  ...message,
-                  user: {
-                    email: rawUserData.email || 'unknown',
-                    name: name,
-                    profileImage: rawUserData.profile_image || rawUserData.avatar_url || getFallbackPhotoFromName(name)
-                  }
-                };
-              }
-              
-              console.error('All user data retrieval methods failed for:', message.user_id);
-              
-              // Generate a fallback profile with an avatar
-              const defaultName = `User ${message.user_id.substring(0, 6)}`;
-              return {
-                ...message,
-                user: {
-                  email: 'unknown',
-                  name: defaultName,
-                  profileImage: getFallbackPhotoFromName(defaultName)
-                }
-              };
-            } catch (err) {
-              console.error('Error fetching user details:', err);
-              return {
-                ...message,
-                user: {
-                  email: 'unknown',
-                  name: `User ${message.user_id.substring(0, 6)}`,
-                  profileImage: null
-                }
-              };
+          
+          // For other users, use profile data or fallback
+          return {
+            ...message,
+            user: {
+              email: userProfile?.email || 'unknown@example.com',
+              name: userProfile?.full_name || 'Unknown User',
+              profileImage: userProfile?.avatar_url || null
             }
-          })
-        );
+          };
+        });
         
-        // Update with fully processed messages, for THIS SPECIFIC room only
+        // Update messages for this room
         updateRoomMessages(roomId, () => processedMessages);
-        
-        // Also try to preload additional profile information for all users in the room
-        setTimeout(() => preloadUserProfiles(roomId), 500);
       } else {
-        // Clear messages for this room
+        // No messages, set empty array
         updateRoomMessages(roomId, () => []);
       }
-      
-      // Update unread count in chat rooms
-      setChatRooms(prev => 
-        prev.map(room => 
-          room.id === roomId 
-            ? { ...room, unread_count: 0 } 
-            : room
-        )
-      );
     } catch (err: any) {
       console.error('Error fetching messages:', err);
       setError(`Failed to load messages: ${err.message}`);

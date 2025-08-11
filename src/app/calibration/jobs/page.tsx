@@ -113,7 +113,11 @@ export default function CalibrationJobsPage() {
 
   // Fetch lab jobs specific to the Calibration and Armadillo divisions
   useEffect(() => {
-    fetchJobs(activeFilter);
+    // Defer heavy fetch to next tick so first render paints quickly
+    const id = window.setTimeout(() => {
+      fetchJobs(activeFilter);
+    }, 0);
+    return () => window.clearTimeout(id);
   }, [refreshTrigger, activeFilter, statusFilter]);
 
 
@@ -139,7 +143,10 @@ export default function CalibrationJobsPage() {
 
   // Fetch technicians when component mounts or filter changes
   useEffect(() => {
-    fetchTechnicians();
+    const id = window.setTimeout(() => {
+      fetchTechnicians();
+    }, 0);
+    return () => window.clearTimeout(id);
   }, [activeFilter]);
   const fetchJobs = async (filter: 'calibration' | 'armadillo' = 'calibration') => {
     try {
@@ -319,67 +326,34 @@ export default function CalibrationJobsPage() {
   // Fetch technicians from auth.users or admin API
   const fetchTechnicians = async () => {
     try {
-      console.log('[CalibrationJobsPage] Fetching technicians...');
-      
-      // First try to get users with Lab Technician role from auth.users
-      const { data: userData, error: userError } = await supabase
-        .from('auth.users')
-        .select('id, email, raw_user_meta_data')
-        .eq('raw_user_meta_data->>role', 'Lab Technician')
-        .order('raw_user_meta_data->>name');
-      
-      if (userError) {
-        console.log('[CalibrationJobsPage] Error accessing auth.users table:', userError);
-        console.log('[CalibrationJobsPage] Attempting to use auth.admin.listUsers() instead...');
-        
-        // Try alternative approach with auth schema
-        const { data: userData2, error: userError2 } = await supabase.auth.admin.listUsers();
-        
-        if (userError2) {
-          console.error('[CalibrationJobsPage] Error fetching technicians with admin API:', userError2);
-          setTechnicians([]);
-          return;
-        }
-        
-        console.log('[CalibrationJobsPage] Admin API returned users:', userData2?.users?.length || 0);
-        
-        // Filter for Lab Technicians
-        const labTechUsers = userData2.users.filter(u => {
-          const isLabTech = u.user_metadata?.role === 'Lab Technician';
-          const inDivision = !activeFilter || u.user_metadata?.division === activeFilter;
-          return isLabTech && inDivision;
-        });
-        
-        console.log('[CalibrationJobsPage] Filtered Lab Technicians:', labTechUsers.length);
-        
-        // Format the data
-        const formattedUsers = labTechUsers.map(u => ({
-          id: u.id,
-          email: u.email || '',
-          name: u.user_metadata?.name || u.email || '',
-          user_metadata: u.user_metadata
-        }));
-        
-        setTechnicians(formattedUsers);
-      } else {
-        console.log('[CalibrationJobsPage] Successfully fetched users from auth.users:', userData?.length || 0);
-        
-        // Format the data
-        const formattedUsers = userData.map(u => ({
-          id: u.id,
-          email: u.email || '',
-          name: u.raw_user_meta_data?.name || u.email || '',
-          user_metadata: u.raw_user_meta_data
-        }));
-        
-        // Filter for division if specified
-        const filteredUsers = activeFilter 
-          ? formattedUsers.filter(u => u.user_metadata?.division === activeFilter)
-          : formattedUsers;
-          
-        console.log('[CalibrationJobsPage] Filtered Lab Technicians by division:', filteredUsers.length);
-        setTechnicians(filteredUsers);
+      console.log('[CalibrationJobsPage] Fetching technicians from common.profiles...');
+      // Use application profiles table instead of auth or admin endpoints (client-safe)
+      const { data, error } = await supabase
+        .schema('common')
+        .from('profiles')
+        .select('id, email, name, division, role')
+        .eq('role', 'Lab Technician')
+        .order('name', { ascending: true });
+
+      if (error) {
+        console.error('[CalibrationJobsPage] Error fetching technicians from profiles:', error);
+        setTechnicians([]);
+        return;
       }
+
+      const formattedUsers = (data || []).map((u: any) => ({
+        id: u.id,
+        email: u.email || '',
+        name: u.name || u.email || '',
+        user_metadata: { division: u.division, role: u.role, name: u.name }
+      }));
+
+      const filteredUsers = activeFilter
+        ? formattedUsers.filter(u => u.user_metadata?.division === activeFilter)
+        : formattedUsers;
+
+      console.log('[CalibrationJobsPage] Technicians loaded:', filteredUsers.length);
+      setTechnicians(filteredUsers);
     } catch (err) {
       console.error('[CalibrationJobsPage] Exception in fetchTechnicians:', err);
       setTechnicians([]);

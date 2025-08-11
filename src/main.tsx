@@ -8,24 +8,26 @@ import { initEncryptionService } from './services/encryptionService';
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   console.error('Failed to find root element');
-} else {
-  try {
-    // Initialize the encryption service before rendering the app
-    initEncryptionService().then(success => {
-      if (!success) {
-        console.error('Failed to initialize encryption service. Some features may not work properly.');
-      } else {
-        console.log('Encryption service initialized successfully.');
-      }
-
-      // Continue with app rendering
+  } else {
+    try {
+      // Render the app immediately; initialize encryption in the background to avoid blocking initial paint
       createRoot(rootElement).render(
         <StrictMode>
           <App />
         </StrictMode>
       );
-    });
-  } catch (error) {
-    console.error('Failed to render app:', error);
+
+      // Fire-and-forget initialization with error handling
+      initEncryptionService()
+        .then(success => {
+          if (!success) {
+            console.error('Failed to initialize encryption service. Some features may not work properly.');
+          }
+        })
+        .catch(err => {
+          console.error('Encryption initialization error:', err);
+        });
+    } catch (error) {
+      console.error('Failed to render app:', error);
+    }
   }
-}

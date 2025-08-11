@@ -71,67 +71,33 @@ export function CalibrationJobButton({
   // Fetch technicians from auth.users or admin API
   const fetchTechnicians = async () => {
     try {
-      console.log('[CalibrationJobButton] Fetching technicians...');
-      
-      // First try to get users with Lab Technician role from auth.users
-      const { data: userData, error: userError } = await supabase
-        .from('auth.users')
-        .select('id, email, raw_user_meta_data')
-        .eq('raw_user_meta_data->>role', 'Lab Technician')
-        .order('raw_user_meta_data->>name');
-      
-      if (userError) {
-        console.log('[CalibrationJobButton] Error accessing auth.users table:', userError);
-        console.log('[CalibrationJobButton] Attempting to use auth.admin.listUsers() instead...');
-        
-        // Try alternative approach with auth schema
-        const { data: userData2, error: userError2 } = await supabase.auth.admin.listUsers();
-        
-        if (userError2) {
-          console.error('[CalibrationJobButton] Error fetching technicians with admin API:', userError2);
-          setTechnicians([]);
-          return;
-        }
-        
-        console.log('[CalibrationJobButton] Admin API returned users:', userData2?.users?.length || 0);
-        
-        // Filter for Lab Technicians
-        const labTechUsers = userData2.users.filter(u => {
-          const isLabTech = u.user_metadata?.role === 'Lab Technician';
-          const inDivision = !jobDivision || u.user_metadata?.division === jobDivision;
-          return isLabTech && inDivision;
-        });
-        
-        console.log('[CalibrationJobButton] Filtered Lab Technicians:', labTechUsers.length);
-        
-        // Format the data
-        const formattedUsers = labTechUsers.map(u => ({
-          id: u.id,
-          email: u.email,
-          name: u.user_metadata?.name || u.email,
-          user_metadata: u.user_metadata
-        }));
-        
-        setTechnicians(formattedUsers);
-      } else {
-        console.log('[CalibrationJobButton] Successfully fetched users from auth.users:', userData?.length || 0);
-        
-        // Format the data
-        const formattedUsers = userData.map(u => ({
-          id: u.id,
-          email: u.email,
-          name: u.raw_user_meta_data?.name || u.email,
-          user_metadata: u.raw_user_meta_data
-        }));
-        
-        // Filter for division if specified
-        const filteredUsers = jobDivision 
-          ? formattedUsers.filter(u => u.user_metadata?.division === jobDivision)
-          : formattedUsers;
-          
-        console.log('[CalibrationJobButton] Filtered Lab Technicians by division:', filteredUsers.length);
-        setTechnicians(filteredUsers);
+      console.log('[CalibrationJobButton] Fetching technicians from common.profiles...');
+      const { data, error } = await supabase
+        .schema('common')
+        .from('profiles')
+        .select('id, email, name, division, role')
+        .eq('role', 'Lab Technician')
+        .order('name', { ascending: true });
+
+      if (error) {
+        console.error('[CalibrationJobButton] Error fetching technicians from profiles:', error);
+        setTechnicians([]);
+        return;
       }
+
+      const formattedUsers = (data || []).map((u: any) => ({
+        id: u.id,
+        email: u.email,
+        name: u.name || u.email,
+        user_metadata: { name: u.name, division: u.division, role: u.role }
+      }));
+
+      const filteredUsers = jobDivision
+        ? formattedUsers.filter(u => u.user_metadata?.division === jobDivision)
+        : formattedUsers;
+
+      console.log('[CalibrationJobButton] Technicians loaded:', filteredUsers.length);
+      setTechnicians(filteredUsers);
     } catch (err) {
       console.error('[CalibrationJobButton] Exception in fetchTechnicians:', err);
       setTechnicians([]);
