@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANNUAL VEHICLE INSPECTION REPORT</title>
+    <style>
+        @page { 
+            margin: 0.5in; 
+            size: 8.5in 11in;
+        }
+        body { 
+            font-family: "Times New Roman", serif; 
+            font-size: 10pt; 
+            line-height: 1.2; 
+            margin: 0; 
+            padding: 0;
+            color: #000;
+        }
+        .page-container {
+            max-width: 8.5in;
+            margin: 0 auto;
+            padding: 0.25in;
+        }
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.3in;
+        }
+        .main-title {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 0.2in;
+            text-transform: uppercase;
+        }
+        .vehicle-history {
+            border: 1px solid #000;
+            padding: 0.1in;
+            width: 2.5in;
+            font-size: 8pt;
+        }
+        .vehicle-history h3 {
+            margin: 0 0 0.1in 0;
+            font-size: 9pt;
+            font-weight: bold;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        .history-field {
+            margin-bottom: 0.05in;
+        }
+        .history-field label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 0.02in;
+        }
+        .history-field input {
+            width: 100%;
+            border: none;
+            border-bottom: 1px solid #000;
+            background: transparent;
+            font-size: 8pt;
+        }
+        .content-sections {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.3in;
+            margin-bottom: 0.3in;
+        }
+        .left-section {
+            width: 60%;
+        }
+        .right-section {
+            width: 35%;
+        }
+        .field-group {
+            margin-bottom: 0.15in;
+        }
+        .field-group label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 0.05in;
+        }
+        .field-group input[type="text"] {
+            width: 100%;
+            border: none;
+            border-bottom: 1px solid #000;
+            background: transparent;
+            font-size: 10pt;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.1in;
+        }
+        .checkbox {
+            width: 12px;
+            height: 12px;
+            border: 1px solid #000;
+            margin-right: 0.1in;
+            position: relative;
+        }
+        .checkbox.checked::after {
+            content: 'X';
+            position: absolute;
+            top: -2px;
+            left: 1px;
+            font-weight: bold;
+            font-size: 10pt;
+        }
+        .inspection-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.2in;
+        }
+        .inspection-table th {
+            border: 1px solid #000;
+            padding: 0.05in;
+            text-align: center;
+            font-weight: bold;
+            font-size: 9pt;
+        }
+        .inspection-table td {
+            border: 1px solid #000;
+            padding: 0.05in;
+            font-size: 8pt;
+            vertical-align: top;
+        }
+        .section-header {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            font-size: 9pt;
+        }
+        .component-item {
+            font-size: 8pt;
+        }
+        .ok-checkbox, .needs-repair-checkbox {
+            width: 12px;
+            height: 12px;
+            border: 1px solid #000;
+            margin: 0 auto;
+            position: relative;
+        }
+        .ok-checkbox.checked::after, .needs-repair-checkbox.checked::after {
+            content: 'X';
+            position: absolute;
+            top: -2px;
+            left: 1px;
+            font-weight: bold;
+            font-size: 10pt;
+        }
+        .repaired-date {
+            font-size: 8pt;
+            text-align: center;
+        }
+        .additional-conditions {
+            margin-top: 0.2in;
+        }
+        .additional-conditions textarea {
+            width: 100%;
+            height: 1in;
+            border: 1px solid #000;
+            background: transparent;
+            font-size: 9pt;
+            resize: none;
+        }
+        .certification {
+            margin-top: 0.3in;
+            display: flex;
+            align-items: center;
+        }
+        .certification-checkbox {
+            width: 12px;
+            height: 12px;
+            border: 1px solid #000;
+            margin-right: 0.1in;
+            position: relative;
+        }
+        .certification-checkbox.checked::after {
+            content: 'X';
+            position: absolute;
+            top: -2px;
+            left: 1px;
+            font-weight: bold;
+            font-size: 10pt;
+        }
+        .instructions {
+            margin-top: 0.2in;
+            font-size: 9pt;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- Header -->
+        <div class="header-section">
+            <div class="left-section">
+                <div class="field-group">
+                    <label>MOTOR CARRIER OPERATOR</label>
+                    <input type="text" id="motorCarrierOperator" readonly>
+                </div>
+                <div class="field-group">
+                    <label>ADDRESS</label>
+                    <input type="text" id="address" readonly>
+                </div>
+                <div class="field-group">
+                    <label>CITY, STATE, ZIP CODE</label>
+                    <input type="text" id="cityStateZip" readonly>
+                </div>
+                <div class="field-group">
+                    <label>INSPECTOR'S NAME (PRINT OR TYPE)</label>
+                    <input type="text" id="inspectorName" readonly>
+                </div>
+                <div class="field-group">
+                    <label>VEHICLE IDENTIFICATION</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox" id="licPlateCheckbox"></div>
+                        <span>LIC. PLATE NO.</span>
+                    </div>
+                    <div class="checkbox-group">
+                        <div class="checkbox" id="vinCheckbox"></div>
+                        <span>VIN</span>
+                    </div>
+                    <div class="checkbox-group">
+                        <div class="checkbox" id="otherCheckbox"></div>
+                        <span>OTHER</span>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>VEHICLE TYPE</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox" id="tractorCheckbox"></div>
+                        <span>TRACTOR</span>
+                    </div>
+                    <div class="checkbox-group">
+                        <div class="checkbox" id="trailerCheckbox"></div>
+                        <span>TRAILER</span>
+                    </div>
+                    <div class="checkbox-group">
+                        <div class="checkbox" id="truckCheckbox"></div>
+                        <span>TRUCK</span>
+                    </div>
+                    <div class="checkbox-group">
+                        <div class="checkbox" id="otherTypeCheckbox"></div>
+                        <span>(OTHER)</span>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <div class="checkbox-group">
+                        <div class="checkbox" id="inspectorQualifiedCheckbox"></div>
+                        <span>THIS INSPECTOR MEETS THE QUALIFICATION REQUIREMENTS IN SECTION 396.19.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="vehicle-history">
+                <h3>VEHICLE HISTORY</h3>
+                <div class="history-field">
+                    <label>REPORT NUMBER</label>
+                    <input type="text" id="reportNumber" readonly>
+                </div>
+                <div class="history-field">
+                    <label>FLEET UNIT NUMBER</label>
+                    <input type="text" id="fleetUnitNumber" readonly>
+                </div>
+                <div class="history-field">
+                    <label>DATE</label>
+                    <input type="text" id="date" readonly>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Title -->
+        <div class="main-title">ANNUAL VEHICLE INSPECTION REPORT</div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            INSTRUCTIONS: MARK COLUMN ENTRIES TO VERIFY INSPECTION: X OK, X NEEDS REPAIR, NA IF ITEMS DO NOT APPLY, ______ REPAIRED DATE
+        </div>
+
+        <!-- Inspection Table -->
+        <table class="inspection-table">
+            <thead>
+                <tr>
+                    <th>COMPONENT</th>
+                    <th>OK</th>
+                    <th>NEEDS REPAIR</th>
+                    <th>REPAIRED DATE</th>
+                </tr>
+            </thead>
+            <tbody id="inspectionTableBody">
+                <!-- Component rows will be populated by JavaScript -->
+            </tbody>
+        </table>
+
+        <!-- Additional Conditions -->
+        <div class="additional-conditions">
+            <label>List any other condition which may prevent safe operation of this vehicle</label>
+            <textarea id="additionalConditions" readonly></textarea>
+        </div>
+
+        <!-- Certification -->
+        <div class="certification">
+            <div class="certification-checkbox" id="certifiedCheckbox"></div>
+            <span>CERTIFICATION: THIS VEHICLE HAS PASSED ALL THE INSPECTION ITEMS FOR THE ANNUAL VEHICLE INSPECTION REPORT IN ACCORDANCE WITH 49 CFR 396.</span>
+        </div>
+    </div>
+
+    <script>
+        // Function to populate the form with data
+        function populateForm(data) {
+            // Populate text fields
+            document.getElementById('motorCarrierOperator').value = data.motorCarrierOperator || '';
+            document.getElementById('address').value = data.address || '';
+            document.getElementById('cityStateZip').value = data.cityStateZip || '';
+            document.getElementById('inspectorName').value = data.inspectorName || '';
+            document.getElementById('reportNumber').value = data.reportNumber || '';
+            document.getElementById('fleetUnitNumber').value = data.fleetUnitNumber || '';
+            document.getElementById('date').value = data.date || new Date().toLocaleDateString();
+            document.getElementById('additionalConditions').value = data.additionalConditions || '';
+
+            // Populate vehicle identification checkboxes
+            if (data.vehicleIdentification && data.vehicleIdentification.includes('LIC. PLATE NO.')) {
+                document.getElementById('licPlateCheckbox').classList.add('checked');
+            }
+            if (data.vehicleIdentification && data.vehicleIdentification.includes('VIN')) {
+                document.getElementById('vinCheckbox').classList.add('checked');
+            }
+            if (data.vehicleIdentification && data.vehicleIdentification.includes('OTHER')) {
+                document.getElementById('otherCheckbox').classList.add('checked');
+            }
+
+            // Populate vehicle type checkboxes
+            if (data.vehicleType === 'TRACTOR') {
+                document.getElementById('tractorCheckbox').classList.add('checked');
+            }
+            if (data.vehicleType === 'TRAILER') {
+                document.getElementById('trailerCheckbox').classList.add('checked');
+            }
+            if (data.vehicleType === 'TRUCK') {
+                document.getElementById('truckCheckbox').classList.add('checked');
+            }
+            if (data.vehicleType === 'OTHER') {
+                document.getElementById('otherTypeCheckbox').classList.add('checked');
+            }
+
+            // Populate inspector qualification checkbox
+            if (data.inspectorQualified) {
+                document.getElementById('inspectorQualifiedCheckbox').classList.add('checked');
+            }
+
+            // Populate certification checkbox
+            if (data.certified) {
+                document.getElementById('certifiedCheckbox').classList.add('checked');
+            }
+
+            // Populate inspection components
+            const tableBody = document.getElementById('inspectionTableBody');
+            tableBody.innerHTML = '';
+
+            const components = data.components || {};
+            const componentSections = [
+                {
+                    title: '1. BRAKE SYSTEM',
+                    items: [
+                        'a. Service Brakes',
+                        'b. Parking Brake System',
+                        'c. Brake Drums or Rotors',
+                        'd. Brake Hose',
+                        'e. Brake Tubing',
+                        'f. Low Pressure Warning Device',
+                        'g. Tractor Protection Valve',
+                        'h. Air Compressor',
+                        'i. Electric Brakes',
+                        'j. Hydraulic Brakes',
+                        'k. Vacuum Systems'
+                    ]
+                },
+                {
+                    title: '2. COUPLING DEVICES',
+                    items: [
+                        'a. Fifth Wheels',
+                        'b. Pintle Hooks',
+                        'c. Drawbar/Towbar Eye',
+                        'd. Drawbar/Towbar Tongue',
+                        'e. Safety Devices',
+                        'f. Saddle-Mounts'
+                    ]
+                },
+                {
+                    title: '3. EXHAUST SYSTEM',
+                    items: [
+                        'a. Any exhaust system determined to be leaking at a point forward of or directly below the driver/sleeper compartment.',
+                        'b. A bus exhaust system leaking or discharging to the atmosphere in violation of standards (1), (2) or (3).',
+                        'c. No part of the exhaust system of any motor vehicle shall be so located as would be likely to result in burning, charring, or damaging the electrical wiring, the fuel supply, or any combustible part of the motor vehicle.'
+                    ]
+                },
+                {
+                    title: '4. FUEL SYSTEM',
+                    items: [
+                        'a. Visible leak',
+                        'b. Fuel tank filler cap missing',
+                        'c. Fuel tank securely attached'
+                    ]
+                },
+                {
+                    title: '5. LIGHTING DEVICES',
+                    items: [
+                        'All lighting devices and reflectors required by Section 393 shall be operable.'
+                    ]
+                },
+                {
+                    title: '6. SAFE LOADING',
+                    items: [
+                        'a. Part(s) of vehicle or condition of loading such that the spare tire or any part of the load or dunnage can fall onto the roadway.',
+                        'b. Protection against shifting cargo'
+                    ]
+                },
+                {
+                    title: '7. STEERING MECHANISM',
+                    items: [
+                        'a. Steering Wheel Free Play',
+                        'b. Steering Column',
+                        'c. Front Axle Beam and All Steering Components Other Than Steering Column',
+                        'd. Steering Gear Box',
+                        'e. Pitman Arm',
+                        'f. Power Steering',
+                        'g. Ball and Socket Joints',
+                        'h. Tie Rods and Drag Links',
+                        'i. Nuts',
+                        'j. Steering System'
+                    ]
+                },
+                {
+                    title: '8. SUSPENSION',
+                    items: [
+                        'a. Any U-bolt(s), spring hanger(s), or other axle positioning part(s) cracked, broken, loose or missing resulting in shifting of an axle from its normal position.',
+                        'b. Spring Assembly',
+                        'c. Torque, Radius or Tracking Components.'
+                    ]
+                },
+                {
+                    title: '9. FRAME',
+                    items: [
+                        'a. Frame Members',
+                        'b. Tire and Wheel Clearance',
+                        'c. Adjustable Axle Assemblies (Sliding Subframes)'
+                    ]
+                },
+                {
+                    title: '10. TIRES',
+                    items: [
+                        'a. Tires on any steering axle of a power unit.',
+                        'b. All other tires.'
+                    ]
+                },
+                {
+                    title: '11. WHEELS AND RIMS',
+                    items: [
+                        'a. Lock or Side Ring',
+                        'b. Wheels and Rims',
+                        'c. Fasteners',
+                        'd. Welds'
+                    ]
+                },
+                {
+                    title: '12. WINDSHIELD GLAZING',
+                    items: [
+                        'Requirements and exceptions as stated pertaining to any crack, discoloration or vision reducing matter (reference 393.60 for exceptions)'
+                    ]
+                },
+                {
+                    title: '13. WINDSHIELD WIPERS',
+                    items: [
+                        'Any power unit that has an inoperative wiper, or missing or damaged parts that render it ineffective.'
+                    ]
+                }
+            ];
+
+            componentSections.forEach((section, sectionIndex) => {
+                // Add section header
+                const sectionRow = document.createElement('tr');
+                sectionRow.className = 'section-header';
+                sectionRow.innerHTML = `
+                    <td colspan="4">${section.title}</td>
+                `;
+                tableBody.appendChild(sectionRow);
+
+                // Add section items
+                section.items.forEach((item, itemIndex) => {
+                    const key = `${sectionIndex}-${itemIndex}`;
+                    const component = components[key] || {};
+                    
+                    const itemRow = document.createElement('tr');
+                    itemRow.className = 'component-item';
+                    itemRow.innerHTML = `
+                        <td>${item}</td>
+                        <td><div class="ok-checkbox ${component.status === 'OK' ? 'checked' : ''}"></div></td>
+                        <td><div class="needs-repair-checkbox ${component.status === 'NEEDS_REPAIR' ? 'checked' : ''}"></div></td>
+                        <td class="repaired-date">${component.repairedDate || ''}</td>
+                    `;
+                    tableBody.appendChild(itemRow);
+                });
+            });
+        }
+
+        // Get data from URL parameters or window object
+        function getFormData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const dataParam = urlParams.get('data');
+            
+            if (dataParam) {
+                try {
+                    return JSON.parse(decodeURIComponent(dataParam));
+                } catch (e) {
+                    console.error('Error parsing data from URL:', e);
+                }
+            }
+
+            // Fallback to window object
+            if (window.DOT_FORM_DATA) {
+                return window.DOT_FORM_DATA;
+            }
+
+            // Fallback to localStorage
+            const storedData = localStorage.getItem('DOT_FORM_DATA');
+            if (storedData) {
+                try {
+                    return JSON.parse(storedData);
+                } catch (e) {
+                    console.error('Error parsing data from localStorage:', e);
+                }
+            }
+
+            return {};
+        }
+
+        // Initialize the form when page loads
+        window.addEventListener('load', function() {
+            const formData = getFormData();
+            populateForm(formData);
+        });
+    </script>
+</body>
+</html>

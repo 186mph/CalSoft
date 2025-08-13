@@ -41,6 +41,33 @@ interface Job {
   comment_count?: number;
 }
 
+// Normalize historical calibration job numbers to 1YYXXX (strip any stray zeros in the middle)
+const formatLabJobNumber = (n?: string): string => {
+  if (!n) return '';
+  const digits = String(n).replace(/[^0-9]/g, '');
+  
+  // Handle the specific pattern 1YY0XXX -> 1YYXXX (7 digits with extra zero)
+  if (/^1\d{2}0\d{3}$/.test(digits)) {
+    const prefix = digits.slice(0, 3);
+    const seq = digits.slice(-3);
+    return `${prefix}${seq}`;
+  }
+  
+  // Handle 6-digit numbers that are already correct (1YYXXX)
+  if (/^1\d{2}\d{3}$/.test(digits)) {
+    return digits; // Return as-is, no formatting needed
+  }
+  
+  // Handle other patterns that start with 1YY (fallback)
+  if (/^1\d{2}\d{3,}$/.test(digits)) {
+    const prefix = digits.slice(0, 3);
+    const seq = digits.slice(-3).padStart(3, '0');
+    return `${prefix}${seq}`;
+  }
+  
+  return n;
+};
+
 export default function CalibrationJobsPage() {
   console.log('🔧 CalibrationJobsPage: Component rendered with updated text');
   const { user } = useAuth();
@@ -51,6 +78,8 @@ export default function CalibrationJobsPage() {
   const [activeFilter, setActiveFilter] = useState<'calibration' | 'armadillo'>('calibration');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [labCustomersExists, setLabCustomersExists] = useState<boolean | null>(null);
+  
+
   
   // Edit job states
   const [isEditing, setIsEditing] = useState(false);
@@ -167,6 +196,9 @@ export default function CalibrationJobsPage() {
         return;
       }
 
+
+
+
       // Fetch customers separately for each job
       const jobsWithCustomers = await Promise.all((jobData || []).map(async (job) => {
         if (!job.customer_id) {
@@ -265,6 +297,8 @@ export default function CalibrationJobsPage() {
       setLoading(false);
     }
   };
+
+
 
   const handleJobCreated = () => {
     setRefreshTrigger(prev => prev + 1);
@@ -530,7 +564,7 @@ export default function CalibrationJobsPage() {
   const handleDeleteJob = async (job: Job) => {
     // Show confirmation dialog
     const confirmed = window.confirm(
-      `Are you sure you want to delete "${job.title}" (Job #${job.job_number})?\n\nThis action cannot be undone.`
+      `Are you sure you want to delete "${job.title}" (Job #${formatLabJobNumber(job.job_number)})?\n\nThis action cannot be undone.`
     );
     
     if (!confirmed) return;
@@ -765,15 +799,9 @@ export default function CalibrationJobsPage() {
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="flex items-center">
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                        {job.job_number}
-                      </h3>
-                      {job.comment_count && job.comment_count > 0 && (
-                        <div className="flex items-center ml-2">
-                          <MessageCircle className="h-4 w-4 text-blue-500" />
-                          <span className="text-xs text-blue-500 ml-1">{job.comment_count}</span>
-                        </div>
-                      )}
+                      <div className="text-lg font-medium text-gray-900 dark:text-white">
+                        {formatLabJobNumber(job.job_number)}
+                      </div>
                       <select
                         value={job.status}
                         onChange={(e) => {
@@ -873,7 +901,7 @@ export default function CalibrationJobsPage() {
                   <div>
                     <label className="block text-sm font-medium mb-1">Job Number</label>
                     <Input
-                      value={editFormData.job_number}
+                      value={formatLabJobNumber(editFormData.job_number)}
                       readOnly
                       className="bg-gray-100 dark:bg-gray-700 cursor-not-allowed !border-gray-300 dark:!border-gray-600"
                     />

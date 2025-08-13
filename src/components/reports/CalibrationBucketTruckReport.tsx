@@ -16,6 +16,8 @@ import { Input } from '../ui/Input';
 import { Plus, FileText, Upload, Trash2, Printer } from 'lucide-react';
 import { getDivisionAccentClasses } from '../../lib/utils';
 import { useDivision } from '../../App';
+import { generateDOTInspectionPDF, downloadPDF, DOTInspectionData, testPDFTemplateLoading, generateCoordinateFinderPDF, generatePrecisionCoordinateFinderPDF } from '../../lib/pdfGeneration';
+
 
 // Add type definitions for error handling
 type SupabaseError = {
@@ -45,6 +47,7 @@ interface EnhancedAsset extends Asset {
 // Interface for form data structure
 interface DOTInspectionComponent {
   status?: 'OK' | 'NEEDS_REPAIR';
+  repairedDate?: string;
 }
 
 interface DOTInspection {
@@ -386,8 +389,12 @@ export default function CalibrationBucketTruckReport() {
       // For OK or NEEDS_REPAIR, we need to handle mutual exclusivity
       if (value) {
         updatedComponent = { ...currentComponent, status: field };
+        // Auto-set repaired date when either "OK" or "Needs Repair" is checked
+        updatedComponent.repairedDate = new Date().toISOString().split('T')[0];
       } else {
         updatedComponent = { ...currentComponent, status: undefined };
+        // Clear repaired date when checkbox is unchecked
+        updatedComponent.repairedDate = undefined;
       }
 
       return {
@@ -401,6 +408,105 @@ export default function CalibrationBucketTruckReport() {
         }
       };
     });
+  };
+
+  const handleDOTComponentRepairedDateChange = (sectionIndex: number, itemIndex: number, repairedDate: string) => {
+    setFormData(prev => {
+      const key = `${sectionIndex}-${itemIndex}`;
+      const currentComponent = prev.dotInspection.components[key] || {};
+      
+      const updatedComponent = { ...currentComponent, repairedDate };
+
+      return {
+        ...prev,
+        dotInspection: {
+          ...prev.dotInspection,
+          components: {
+            ...prev.dotInspection.components,
+            [key]: updatedComponent
+          }
+        }
+      };
+    });
+  };
+
+
+
+  // PDF Generation Functions for DOT Inspection Report
+  const generateDOTInspectionPDFHandler = async () => {
+    try {
+      // Prepare the data for PDF generation
+      const dotData: DOTInspectionData = {
+        motorCarrierOperator: formData.dotInspection?.motorCarrierOperator || '',
+        address: formData.dotInspection?.address || '',
+        cityStateZip: formData.dotInspection?.cityStateZip || '',
+        inspectorName: formData.dotInspection?.inspectorName || '',
+        reportNumber: formData.jobNumber || '',
+        fleetUnitNumber: formData.bucketTruckData?.truckNumber || '',
+        date: new Date().toLocaleDateString(),
+        vehicleType: (formData.dotInspection?.vehicleType as 'TRACTOR' | 'TRAILER' | 'TRUCK' | 'OTHER') || 'TRUCK',
+        vehicleIdentification: formData.dotInspection?.vehicleIdentification || [],
+        inspectorQualified: formData.dotInspection?.inspectorQualified || false,
+        components: formData.dotInspection?.components || {},
+        additionalConditions: formData.dotInspection?.additionalConditions || '',
+        certified: formData.dotInspection?.certified || false
+      };
+
+      // Generate the PDF
+      const pdfBlob = await generateDOTInspectionPDF(dotData);
+      
+      // Download the PDF
+      const filename = `DOT_Inspection_Report_${formData.dotInspection?.motorCarrierOperator || 'Unknown'}_${new Date().toISOString().split('T')[0]}.pdf`;
+      downloadPDF(pdfBlob, filename);
+
+      toast.success('DOT Inspection PDF generated and downloaded successfully!');
+    } catch (error) {
+      console.error('Error generating DOT Inspection PDF:', error);
+      toast.error('Failed to generate DOT Inspection PDF. Please ensure the template file is available.');
+    }
+  };
+
+    // Test function to verify PDF template loading
+  const testPDFTemplate = async () => {
+    try {
+      console.log('Testing PDF template loading...');
+      const success = await testPDFTemplateLoading();
+
+      if (success) {
+        toast.success('PDF template loaded successfully! Check console for details.');
+      } else {
+        toast.error('Failed to load PDF template. Check console for details.');
+      }
+    } catch (error) {
+      console.error('Error testing PDF template:', error);
+      toast.error('Error testing PDF template');
+    }
+  };
+
+  // Coordinate finder function
+  const generateCoordinateFinder = async () => {
+    try {
+      console.log('Generating coordinate finder PDF...');
+      const pdfBlob = await generateCoordinateFinderPDF();
+      downloadPDF(pdfBlob, 'coordinate-finder.pdf');
+      toast.success('Coordinate finder PDF generated! Use this to map exact field positions.');
+    } catch (error) {
+      console.error('Error generating coordinate finder PDF:', error);
+      toast.error('Failed to generate coordinate finder PDF');
+    }
+  };
+
+  // Precision coordinate finder function
+  const generatePrecisionCoordinateFinder = async () => {
+    try {
+      console.log('Generating precision coordinate finder PDF...');
+      const pdfBlob = await generatePrecisionCoordinateFinderPDF();
+      downloadPDF(pdfBlob, 'precision-coordinate-finder.pdf');
+      toast.success('Precision coordinate finder PDF generated! Check where colored text appears.');
+    } catch (error) {
+      console.error('Error generating precision coordinate finder PDF:', error);
+      toast.error('Failed to generate precision coordinate finder PDF');
+    }
   };
 
   const handleSaveDOTInspection = async () => {
@@ -2797,7 +2903,8 @@ export default function CalibrationBucketTruckReport() {
     if (!autoSaveEnabled || !jobId || !user?.id) return;
     
     // Skip auto-save if this is a new report and we don't have essential data
-    if (!reportId && (!data.bucketTruckData.assetId || !data.customer)) return;
+    // Allow auto-save for new reports even without assetId or customer initially
+    if (!reportId && !data.bucketTruckData.assetId && !data.customer && !data.bucketTruckData.manufacturer) return;
     
     // Prevent excessive saves by checking if data actually changed
     const currentDataString = JSON.stringify(data);
@@ -2837,30 +2944,32 @@ export default function CalibrationBucketTruckReport() {
         if (result.data) {
           setReportId(result.data.id);
           
-          // Create asset entry for the new report
-          const assetData = {
-            name: `Bucket Truck Report - ${data.bucketTruckData.assetId || 'Unnamed'}`,
-            file_url: `report:/jobs/${jobId}/calibration-bucket-truck/${result.data.id}`,
-            user_id: user.id
-          };
+          // Create asset entry for the new report using the same logic as handleSave
+          const assetName = `Bucket Truck Report - ${data.bucketTruckData.manufacturer || ''} - ${new Date().toLocaleDateString()}`;
+          const assetUrl = `report:/jobs/${jobId}/calibration-bucket-truck/${result.data.id}`;
 
-          const { data: assetResult } = await supabase
-            .schema(SCHEMA)
-            .from(ASSETS_TABLE)
-            .insert(assetData)
-            .select()
-            .single();
+          console.log('Auto-save: Creating asset record with name:', assetName);
+          console.log('Auto-save: Asset URL:', assetUrl);
 
-          if (assetResult) {
-            // Link asset to job
-            await supabase
-              .schema(SCHEMA)
-              .from('job_assets')
-              .insert({
-                job_id: jobId,
-                asset_id: assetResult.id,
-                user_id: user.id
-              });
+          try {
+            // Use the same asset creation service as handleSave
+            const assetResult = await createCalibrationAsset(
+              jobId,
+              data.customerId || '1',  // UUID for database relations
+              assetName,
+              assetUrl,
+              user.id,
+              data.customerIdForAsset || '1',  // Pass the numeric ID for asset generation
+              undefined  // Don't pass parent report ID for bucket truck itself
+            );
+
+            if (!assetResult) {
+              console.error('Auto-save: Failed to create asset, but report was saved');
+            } else {
+              console.log('Auto-save: Asset created successfully:', assetResult);
+            }
+          } catch (assetError) {
+            console.error('Auto-save: Error creating asset:', assetError);
           }
         }
       }
@@ -2977,15 +3086,15 @@ export default function CalibrationBucketTruckReport() {
             Print PDF
           </button>
           {/* Always show create-new button; remove Edit Report button */}
-          <button
-            onClick={() => navigate(`/jobs/${jobId}/calibration-bucket-truck`)}
-            className={`${accentClasses.bg} ${accentClasses.bgHover} text-white font-medium px-3 py-2 rounded-md flex items-center justify-center`}
-            title="Create New Bucket Truck Report"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
-          </button>
+              <button
+                onClick={() => navigate(`/jobs/${jobId}/calibration-bucket-truck`)}
+                className={`${accentClasses.bg} ${accentClasses.bgHover} text-white font-medium px-3 py-2 rounded-md flex items-center justify-center`}
+                title="Create New Bucket Truck Report"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                </svg>
+              </button>
         </div>
       </div>
 
@@ -3266,31 +3375,40 @@ export default function CalibrationBucketTruckReport() {
               Save DOT Inspection
             </button>
             <button
-              onClick={handlePrintNewDotPDF}
+                              onClick={generateDOTInspectionPDFHandler}
               disabled={!isEditing}
               className={`px-4 py-2 text-sm text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 !isEditing
                   ? 'bg-green-400 cursor-not-allowed'
                   : 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
               }`}
-              title={!isEditing ? 'Must be in editing mode to print' : 'Print new DOT PDF (from-scratch layout)'}
-            >
-              <Printer className="h-4 w-4 inline mr-2" />
-              Print New DOT PDF
-            </button>
-            <button
-              onClick={handlePrintExactHTML}
-              disabled={!isEditing}
-              className={`px-4 py-2 text-sm text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                !isEditing
-                  ? 'bg-green-400 cursor-not-allowed' 
-                  : 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
-              }`}
-              title={!isEditing ? 'Must be in editing mode to print' : 'Print DOT Inspection (exact template)'}
+              title={!isEditing ? 'Must be in editing mode to print' : 'Generate DOT Inspection PDF'}
             >
               <Printer className="h-4 w-4 inline mr-2" />
               Print DOT PDF
             </button>
+            <button
+              onClick={testPDFTemplate}
+              className="px-4 py-2 text-sm text-blue-600 hover:text-blue-700 border border-blue-600 hover:border-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              title="Test PDF template loading"
+            >
+              Test PDF Template
+            </button>
+            <button
+              onClick={generateCoordinateFinder}
+              className="px-4 py-2 text-sm text-purple-600 hover:text-purple-700 border border-purple-600 hover:border-purple-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+              title="Generate coordinate finder PDF"
+            >
+              Coordinate Finder
+            </button>
+            <button
+              onClick={generatePrecisionCoordinateFinder}
+              className="px-4 py-2 text-sm text-orange-600 hover:text-orange-700 border border-orange-600 hover:border-orange-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              title="Generate precision coordinate finder PDF"
+            >
+              Precision Finder
+            </button>
+
           </div>
         </div>
         
@@ -3426,13 +3544,14 @@ export default function CalibrationBucketTruckReport() {
                   <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Component</th>
                   <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300">OK</th>
                   <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300">Needs Repair</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300">Repaired Date</th>
                 </tr>
               </thead>
               <tbody>
                 {dotInspectionItems.map((section, sectionIndex) => (
                   <React.Fragment key={sectionIndex}>
                     <tr className="bg-gray-100 dark:bg-gray-800">
-                      <td colSpan={3} className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-medium text-gray-900 dark:text-white">
+                      <td colSpan={4} className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-medium text-gray-900 dark:text-white">
                         {section.title}
                       </td>
                     </tr>
@@ -3457,6 +3576,15 @@ export default function CalibrationBucketTruckReport() {
                             onChange={(e) => handleDOTComponentChange(sectionIndex, itemIndex, 'NEEDS_REPAIR', e.target.checked)}
                             disabled={!isEditing}
                             className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                          />
+                        </td>
+                        <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center">
+                          <input
+                            type="date"
+                            value={formData.dotInspection?.components?.[`${sectionIndex}-${itemIndex}`]?.repairedDate || ''}
+                            onChange={(e) => handleDOTComponentRepairedDateChange(sectionIndex, itemIndex, e.target.value)}
+                            disabled={!isEditing}
+                            className={`w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#339C5E] focus:border-[#339C5E] ${!isEditing ? 'bg-gray-100 dark:bg-gray-600' : ''}`}
                           />
                         </td>
                       </tr>

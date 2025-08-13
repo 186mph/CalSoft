@@ -36,6 +36,33 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { Link } from 'react-router-dom';
 
+// Normalize historical calibration job numbers to 1YYXXX (strip any stray zeros in the middle)
+const formatLabJobNumber = (n?: string): string => {
+  if (!n) return '';
+  const digits = String(n).replace(/[^0-9]/g, '');
+  
+  // Handle the specific pattern 1YY0XXX -> 1YYXXX (7 digits with extra zero)
+  if (/^1\d{2}0\d{3}$/.test(digits)) {
+    const prefix = digits.slice(0, 3);
+    const seq = digits.slice(-3);
+    return `${prefix}${seq}`;
+  }
+  
+  // Handle 6-digit numbers that are already correct (1YYXXX)
+  if (/^1\d{2}\d{3}$/.test(digits)) {
+    return digits; // Return as-is, no formatting needed
+  }
+  
+  // Handle other patterns that start with 1YY (fallback)
+  if (/^1\d{2}\d{3,}$/.test(digits)) {
+    const prefix = digits.slice(0, 3);
+    const seq = digits.slice(-3).padStart(3, '0');
+    return `${prefix}${seq}`;
+  }
+  
+  return n;
+};
+
 interface ArmadilloDashboardProps {
   division: string;
 }
@@ -656,7 +683,7 @@ export const ArmadilloDashboard: React.FC<ArmadilloDashboardProps> = ({ division
                                   {job.status?.replace('_', ' ')}
                                 </Badge>
                                 {job.job_number && (
-                                  <span className="text-xs text-gray-500 ml-2">#{job.job_number}</span>
+                                  <span className="text-xs text-gray-500 ml-2">#{formatLabJobNumber(job.job_number)}</span>
                                 )}
                               </div>
                             </div>

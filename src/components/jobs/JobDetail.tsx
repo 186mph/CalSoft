@@ -81,6 +81,7 @@ interface Asset {
   source_table?: string;  // Source table for the asset
   is_master?: boolean;  // Whether this is a master asset
   original_job_id?: string;  // Original job ID for retesting
+  templateId?: string;  // Template ID for meter templates
 }
 
 interface RelatedOpportunity {
@@ -1172,7 +1173,7 @@ const JobDetail = React.memo(function JobDetail() {
 
       // Convert job reports to Asset format
       const jobMeterAssets: Asset[] = (jobMeterReports || []).map(report => ({
-        id: `meter-report-${report.id}`,
+        id: report.id, // Use the actual report ID for database operations
         name: `Meter Report - ${report.report_info?.meterName || 'Unnamed'}`,
         file_url: `report:/jobs/${id}/meter-template/${report.id}`,
         created_at: report.created_at,
@@ -1185,12 +1186,13 @@ const JobDetail = React.memo(function JobDetail() {
         const reportInfo = template.report_info as any;
         const templateName = reportInfo?.templateName || reportInfo?.meterName || 'Unnamed Template';
         return {
-          id: `meter-template-${template.id}`,
+          id: template.id, // Use the actual template ID for database operations
           name: templateName,
           file_url: `template:/meter-template/${template.id}`, // Different URL scheme for templates
           created_at: template.created_at,
           pass_fail_status: null, // Templates don't have pass/fail status
-          type: 'template'
+          type: 'template',
+          templateId: template.id // Store the template ID separately for reference
         };
       });
 
@@ -1200,7 +1202,7 @@ const JobDetail = React.memo(function JobDetail() {
       // Only add job reports to main assets list (not templates)
       setJobAssets(prevAssets => {
         // Remove any existing meter reports to avoid duplicates
-        const filteredAssets = prevAssets.filter(asset => !asset.id.startsWith('meter-report-'));
+        const filteredAssets = prevAssets.filter(asset => !asset.file_url.includes('meter-template'));
         // Add the new job meter reports (not templates)
         return [...filteredAssets, ...jobMeterAssets];
       });
@@ -2151,7 +2153,17 @@ const JobDetail = React.memo(function JobDetail() {
       
       if (isCalibration) {
         // For calibration division, soft delete by setting deleted_at timestamp
-        console.log('Soft deleting calibration asset with ID:', assetToDelete.id);
+        // Use the actual database ID, not the userAssetId
+        const assetId = assetToDelete.id;
+        console.log('Soft deleting calibration asset with ID:', assetId);
+        
+        // Validate that the ID is a proper UUID format
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(assetId)) {
+          console.error('Invalid UUID format for asset ID:', assetId);
+          toast.error('Invalid asset ID format');
+          return;
+        }
         
         const { error: deleteError } = await supabase
           .schema('lab_ops')
@@ -2160,7 +2172,7 @@ const JobDetail = React.memo(function JobDetail() {
             deleted_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
-          .eq('id', assetToDelete.id);
+          .eq('id', assetId);
 
         if (deleteError) {
           console.error('Error soft deleting lab asset:', deleteError);
@@ -4147,7 +4159,7 @@ const JobDetail = React.memo(function JobDetail() {
                     {job.title === 'Calibration Job' || job.title === 'calibration job' ? 'Project' : job.title}
                   </h1>
                   <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Job #{job.job_number || 'Pending'}
+                    Job #{(job.job_number || 'Pending').replace(/(\D|^)(1\d{2})0(\d{3})$/, '$1$2$3')}
                   </p>
                 </div>
                 
@@ -4179,7 +4191,7 @@ const JobDetail = React.memo(function JobDetail() {
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Job Number</h3>
                   <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                    {job.job_number || 'Not assigned'}
+                    {(job.job_number || 'Not assigned').replace(/(\D|^)(1\d{2})0(\d{3})$/, '$1$2$3')}
                   </p>
                 </div>
                 <div>
@@ -4507,7 +4519,7 @@ const JobDetail = React.memo(function JobDetail() {
                                         .map((report) => {
                                           // Handle templates differently from regular reports
                                           const isTemplate = report.file_url.startsWith('template:');
-                                          const templateId = isTemplate ? report.id.replace('meter-template-', '') : null;
+                                          const templateId = isTemplate ? (report.templateId || report.id) : null;
                                           
                                           if (isTemplate) {
                                             // For templates, make name clickable to use template, with edit icon

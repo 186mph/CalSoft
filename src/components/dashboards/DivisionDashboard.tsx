@@ -37,6 +37,33 @@ import { useAuth } from '@/lib/AuthContext';
 import { NETAMetrics } from '@/components/metrics/NETAMetrics';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 
+// Normalize historical calibration job numbers to 1YYXXX (strip any stray zeros in the middle)
+const formatLabJobNumber = (n?: string): string => {
+  if (!n) return '';
+  const digits = String(n).replace(/[^0-9]/g, '');
+  
+  // Handle the specific pattern 1YY0XXX -> 1YYXXX (7 digits with extra zero)
+  if (/^1\d{2}0\d{3}$/.test(digits)) {
+    const prefix = digits.slice(0, 3);
+    const seq = digits.slice(-3);
+    return `${prefix}${seq}`;
+  }
+  
+  // Handle 6-digit numbers that are already correct (1YYXXX)
+  if (/^1\d{2}\d{3}$/.test(digits)) {
+    return digits; // Return as-is, no formatting needed
+  }
+  
+  // Handle other patterns that start with 1YY (fallback)
+  if (/^1\d{2}\d{3,}$/.test(digits)) {
+    const prefix = digits.slice(0, 3);
+    const seq = digits.slice(-3).padStart(3, '0');
+    return `${prefix}${seq}`;
+  }
+  
+  return n;
+};
+
 interface CountsData {
   customers: number;
   contacts: number;
@@ -778,7 +805,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                             <div className="flex justify-between mt-auto pt-3 text-sm text-gray-500 border-t border-gray-100 mt-3">
                               <div className="flex items-center">
                                 <BriefcaseIcon className="h-3.5 w-3.5 mr-1" />
-                                {job.job_number || 'No number'}
+                                {formatLabJobNumber(job.job_number) || 'No number'}
                               </div>
                               {/* Due date is optional */}
                               {job.due_date && (
